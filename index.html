@@ -49,6 +49,11 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="label">Tareas Realizadas (Opcional)</label>
+                <input type="text" id="in-tareas" class="input" placeholder="Ej: Mantenimiento de hardware, config. dual-boot...">
+            </div>
+
             <button onclick="handleSave()" class="btn btn-primary" id="btn-main">Guardar Registro</button>
             <button onclick="cancelEdit()" class="btn btn-cancel" id="btn-cancel" style="display:none">Cancelar Edición</button>
         </div>
@@ -70,6 +75,8 @@
             HORA_BRUTA: 1600000 / 200
         };
 
+        // Cambié a v6 para que tome la nueva estructura de datos limpia si querés, 
+        // pero mantengo v5 para que no pierdas lo que ya cargaste
         let db = JSON.parse(localStorage.getItem('rutas_v5')) || [];
         let editId = null;
 
@@ -103,10 +110,11 @@
         function handleSave() {
             const f = document.getElementById('in-fecha').value;
             const acor = document.getElementById('in-acordar').checked;
+            const tareas = document.getElementById('in-tareas').value.trim(); // Tomamos el valor de la descripción
             
             if (!f) return alert("Falta fecha");
 
-            let item = { fecha: f, acor: acor };
+            let item = { fecha: f, acor: acor, tareas: tareas };
 
             if (!acor) {
                 const hi = document.getElementById('in-inicio').value;
@@ -145,16 +153,23 @@
                 tNeto += i.neto; tBruto += i.bruto;
                 tHoras += (i.h50 + i.h100);
                 
+                // Si hay tareas escritas, creamos el bloque HTML para mostrarlas
+                let tareasHtml = "";
+                if (i.tareas && i.tareas !== "") {
+                    tareasHtml = `<p style="font-size:0.8rem; font-style:italic; color:var(--text); margin-top:4px;"><i class="fa-solid fa-clipboard-check" style="color:var(--primary); margin-right:4px;"></i>${i.tareas}</p>`;
+                }
+
                 const li = document.createElement('li');
                 li.className = `list-item ${i.acor ? 'pendiente-bg' : ''}`;
                 li.innerHTML = `
-                    <div>
+                    <div style="flex:1;">
                         <p style="font-weight:bold; font-size:0.9rem;">${i.fecha} <small style="color:var(--muted); font-weight:normal;">(${i.txt})</small></p>
-                        <p style="font-size:0.7rem; color:var(--muted); margin-top:2px;">
+                        ${tareasHtml}
+                        <p style="font-size:0.7rem; color:var(--muted); margin-top:4px;">
                             ${i.acor ? '<strong style="color:var(--danger)">PENDIENTE DE ACORDAR</strong>' : 'Total sumado: '+fmt(i.neto)}
                         </p>
                     </div>
-                    <div class="actions">
+                    <div class="actions" style="margin-left:10px;">
                         <button class="btn-edit" onclick="startEdit(${i.id})"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn-del" onclick="del(${i.id})"><i class="fa-solid fa-trash"></i></button>
                     </div>
@@ -174,6 +189,7 @@
             
             document.getElementById('in-fecha').value = item.fecha;
             document.getElementById('in-acordar').checked = item.acor;
+            document.getElementById('in-tareas').value = item.tareas || ""; // Carga las tareas si había
             
             if (!item.acor) {
                 const horasArr = item.txt.split(' a ');
@@ -200,6 +216,7 @@
             document.getElementById('in-acordar').checked = false;
             document.getElementById('in-inicio').value = "";
             document.getElementById('in-fin').value = "";
+            document.getElementById('in-tareas').value = ""; // Limpia el campo de tareas
             
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('in-fecha').value = hoy;
