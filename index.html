@@ -2,106 +2,240 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soporte IT - App de Horas Extras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soporte IT - Panel Personal</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
+
+    <style>
+        /* ==================== VARIABLES DE TEMA ==================== */
+        :root {
+            --bg-base: #0f172a;     
+            --bg-card: #1e293b;     
+            --bg-input: #0f172a;    
+            --primary: #6366f1;     
+            --primary-hover: #4f46e5;
+            --success: #10b981;     
+            --danger: #f43f5e;      
+            --text-main: #f8fafc;   
+            --text-muted: #94a3b8;  
+            --border: #334155;      
+        }
+
+        /* ==================== RESET Y BASE ==================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+
+        /* ==================== COMPONENTES UI ==================== */
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .header-top h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+        .select-modern { background: var(--bg-card); color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; outline: none; cursor: pointer; appearance: none; }
+        
+        .card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input { width: 100%; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; }
+        .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+
+        /* Botones */
+        .btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: all 0.3s ease; color: white; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-success { background: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-danger { background: var(--danger); box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); }
+        .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); box-shadow: none; padding: 12px; font-size: 0.9rem; }
+        .btn-outline-danger:hover { background: rgba(244, 63, 94, 0.1); }
+
+        /* Tarjeta Resumen Financiero */
+        .balance-card { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); position: relative; overflow: hidden; }
+        .balance-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+        .balance-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 5px; }
+        .balance-card h2 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; }
+        .balance-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; backdrop-filter: blur(5px); }
+        .balance-row span strong { display: block; font-size: 1.1rem; margin-top: 2px; }
+
+        /* Resumen Horas */
+        .horas-stats { display: flex; gap: 10px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-box p { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+        .stat-box h3 { font-size: 1.2rem; color: var(--text-main); }
+        .stat-box h3.highlight { color: var(--success); }
+
+        /* Listas */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); }
+        .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .item-info p { font-size: 0.8rem; color: var(--text-muted); }
+        .item-action { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: none; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .item-action:hover { background: var(--danger); color: white; }
+        .item-monto { font-weight: 700; color: var(--danger); font-size: 1rem; margin-right: 15px; text-align: right; }
+
+        /* Navegación */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
+        .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; width: 50%; transition: 0.3s; }
+        .nav-btn i { font-size: 1.3rem; transition: transform 0.3s; }
+        .nav-btn.active { color: var(--primary); }
+        .nav-btn.active i { transform: translateY(-3px); }
+
+        .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
+    </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="container">
-            <div style="margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-                <label style="font-size: 0.7rem; display: block; margin-bottom: 5px; color: #a5b4fc;">MES SELECCIONADO:</label>
-                <select id="select-mes" class="input" style="background: #1e1b4b; color: white; border: 1px solid #4338ca;" onchange="render()"></select>
-            </div>
-
-            <div class="sum-box">
-                <div class="sum-item"><p>Neto Base</p><h3 id="view-neto-base">$0</h3></div>
-                <div style="color:#a5b4fc"><i class="fa-solid fa-plus"></i></div>
-                <div class="sum-item"><p>Extras Mes</p><h3 id="view-extra-neto">$0</h3></div>
-            </div>
-            <p style="font-size: 0.7rem; color: #a5b4fc; text-transform: uppercase; margin-top:15px;">Total Estimado</p>
-            <h1 class="total-h1" id="view-total-neto">$0</h1>
-            <p class="bruto-p">Bruto Mes: <span id="view-total-bruto">$0</span> | Extras: <strong id="view-total-horas">0h</strong></p>
-        </div>
-    </header>
-
-    <main class="container">
-        <div class="card" id="form-card">
-            <div class="card-title" id="form-title">Registrar Turno</div>
-            
-            <div class="grid">
-                <div class="form-group">
-                    <label class="label">Fecha</label>
-                    <input type="date" id="in-fecha" class="input">
-                </div>
-                <div class="form-group">
-                    <label class="label">Tarea</label>
-                    <input type="text" id="in-tareas" class="input">
-                </div>
-            </div>
-
-            <div class="grid" style="margin-top:15px">
-                <div class="form-group">
-                    <label class="label">Desde:</label>
-                    <select id="in-inicio" class="input"></select>
-                </div>
-                <div class="form-group">
-                    <label class="label">Hasta:</label>
-                    <select id="in-fin" class="input"></select>
-                </div>
-            </div>
-
-            <button onclick="handleSave()" class="btn btn-primary" id="btn-main" style="margin-top:20px">Guardar Turno</button>
-            <button onclick="cancelEdit()" class="btn btn-cancel" id="btn-cancel" style="display:none">Cancelar Edición</button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Historial de Registros</div>
-            <ul id="list-data" style="list-style:none"></ul>
+    <div class="app-container">
         
+        <header class="header-top">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="https://www.shutterstock.com/image-vector/united-states-dollar-sign-dark-600nw-578651800.jpg" alt="Logo" width="30" style="filter: hue-rotate(220deg);">
+                <h1>Control Financiero</h1>
+            </div>
+            <select id="select-mes" class="select-modern" onchange="renderTodo()"></select>
+        </header>
 
-            <button onclick="resetAll()" style="margin-top:20px; color:var(--danger); background:none; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:center;">LIMPIAR DATOS DEL HISTORIAL</button>
-        </div>
-    </main>
+        <main class="tab-content active" id="tab-horas">
+            
+            <div class="horas-stats">
+                <div class="stat-box">
+                    <p>Neto Base</p>
+                    <h3 id="view-neto-base">$0</h3>
+                </div>
+                <div class="stat-box">
+                    <p>Horas Extras</p>
+                    <h3 class="highlight" id="view-extra-neto">$0</h3>
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center; padding: 15px; background: linear-gradient(to right, #1e293b, #0f172a);">
+                <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Total a Cobrar Estimado</p>
+                <h1 id="view-total-neto" style="font-size: 2rem; color: var(--success); margin-bottom: 5px;">$0</h1>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span> | Total Extras: <strong id="view-total-horas" style="color:var(--text-main)">0h</strong></p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-clock"></i> Registrar Turno</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Fecha</label><input type="date" id="in-fecha" class="input"></div>
+                    <div class="form-group"><label>Sede / Tarea</label><input type="text" id="in-tareas" class="input" placeholder="Ej: Fiter Quilmes"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Desde las:</label><select id="in-inicio" class="input"></select></div>
+                    <div class="form-group"><label>Hasta las:</label><select id="in-fin" class="input"></select></div>
+                </div>
+                <button onclick="handleSaveTurno()" class="btn btn-primary" style="margin-top:10px"><i class="fa-solid fa-plus"></i> Añadir Turno</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes</div>
+                <ul id="list-data" style="list-style:none; margin-bottom: 20px;"></ul>
+                
+                <button onclick="descargarDatosParaPegar()" class="btn btn-success" style="margin-bottom: 15px;">
+                    <i class="fa-solid fa-file-excel"></i> Exportar para Excel
+                </button>
+                <button onclick="resetHoras()" class="btn btn-outline-danger">
+                    <i class="fa-solid fa-trash-can"></i> Borrar Todo el Historial
+                </button>
+            </div>
+        </main>
+
+        <main class="tab-content" id="tab-finanzas">
+            
+            <div class="balance-card">
+                <p>Plata Disponible a Fin de Mes</p>
+                <h2 id="view-fin-disponible">$0</h2>
+                <div class="balance-row">
+                    <span>Proyectado<strong id="view-fin-ingresos" style="color: #6ee7b7;">$0</strong></span>
+                    <span style="text-align: right;">Gastos<strong id="view-fin-gastos" style="color: #fca5a5;">$0</strong></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-wallet"></i> Anotar un Gasto</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Fecha</label><input type="date" id="gasto-fecha" class="input"></div>
+                    <div class="form-group"><label>Monto ($)</label><input type="number" id="gasto-monto" class="input" placeholder="0.00"></div>
+                </div>
+                <div class="form-group">
+                    <label>Concepto</label>
+                    <input type="text" id="gasto-concepto" class="input" placeholder="Ej: Almuerzo, Viáticos, SUBE...">
+                </div>
+                <button onclick="handleSaveGasto()" class="btn btn-danger" style="margin-top:10px"><i class="fa-solid fa-minus"></i> Restar Gasto</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-receipt"></i> Movimientos</div>
+                <ul id="list-gastos" style="list-style:none; margin-bottom: 20px;"></ul>
+                
+                <button onclick="resetGastos()" class="btn btn-outline-danger">
+                    <i class="fa-solid fa-trash-can"></i> Borrar Historial de Gastos
+                </button>
+            </div>
+        </main>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" id="btn-tab-horas" onclick="switchTab('horas')">
+            <i class="fa-solid fa-briefcase"></i> Trabajo
+        </button>
+        <button class="nav-btn" id="btn-tab-finanzas" onclick="switchTab('finanzas')">
+            <i class="fa-solid fa-wallet"></i> Finanzas
+        </button>
+    </nav>
 
     <script>
-        const VALORES = {
-            BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 1680000 / 200, HORA_NETA: (1680000 / 200) * 0.83 
-        };
+        const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
 
-        let db = JSON.parse(localStorage.getItem('db_horas_v1')) || [];
-        let editId = null;
+        let dbHoras = JSON.parse(localStorage.getItem('db_horas_v1')) || [];
+        let dbGastos = JSON.parse(localStorage.getItem('db_gastos_v1')) || [];
+        let totalIngresosMes = 0; 
 
         window.onload = () => {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('in-fecha').value = hoy;
+            document.getElementById('gasto-fecha').value = hoy;
             document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
             
-            const selInicio = document.getElementById('in-inicio');
-            const selFin = document.getElementById('in-fin');
+            const selInicio = document.getElementById('in-inicio'), selFin = document.getElementById('in-fin');
             for(let i=0; i<24; i++) {
                 let h = (i < 10 ? '0'+i : i) + ':00';
                 selInicio.options[selInicio.options.length] = new Option(h, i);
                 selFin.options[selFin.options.length] = new Option(h, i);
             }
             selInicio.value = 18; selFin.value = 21;
-            setupMonthSelector(); render();
+            
+            setupMonthSelector(); 
+            renderTodo();
         };
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`btn-tab-${tab}`).classList.add('active');
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
 
         function formatFechaUS(fechaStr) {
             if (!fechaStr) return "";
             const [y, m, d] = fechaStr.split('-');
-            return `${m}/${d}/${y}`;
+            return `${d}/${m}`;
         }
 
         function setupMonthSelector() {
             const sel = document.getElementById('select-mes');
-            const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            let mesesConDatos = db.map(item => item.fecha.substring(0, 7));
+            const mesesNombres = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            let mesesHoras = dbHoras.filter(i => i && i.fecha).map(item => item.fecha.substring(0, 7));
+            let mesesGastos = dbGastos.filter(i => i && i.fecha).map(item => item.fecha.substring(0, 7));
+            let mesesConDatos = [...mesesHoras, ...mesesGastos];
             const ahora = new Date();
             const mesActualStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
             mesesConDatos.push(mesActualStr);
@@ -110,79 +244,166 @@
             sel.innerHTML = "";
             mesesUnicos.forEach(m => {
                 const [anio, mesNum] = m.split('-');
-                let opt = new Option(`${mesesNombres[parseInt(mesNum)-1]} ${anio}`, m);
-                sel.add(opt);
+                sel.add(new Option(`${mesesNombres[parseInt(mesNum)-1]} ${anio}`, m));
             });
             sel.value = valorPrevio || mesActualStr;
         }
 
-        function handleSave() {
-            const f = document.getElementById('in-fecha').value;
-            const t = document.getElementById('in-tareas').value;
-            const hi = parseInt(document.getElementById('in-inicio').value);
-            const hf = parseInt(document.getElementById('in-fin').value);
-            
-            if (!f || hf <= hi) return alert("Datos inválidos");
+        function handleSaveTurno() {
+            const f = document.getElementById('in-fecha').value, t = document.getElementById('in-tareas').value;
+            const hi = parseInt(document.getElementById('in-inicio').value), hf = parseInt(document.getElementById('in-fin').value);
+            if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
             
             const [y, m, d] = f.split('-').map(Number);
             const diaSemana = new Date(y, m-1, d).getDay(); 
-            const nombresDias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-            
             let h50 = 0, h100 = 0;
             for (let h = hi; h < hf; h++) {
-                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) h100++;
-                else h50++;
+                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) h100++; else h50++;
             }
 
-            let item = {
-                id: editId || Date.now(), fecha: f, diaNombre: nombresDias[diaSemana], tareas: t,
-                hStartVal: hi, hEndVal: hf, txt: `${hi}:00 a ${hf}:00`, h50: h50, h100: h100,
+            dbHoras.push({
+                id: Date.now(), fecha: f, tareas: t,
+                hStartVal: hi, hEndVal: hf, txt: `${hi}:00 a ${hf}:00`, h50, h100,
                 neto: (h50 * VALORES.HORA_NETA * 1.5) + (h100 * VALORES.HORA_NETA * 2),
                 bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
-            };
+            });
 
-            if (editId) { db = db.map(x => x.id === editId ? item : x); editId = null; }
-            else { db.push(item); }
-
-            localStorage.setItem('db_horas_v1', JSON.stringify(db));
-            setupMonthSelector(); cancelEdit(); render();
+            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+            document.getElementById('in-tareas').value = ""; 
+            setupMonthSelector(); renderTodo();
         }
 
-        function render() {
+        function delTurno(id) {
+            if(confirm("¿Eliminar este turno?")) {
+                dbHoras = dbHoras.filter(x => x.id !== id);
+                localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+                setupMonthSelector(); renderTodo();
+            }
+        }
+
+        function handleSaveGasto() {
+            const f = document.getElementById('gasto-fecha').value;
+            const c = document.getElementById('gasto-concepto').value;
+            const m = parseFloat(document.getElementById('gasto-monto').value);
+
+            if (!f || !c || !m || isNaN(m)) return alert("Completá todos los campos.");
+
+            dbGastos.push({ id: Date.now(), fecha: f, concepto: c, monto: m });
+            localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
+            
+            document.getElementById('gasto-concepto').value = "";
+            document.getElementById('gasto-monto').value = "";
+            setupMonthSelector(); renderTodo();
+        }
+
+        function delGasto(id) {
+            if(confirm("¿Eliminar este gasto?")) {
+                dbGastos = dbGastos.filter(x => x.id !== id);
+                localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
+                setupMonthSelector(); renderTodo();
+            }
+        }
+
+        // --- NUEVAS FUNCIONES DE BORRADO MASIVO ---
+        function resetHoras() {
+            if(confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
+                dbHoras = [];
+                localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+                setupMonthSelector(); renderTodo();
+            }
+        }
+
+        function resetGastos() {
+            if(confirm("⚠️ ¿Estás seguro de borrar TODOS los gastos guardados? Esta acción no se puede deshacer.")) {
+                dbGastos = [];
+                localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
+                setupMonthSelector(); renderTodo();
+            }
+        }
+
+        function renderTodo() {
             const mesSel = document.getElementById('select-mes').value;
-            const list = document.getElementById('list-data');
-            list.innerHTML = "";
+            
+            const listHoras = document.getElementById('list-data'); listHoras.innerHTML = "";
             let tNeto = 0, tBruto = 0, tHoras = 0;
             
-            db.filter(i => i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
-                tNeto += i.neto; tBruto += i.bruto; tHoras += (i.h50 + i.h100);
-                const li = document.createElement('li');
-                li.className = 'list-item';
-                li.innerHTML = `<div style="flex:1"><p style="font-weight:bold">${formatFechaUS(i.fecha)} <small style="color:var(--muted)">(${i.txt})</small></p><p style="font-size:0.8rem; color:#a5b4fc">${i.tareas || 'Sin Detalles'}</p></div><div class="actions"><button onclick="startEdit(${i.id})"><i class="fa-solid fa-pen"></i></button><button onclick="del(${i.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div>`;
-                list.appendChild(li);
+            dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
+                tNeto += i.neto || 0; tBruto += i.bruto || 0; tHoras += ((i.h50 || 0) + (i.h100 || 0));
+                listHoras.innerHTML += `
+                    <li class="list-item">
+                        <div class="item-info">
+                            <h4>${formatFechaUS(i.fecha)} <span style="font-weight:400; color:var(--text-muted)">| ${i.txt}</span></h4>
+                            <p>${i.tareas || 'Soporte IT'}</p>
+                        </div>
+                        <button class="item-action" onclick="delTurno(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
+                    </li>`;
             });
             
             document.getElementById('view-extra-neto').innerText = fmt(tNeto);
             document.getElementById('view-total-horas').innerText = tHoras + "h";
-            document.getElementById('view-total-neto').innerText = fmt(VALORES.NETO_BASE + tNeto);
+            
+            totalIngresosMes = VALORES.NETO_BASE + tNeto;
+            document.getElementById('view-total-neto').innerText = fmt(totalIngresosMes);
             document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
+
+            const listGastos = document.getElementById('list-gastos'); listGastos.innerHTML = "";
+            let tGastos = 0;
+
+            dbGastos.filter(i => i.fecha && i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
+                tGastos += i.monto;
+                listGastos.innerHTML += `
+                    <li class="list-item">
+                        <div class="item-info">
+                            <h4>${formatFechaUS(i.fecha)}</h4>
+                            <p>${i.concepto}</p>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <span class="item-monto">- ${fmt(i.monto)}</span>
+                            <button class="item-action" onclick="delGasto(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </li>`;
+            });
+
+            document.getElementById('view-fin-ingresos').innerText = fmt(totalIngresosMes);
+            document.getElementById('view-fin-gastos').innerText = fmt(tGastos);
+            
+            const disponible = totalIngresosMes - tGastos;
+            const elDisponible = document.getElementById('view-fin-disponible');
+            elDisponible.innerText = fmt(disponible);
+            elDisponible.style.color = disponible < 0 ? '#fca5a5' : '#ffffff';
+            
+            if(listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">No hay turnos registrados en este mes.</p>`;
+            if(listGastos.innerHTML === "") listGastos.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">Aún no anotaste gastos este mes.</p>`;
         }
 
-        function startEdit(id) {
-            const i = db.find(x => x.id === id); editId = id;
-            document.getElementById('in-fecha').value = i.fecha; document.getElementById('in-tareas').value = i.tareas;
-            document.getElementById('in-inicio').value = i.hStartVal; document.getElementById('in-fin').value = i.hEndVal;
-            document.getElementById('btn-cancel').style.display = "block"; window.scrollTo({top:0, behavior:'smooth'});
-        }
-
-        function cancelEdit() {
-            editId = null; document.getElementById('btn-cancel').style.display = "none";
-            document.getElementById('in-tareas').value = ""; document.getElementById('in-inicio').value = 18; document.getElementById('in-fin').value = 21;
-        }
-
-        function del(id) { if(confirm("¿Eliminar?")) { db = db.filter(x => x.id !== id); localStorage.setItem('db_horas_v1', JSON.stringify(db)); setupMonthSelector(); render(); } }
-        function resetAll() { if(confirm("¿Borrar todo?")) { db = []; localStorage.clear(); setupMonthSelector(); render(); } }
         function fmt(v) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS', maximumFractionDigits: 0}).format(v); }
+        
+        function descargarDatosParaPegar() {
+            const sel = document.getElementById('select-mes');
+            if (!sel.value) return;
+            const [anioSel, mesNumSel] = sel.value.split('-');
+            const mesesAbr = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+            const mesAbreviado = mesesAbr[parseInt(mesNumSel, 10) - 1] || "";
+            const datosMes = dbHoras.filter(i => i.fecha && i.fecha.startsWith(sel.value)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+            if (datosMes.length === 0) return alert("No hay datos para exportar este mes.");
+            
+            let contenidoTxt = "";
+            datosMes.forEach(item => {
+                const [y, m, d] = item.fecha.split('-');
+                const fecha = `${m}/${d}/${y}`;
+                const desde = `${String(item.hStartVal || 0).padStart(2, '0')}:00`;
+                const hasta = `${String(item.hEndVal || 0).padStart(2, '0')}:00`;
+                const detalles = (item.tareas || "");
+                contenidoTxt += `${fecha}\t${desde}\t${hasta}\t${detalles}\n`;
+            });
+
+            const blob = new Blob([contenidoTxt], { type: "text/plain;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Datos_Pegar_${mesAbreviado}.txt`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html> 
