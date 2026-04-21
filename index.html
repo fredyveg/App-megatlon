@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Megatlon/Fiter</title>
+    <title>Soporte IT - Control de Horas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
-
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
 </head>
 <body>
 
     <header class="header">
         <div class="container">
-            <div class="sum-box">
-                <div class="sum-item"><p>Neto Base</p><h3 id="view-neto-base">$0,00</h3></div>
-                <div style="color:#a5b4fc"><i class="fa-solid fa-plus"></i></div>
-                <div class="sum-item"><p>Extras</p><h3 id="view-extra-neto">$0,00</h3></div>
+            <div style="margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
+                <label style="font-size: 0.7rem; display: block; margin-bottom: 5px; color: #a5b4fc;">MES SELECCIONADO:</label>
+                <select id="select-mes" class="input" style="background: #1e1b4b; color: white; border: 1px solid #4338ca;" onchange="render()">
+                </select>
             </div>
-            <p style="font-size: 0.7rem; color: #a5b4fc; text-transform: uppercase;">Total Neto Estimado</p>
-            <h1 class="total-h1" id="view-total-neto">$0,00</h1>
-            
-            <p class="bruto-p">Bruto: <span id="view-total-bruto">$0,00</span> | Extras: <strong id="view-total-horas">0h</strong></p>
+
+            <div class="sum-box">
+                <div class="sum-item"><p>Neto Base</p><h3 id="view-neto-base">$0</h3></div>
+                <div style="color:#a5b4fc"><i class="fa-solid fa-plus"></i></div>
+                <div class="sum-item"><p>Extras Mes</p><h3 id="view-extra-neto">$0</h3></div>
+            </div>
+            <p style="font-size: 0.7rem; color: #a5b4fc; text-transform: uppercase; margin-top:15px;">Total Estimado</p>
+            <h1 class="total-h1" id="view-total-neto">$0</h1>
+            <p class="bruto-p">Bruto Mes: <span id="view-total-bruto">$0</span> | Extras: <strong id="view-total-horas">0h</strong></p>
         </div>
     </header>
 
@@ -30,196 +34,217 @@
         <div class="card" id="form-card">
             <div class="card-title" id="form-title">Registrar Turno</div>
             
-            <div class="form-group">
-                <label class="label">Fecha</label>
-                <input type="date" id="in-fecha" class="input">
-            </div>
-
-            <label class="toggle-area">
-                <input type="checkbox" id="in-acordar" style="display:none" onchange="toggleInputs()">
-                <div class="sw"></div>
-                <span style="font-size:0.8rem; font-weight:bold;">A acordar con coordinador</span>
-            </label>
-
-            <div class="grid" id="box-horas">
+            <div class="grid">
                 <div class="form-group">
-                    <label class="label">Inicio</label>
-                    <input type="time" id="in-inicio" class="input">
+                    <label class="label">Fecha</label>
+                    <input type="date" id="in-fecha" class="input">
                 </div>
                 <div class="form-group">
-                    <label class="label">Fin</label>
-                    <input type="time" id="in-fin" class="input">
+                    <label class="label">Tarea</label>
+                    <input type="text" id="in-tareas" class="input" >
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="label">Tareas Realizadas (Opcional)</label>
-                <input type="text" id="in-tareas" class="input"
+            <div class="grid" style="margin-top:15px">
+                <div class="form-group">
+                    <label class="label">Desde las:</label>
+                    <select id="in-inicio" class="input"></select>
+                </div>
+                <div class="form-group">
+                    <label class="label">Hasta las:</label>
+                    <select id="in-fin" class="input"></select>
+                </div>
             </div>
 
-            <button onclick="handleSave()" class="btn btn-primary" id="btn-main">Guardar Registro</button>
+            <button onclick="handleSave()" class="btn btn-primary" id="btn-main" style="margin-top:20px">Guardar y Calcular</button>
             <button onclick="cancelEdit()" class="btn btn-cancel" id="btn-cancel" style="display:none">Cancelar Edición</button>
         </div>
 
         <div class="card">
-            <div class="card-title">
-                Historial del Ciclo 
-                <button onclick="resetAll()" style="color:var(--danger); background:none; border:none; font-size:0.7rem; font-weight:bold; cursor:pointer;">BORRAR TODO</button>
-            </div>
+            <div class="card-title" id="list-title">Historial de Registros</div>
             <ul id="list-data" style="list-style:none"></ul>
+            <button onclick="resetAll()" style="margin-top:20px; color:var(--danger); background:none; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:center;">BORRAR TODO EL HISTORIAL</button>
         </div>
     </main>
 
     <script>
-        // VALORES ACTUALIZADOS SEGÚN RECIBO MARZO 2026
+        // VALORES EXACTOS SEGÚN RECIBO MARZO 2026
         const VALORES = {
             BRUTO_BASE: 1680000,
-            NETO_BASE: 1394400, // Neto aproximado después de descuentos (17%)
+            NETO_BASE: 1394400, 
             HORA_BRUTA: 1680000 / 200,
             HORA_NETA: (1680000 / 200) * 0.83 
         };
 
-        let db = JSON.parse(localStorage.getItem('rutas_v5')) || [];
+        let db = JSON.parse(localStorage.getItem('db_horas_v1')) || [];
         let editId = null;
 
         window.onload = () => {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('in-fecha').value = hoy;
             document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
+            
+            // Selectores de horas redondas
+            const selInicio = document.getElementById('in-inicio');
+            const selFin = document.getElementById('in-fin');
+            for(let i=0; i<24; i++) {
+                let txt = (i < 10 ? '0'+i : i) + ':00';
+                selInicio.options[selInicio.options.length] = new Option(txt, i);
+                selFin.options[selFin.options.length] = new Option(txt, i);
+            }
+            selInicio.value = 18;
+            selFin.value = 21;
+
+            setupMonthSelector(); 
             render();
         };
 
-        function toggleInputs() {
-            const isChecked = document.getElementById('in-acordar').checked;
-            document.getElementById('box-horas').style.display = isChecked ? 'none' : 'grid';
+        function formatFechaLatino(fechaStr) {
+            if (!fechaStr) return "";
+            const [anio, mes, dia] = fechaStr.split('-');
+            return `${dia}/${mes}/${anio}`;
         }
 
-        function calcHoras(f, hi, hf) {
-            let start = new Date(`${f}T${hi}`);
-            let end = new Date(`${f}T${hf}`);
-            if (end < start) end.setDate(end.getDate() + 1);
-
-            let h50 = 0, h100 = 0;
-            let cur = new Date(start);
-            while (cur < end) {
-                let d = cur.getDay(), h = cur.getHours();
-                // Sábado después de las 13 o Domingo todo el día = 100%
-                if (d === 0 || (d === 6 && h >= 13)) h100 += 1/60;
-                else h50 += 1/60;
-                cur.setMinutes(cur.getMinutes() + 1);
-            }
-            return { h50, h100 };
+        function setupMonthSelector() {
+            const sel = document.getElementById('select-mes');
+            const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
+            let mesesConDatos = db.map(item => item.fecha.substring(0, 7));
+            const ahora = new Date();
+            const mesActualStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
+            mesesConDatos.push(mesActualStr);
+            
+            let mesesUnicos = [...new Set(mesesConDatos)].sort().reverse();
+            
+            const valorPrevio = sel.value;
+            sel.innerHTML = "";
+            mesesUnicos.forEach(m => {
+                const [anio, mesNum] = m.split('-');
+                let opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = `${mesesNombres[parseInt(mesNum)-1]} ${anio}`;
+                sel.appendChild(opt);
+            });
+            sel.value = valorPrevio || mesActualStr;
         }
 
         function handleSave() {
             const f = document.getElementById('in-fecha').value;
-            const acor = document.getElementById('in-acordar').checked;
-            const tareas = document.getElementById('in-tareas').value.trim();
+            const t = document.getElementById('in-tareas').value;
+            const hStart = parseInt(document.getElementById('in-inicio').value);
+            const hEnd = parseInt(document.getElementById('in-fin').value);
             
-            if (!f) return alert("Falta fecha");
+            if (!f) return alert("Falta la fecha");
+            if (hEnd <= hStart) return alert("La hora de fin debe ser posterior");
 
-            let item = { fecha: f, acor: acor, tareas: tareas };
+            let h50 = 0, h100 = 0;
+            const [y, m, d] = f.split('-').map(Number);
+            const diaSemana = new Date(y, m-1, d).getDay(); 
 
-            if (!acor) {
-                const hi = document.getElementById('in-inicio').value;
-                const hf = document.getElementById('in-fin').value;
-                if (!hi || !hf) return alert("Faltan horas");
-
-                const res = calcHoras(f, hi, hf);
-                item.h50 = res.h50;
-                item.h100 = res.h100;
-                item.neto = (res.h50 * VALORES.HORA_NETA * 1.5) + (res.h100 * VALORES.HORA_NETA * 2);
-                item.bruto = (res.h50 * VALORES.HORA_BRUTA * 1.5) + (res.h100 * VALORES.HORA_BRUTA * 2);
-                item.txt = `${hi} a ${hf}`;
-            } else {
-                item.h50 = 0; item.h100 = 0; item.neto = 0; item.bruto = 0; item.txt = "A acordar";
+            for (let h = hStart; h < hEnd; h++) {
+                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) {
+                    h100++;
+                } else {
+                    h50++;
+                }
             }
+
+            let item = {
+                id: editId || Date.now(),
+                fecha: f,
+                tareas: t,
+                txt: `${hStart}:00 a ${hEnd}:00`,
+                h50: h50,
+                h100: h100,
+                neto: (h50 * VALORES.HORA_NETA * 1.5) + (h100 * VALORES.HORA_NETA * 2),
+                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
+            };
 
             if (editId) {
-                const index = db.findIndex(x => x.id === editId);
-                db[index] = { ...item, id: editId };
+                db = db.map(x => x.id === editId ? item : x);
                 editId = null;
             } else {
-                db.push({ ...item, id: Date.now() });
+                db.push(item);
             }
 
-            localStorage.setItem('rutas_v5', JSON.stringify(db));
-            cancelEdit(); 
+            localStorage.setItem('db_horas_v1', JSON.stringify(db));
+            setupMonthSelector(); 
+            cancelEdit();
             render();
         }
 
         function render() {
+            const mesSel = document.getElementById('select-mes').value;
             const list = document.getElementById('list-data');
             list.innerHTML = "";
             let tNeto = 0, tBruto = 0, tHoras = 0;
 
-            db.sort((a,b) => b.id - a.id).forEach(i => {
+            const filtrados = db.filter(i => i.fecha.startsWith(mesSel));
+
+            filtrados.sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
                 tNeto += i.neto; tBruto += i.bruto;
                 tHoras += (i.h50 + i.h100);
                 
-                let tareasHtml = i.tareas ? `<p style="font-size:0.8rem; font-style:italic; color:var(--text); margin-top:4px;"><i class="fa-solid fa-clipboard-check" style="color:var(--primary); margin-right:4px;"></i>${i.tareas}</p>` : "";
-
                 const li = document.createElement('li');
-                li.className = `list-item ${i.acor ? 'pendiente-bg' : ''}`;
+                li.className = 'list-item';
                 li.innerHTML = `
-                    <div style="flex:1;">
-                        <p style="font-weight:bold; font-size:0.9rem;">${i.fecha} <small style="color:var(--muted); font-weight:normal;">(${i.txt})</small></p>
-                        ${tareasHtml}
-                        <p style="font-size:0.7rem; color:var(--muted); margin-top:4px;">
-                            ${i.acor ? '<strong style="color:var(--danger)">PENDIENTE</strong>' : 'Sumado: '+fmt(i.neto)}
-                        </p>
+                    <div style="flex:1">
+                        <p style="font-weight:bold">${formatFechaLatino(i.fecha)} <small style="color:var(--muted)">(${i.txt})</small></p>
+                        <p style="font-size:0.8rem; color:#a5b4fc">${i.tareas || 'Soporte IT'}</p>
+                        <p style="font-size:0.7rem; color:var(--muted)">Ganancia: ${fmt(i.neto)}</p>
                     </div>
                     <div class="actions">
-                        <button class="btn-edit" onclick="startEdit(${i.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-del" onclick="del(${i.id})"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="startEdit(${i.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="del(${i.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `;
                 list.appendChild(li);
             });
 
             document.getElementById('view-extra-neto').innerText = fmt(tNeto);
-            document.getElementById('view-total-horas').innerText = tHoras.toFixed(1) + "h";
+            document.getElementById('view-total-horas').innerText = tHoras + "h";
             document.getElementById('view-total-neto').innerText = fmt(VALORES.NETO_BASE + tNeto);
             document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
         }
 
         function startEdit(id) {
-            const item = db.find(x => x.id === id);
+            const i = db.find(x => x.id === id);
             editId = id;
-            document.getElementById('in-fecha').value = item.fecha;
-            document.getElementById('in-acordar').checked = item.acor;
-            document.getElementById('in-tareas').value = item.tareas || "";
-            if (!item.acor) {
-                const horasArr = item.txt.split(' a ');
-                document.getElementById('in-inicio').value = horasArr[0];
-                document.getElementById('in-fin').value = horasArr[1];
-            }
-            toggleInputs();
-            document.getElementById('form-title').innerText = "Editando Turno";
-            document.getElementById('btn-main').innerText = "Actualizar";
+            document.getElementById('in-fecha').value = i.fecha;
+            document.getElementById('in-tareas').value = i.tareas;
+            const horas = i.txt.replace(/:00/g,'').split(' a ');
+            document.getElementById('in-inicio').value = parseInt(horas[0]);
+            document.getElementById('in-fin').value = parseInt(horas[1]);
+            document.getElementById('form-title').innerText = "Editando Registro";
             document.getElementById('btn-cancel').style.display = "block";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({top:0, behavior:'smooth'});
         }
 
         function cancelEdit() {
             editId = null;
             document.getElementById('form-title').innerText = "Registrar Turno";
-            document.getElementById('btn-main').innerText = "Guardar Registro";
             document.getElementById('btn-cancel').style.display = "none";
-            document.getElementById('in-acordar').checked = false;
             document.getElementById('in-tareas').value = "";
-            toggleInputs();
+            document.getElementById('in-inicio').value = 18;
+            document.getElementById('in-fin').value = 21;
         }
 
         function del(id) {
-            if(confirm("¿Eliminar?")) { db = db.filter(x => x.id !== id); localStorage.setItem('rutas_v5', JSON.stringify(db)); render(); }
+            if(confirm("¿Eliminar registro?")) {
+                db = db.filter(x => x.id !== id);
+                localStorage.setItem('db_horas_v1', JSON.stringify(db));
+                setupMonthSelector();
+                render();
+            }
         }
 
         function resetAll() {
-            if(confirm("¿Borrar todo?")) { db = []; localStorage.clear(); render(); }
+            if(confirm("¿Borrar todo el historial?")) {
+                db = []; localStorage.clear(); setupMonthSelector(); render();
+            }
         }
 
         function fmt(v) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS', maximumFractionDigits: 0}).format(v); }
     </script>
 </body>
-</html>
+</html> 
