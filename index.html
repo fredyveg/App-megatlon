@@ -62,10 +62,7 @@
         <div class="card">
             <div class="card-title">Historial de Registros</div>
             <ul id="list-data" style="list-style:none"></ul>
-            
-            <button onclick="exportToCSV()" class="btn" style="background:#10b981; color:#fff; margin-top:15px; width:100%; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: bold; border:none; padding: 12px; border-radius: 8px; cursor:pointer;">
-                <i class="fa-solid fa-download"></i> DESCARGAR DATOS
-            </button>
+        
 
             <button onclick="resetAll()" style="margin-top:20px; color:var(--danger); background:none; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:center;">LIMPIAR DATOS DEL HISTORIAL</button>
         </div>
@@ -149,39 +146,6 @@
 
             localStorage.setItem('db_horas_v1', JSON.stringify(db));
             setupMonthSelector(); cancelEdit(); render();
-        }
-
-        // GENERADOR DE DATOS CSV LIMPIOS
-        function exportToCSV() {
-            const sel = document.getElementById('select-mes');
-            const mesSolo = sel.options[sel.selectedIndex].text.split(' ')[0].toUpperCase();
-            const mesSelVal = sel.value;
-            const filtrados = db.filter(i => i.fecha.startsWith(mesSelVal)).sort((a,b) => a.fecha.localeCompare(b.fecha));
-
-            if (filtrados.length === 0) return alert("No hay datos para exportar.");
-
-            // Encabezados del CSV
-            let csvContent = "Mes,Legajo,Nombre,Fecha,Dia,Desde,Hasta,h50,h100,Observaciones\\n";
-
-            filtrados.forEach(i => {
-                const desdeStr = `${i.hStartVal < 10 ? '0' : ''}${i.hStartVal}:00:00`;
-                const hastaStr = `${i.hEndVal < 10 ? '0' : ''}${i.hEndVal}:00:00`;
-                const fechaFormat = formatFechaUS(i.fecha);
-                const tareasSafe = `"${(i.tareas || "").replace(/"/g, '""')}"`;
-
-                // Fila del CSV
-                csvContent += `${mesSolo},13509,JOSE LAGO,${fechaFormat},${i.diaNombre},${desdeStr},${hastaStr},${i.h50 || ""},${i.h100 || ""},${tareasSafe}\\n`;
-            });
-
-            // Descargar archivo
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Datos_${mesSolo}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function render() {
