@@ -158,7 +158,7 @@
                 tNeto += i.neto; tBruto += i.bruto; tHoras += (i.h50 + i.h100);
                 const li = document.createElement('li');
                 li.className = 'list-item';
-                li.innerHTML = `<div style="flex:1"><p style="font-weight:bold">${formatFechaUS(i.fecha)} <small style="color:var(--muted)">(${i.txt})</small></p><p style="font-size:0.8rem; color:#a5b4fc">${i.tareas || 'Soporte IT'}</p></div><div class="actions"><button onclick="startEdit(${i.id})"><i class="fa-solid fa-pen"></i></button><button onclick="del(${i.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div>`;
+                li.innerHTML = `<div style="flex:1"><p style="font-weight:bold">${formatFechaUS(i.fecha)} <small style="color:var(--muted)">(${i.txt})</small></p><p style="font-size:0.8rem; color:#a5b4fc">${i.tareas || 'Sin Detalles'}</p></div><div class="actions"><button onclick="startEdit(${i.id})"><i class="fa-solid fa-pen"></i></button><button onclick="del(${i.id})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div>`;
                 list.appendChild(li);
             });
             
