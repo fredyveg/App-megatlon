@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -69,13 +69,41 @@
         .stat-box h3.highlight { color: var(--success); }
 
         /* Listas */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); gap: 10px; }
         .list-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
-        .item-info p { font-size: 0.8rem; color: var(--text-muted); }
-        .item-action { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: none; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .item-info { flex: 1; min-width: 0; }
+        .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-info p { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .item-action { border: none; width: 35px; height: 35px; min-width: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: rgba(244,63,94,0.1); color: var(--danger); }
         .item-action:hover { background: var(--danger); color: white; }
-        .item-monto { font-weight: 700; color: var(--danger); font-size: 1rem; margin-right: 15px; text-align: right; }
+        .item-action.edit { background: rgba(99,102,241,0.1); color: var(--primary); }
+        .item-action.edit:hover { background: var(--primary); color: white; }
+        .item-monto { font-weight: 700; color: var(--danger); font-size: 1rem; margin-right: 8px; text-align: right; flex-shrink: 0; }
+
+        /* Badges de horas por registro */
+        .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
+        .horas-badge span { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+        .badge-total { background: rgba(99,102,241,0.15); color: #818cf8; }
+        .badge-50    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+        .badge-100   { background: rgba(16,185,129,0.15);  color: #10b981; }
+
+        /* Resumen 50% / 100% / Total horas */
+        .horas-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .breakdown-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 6px; text-align: center; }
+        .breakdown-box p { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 4px; }
+        .breakdown-box h3 { font-size: 1.05rem; font-weight: 700; }
+        .c-total { color: #818cf8; }
+        .c-50    { color: #fbbf24; }
+        .c-100   { color: #10b981; }
+
+        /* Modal edición */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; width: 92%; max-width: 420px; animation: fadeUp 0.3s ease; }
+        .modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .modal-actions .btn { flex: 1; padding: 12px; font-size: 0.9rem; }
 
         /* Navegación */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
@@ -119,6 +147,42 @@
                 <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Total a Cobrar Estimado</p>
                 <h1 id="view-total-neto" style="font-size: 2rem; color: var(--success); margin-bottom: 5px;">$0</h1>
                 <p style="font-size: 0.8rem; color: var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span> | Total Extras: <strong id="view-total-horas" style="color:var(--text-main)">0h</strong></p>
+            </div>
+
+            <!-- Resumen horas breakdown -->
+            <div class="horas-breakdown">
+                <div class="breakdown-box">
+                    <p>⏱ Total Extras</p>
+                    <h3 id="bd-total" class="c-total">0h</h3>
+                </div>
+                <div class="breakdown-box">
+                    <p>🟡 Al 50%</p>
+                    <h3 id="bd-50" class="c-50">0h</h3>
+                </div>
+                <div class="breakdown-box">
+                    <p>🟢 Al 100%</p>
+                    <h3 id="bd-100" class="c-100">0h</h3>
+                </div>
+            </div>
+
+            <!-- Modal edición -->
+            <div class="modal-overlay" id="modal-edit">
+                <div class="modal">
+                    <h3><i class="fa-solid fa-pen-to-square"></i> Editar Turno</h3>
+                    <input type="hidden" id="edit-id">
+                    <div class="grid-2">
+                        <div class="form-group"><label>Fecha</label><input type="date" id="edit-fecha" class="input"></div>
+                        <div class="form-group"><label>Tarea</label><input type="text" id="edit-tareas" class="input"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Desde las:</label><select id="edit-inicio" class="input"></select></div>
+                        <div class="form-group"><label>Hasta las:</label><select id="edit-fin" class="input"></select></div>
+                    </div>
+                    <div class="modal-actions">
+                        <button onclick="cerrarModal()" class="btn btn-outline-danger"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+                        <button onclick="guardarEdicion()" class="btn btn-primary"><i class="fa-solid fa-check"></i> Guardar</button>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -331,18 +395,33 @@
             
             dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
                 tNeto += i.neto || 0; tBruto += i.bruto || 0; tHoras += ((i.h50 || 0) + (i.h100 || 0));
+                const h50i = i.h50 || 0, h100i = i.h100 || 0, htot = h50i + h100i;
                 listHoras.innerHTML += `
                     <li class="list-item">
                         <div class="item-info">
                             <h4>${formatFechaUS(i.fecha)} <span style="font-weight:400; color:var(--text-muted)">| ${i.txt}</span></h4>
                             <p>${i.tareas || 'Soporte IT'}</p>
+                            <div class="horas-badge">
+                                <span class="badge-total">${htot}h total</span>
+                                ${h50i > 0 ? `<span class="badge-50">${h50i}h al 50%</span>` : ''}
+                                ${h100i > 0 ? `<span class="badge-100">${h100i}h al 100%</span>` : ''}
+                            </div>
                         </div>
-                        <button class="item-action" onclick="delTurno(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        <div class="item-actions">
+                            <button class="item-action edit" onclick="abrirEdicion(${i.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="item-action" onclick="delTurno(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
                     </li>`;
             });
             
             document.getElementById('view-extra-neto').innerText = fmt(tNeto);
             document.getElementById('view-total-horas').innerText = tHoras + "h";
+            // Breakdown 50% / 100%
+            const t50 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h50||0),0);
+            const t100 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h100||0),0);
+            document.getElementById('bd-total').innerText = tHoras + 'h';
+            document.getElementById('bd-50').innerText   = t50   + 'h';
+            document.getElementById('bd-100').innerText  = t100  + 'h';
             
             totalIngresosMes = VALORES.NETO_BASE + tNeto;
             document.getElementById('view-total-neto').innerText = fmt(totalIngresosMes);
@@ -379,6 +458,61 @@
         }
 
         function fmt(v) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS', maximumFractionDigits: 0}).format(v); }
+
+        // ── Modal edición ─────────────────────────────────────────────────
+        function abrirEdicion(id) {
+            const item = dbHoras.find(x => x.id === id);
+            if (!item) return;
+            document.getElementById('edit-id').value    = id;
+            document.getElementById('edit-fecha').value  = item.fecha;
+            document.getElementById('edit-tareas').value = item.tareas || '';
+
+            // Poblar selects si están vacíos
+            ['edit-inicio','edit-fin'].forEach(selId => {
+                const sel = document.getElementById(selId);
+                if (sel.options.length === 0) {
+                    for(let h=0; h<24; h++) sel.add(new Option((h<10?'0':'')+h+':00', h));
+                }
+            });
+            document.getElementById('edit-inicio').value = item.hStartVal;
+            document.getElementById('edit-fin').value    = item.hEndVal;
+            document.getElementById('modal-edit').classList.add('open');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-edit').classList.remove('open');
+        }
+
+        function guardarEdicion() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const f  = document.getElementById('edit-fecha').value;
+            const t  = document.getElementById('edit-tareas').value;
+            const hi = parseInt(document.getElementById('edit-inicio').value);
+            const hf = parseInt(document.getElementById('edit-fin').value);
+            if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
+
+            const [y, m, d] = f.split('-').map(Number);
+            const diaSemana = new Date(y, m-1, d).getDay();
+            let h50 = 0, h100 = 0;
+            for (let h = hi; h < hf; h++) {
+                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) h100++; else h50++;
+            }
+
+            dbHoras = dbHoras.map(x => x.id !== id ? x : {
+                ...x, fecha: f, tareas: t, hStartVal: hi, hEndVal: hf,
+                txt: `${hi}:00 a ${hf}:00`, h50, h100,
+                neto:  (h50 * VALORES.HORA_NETA * 1.5)  + (h100 * VALORES.HORA_NETA * 2),
+                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
+            });
+            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+            cerrarModal();
+            setupMonthSelector(); renderTodo();
+        }
+
+        // Cerrar modal al tocar fuera
+        document.addEventListener('click', e => {
+            if (e.target.id === 'modal-edit') cerrarModal();
+        });
         
         async function descargarExcel() {
             const sel = document.getElementById('select-mes');
