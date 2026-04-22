@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
     <style>
         /* ==================== VARIABLES DE TEMA ==================== */
@@ -138,6 +139,9 @@
                 <ul id="list-data" style="list-style:none; margin-bottom: 20px;"></ul>
                 
             
+                <button onclick="descargarExcel()" class="btn btn-success" style="margin-bottom:10px">
+                    <i class="fa-solid fa-file-excel"></i> Descargar Planilla Excel
+                </button>
                 <button onclick="resetHoras()" class="btn btn-outline-danger">
                     <i class="fa-solid fa-trash-can"></i> Borrar Todo el Historial
                 </button>
@@ -376,31 +380,210 @@
 
         function fmt(v) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS', maximumFractionDigits: 0}).format(v); }
         
-        function descargarDatosParaPegar() {
+        async function descargarExcel() {
             const sel = document.getElementById('select-mes');
             if (!sel.value) return;
             const [anioSel, mesNumSel] = sel.value.split('-');
-            const mesesAbr = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
-            const mesAbreviado = mesesAbr[parseInt(mesNumSel, 10) - 1] || "";
-            const datosMes = dbHoras.filter(i => i.fecha && i.fecha.startsWith(sel.value)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+            const mesesAbr    = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+            const mesesNombre = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+            const mesAbreviado     = mesesAbr[parseInt(mesNumSel,10)-1] || "";
+            const mesNombreCompleto = mesesNombre[parseInt(mesNumSel,10)-1] || "";
+            const datosMes = dbHoras.filter(i => i.fecha && i.fecha.startsWith(sel.value)).sort((a,b) => a.fecha.localeCompare(b.fecha));
             if (datosMes.length === 0) return alert("No hay datos para exportar este mes.");
-            
-            let contenidoTxt = "";
-            datosMes.forEach(item => {
-                const [y, m, d] = item.fecha.split('-');
-                const fecha = `${m}/${d}/${y}`;
-                const desde = `${String(item.hStartVal || 0).padStart(2, '0')}:00`;
-                const hasta = `${String(item.hEndVal || 0).padStart(2, '0')}:00`;
-                const detalles = (item.tareas || "");
-                contenidoTxt += `${fecha}\t${desde}\t${hasta}\t${detalles}\n`;
+
+            const LEGAJO   = 13509;
+            const NOMBRE   = "JOSE LAGO";
+            const MAX_ROWS = 30;
+
+            // ── Colores ────────────────────────────────────────────────────
+            const C_YELLOW = "FFE598";  // Mes, Nombre, Fecha, Hasta + descripción
+            const C_GREEN  = "A8D08D";  // Legajo, Dia, Desde, Total
+            const C_BLUE   = "BDD6EE";  // 50% y 100%
+            const C_WHITE  = "FFFFFF";  // Completa RRHH
+
+            // ── Helpers de estilo ExcelJS ──────────────────────────────────
+            const bMed = { style: 'medium', color: { argb: 'FF000000' } };
+            const bThin = { style: 'thin',  color: { argb: 'FF000000' } };
+
+            function fillOf(hex)  { return { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + hex } }; }
+            function fontHdr(sz)  { return { name: 'Calibri', size: sz || 14, bold: true, color: { argb: 'FF000000' } }; }
+            function fontDat()    { return { name: 'Calibri', size: 11, color: { argb: 'FF000000' } }; }
+            const alignCenter = { horizontal: 'center', vertical: 'middle' };
+            const alignLeft   = { horizontal: 'left',   vertical: 'middle' };
+            const borderHdr   = { top: bMed, bottom: bMed, left: bMed, right: bMed };
+            const borderDat   = { top: bThin, bottom: bThin, left: bThin, right: bThin };
+
+            // Aplica estilo completo a una celda
+            function styleCell(cell, { fill, font, alignment, border, numFmt }) {
+                if (fill)      cell.fill      = fill;
+                if (font)      cell.font      = font;
+                if (alignment) cell.alignment = alignment;
+                if (border)    cell.border    = border;
+                if (numFmt)    cell.numFmt    = numFmt;
+            }
+
+            // ── Crear workbook ─────────────────────────────────────────────
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('BASE');
+
+            // Anchos de columna (A=1 … O=15)
+            ws.getColumn(1).width  = 11.45;
+            ws.getColumn(2).width  = 8;
+            ws.getColumn(3).width  = 8;
+            ws.getColumn(4).width  = 19.73;   // D - Mes
+            ws.getColumn(5).width  = 11.45;   // E - Legajo
+            ws.getColumn(6).width  = 45.45;   // F - Nombre
+            ws.getColumn(7).width  = 20.82;   // G - Fecha
+            ws.getColumn(8).width  = 16.45;   // H - Dia
+            ws.getColumn(9).width  = 17.18;   // I - Desde
+            ws.getColumn(10).width = 18.54;   // J - Hasta
+            ws.getColumn(11).width = 13.36;   // K - Total
+            ws.getColumn(12).width = 24.0;    // L - 50%
+            ws.getColumn(13).width = 21.54;   // M - 100%
+            ws.getColumn(14).width = 39.82;   // N - Descripción
+            ws.getColumn(15).width = 66.27;   // O
+
+            // ── Fila 1: vacía ──────────────────────────────────────────────
+            ws.getRow(1).height = 15;
+
+            // ── Fila 2: "Completa RRHH" en L2:M2, fondo blanco con borde ──
+            ws.getRow(2).height = 19;
+            ws.mergeCells('L2:M2');
+            const cRRHH = ws.getCell('L2');
+            cRRHH.value = 'Completa RRHH';
+            styleCell(cRRHH, {
+                fill:      fillOf(C_WHITE),
+                font:      fontHdr(14),
+                alignment: alignCenter,
+                border:    borderHdr
             });
 
-            const blob = new Blob([contenidoTxt], { type: "text/plain;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Datos_Pegar_${mesAbreviado}.txt`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            // ── Fila 3: encabezados ────────────────────────────────────────
+            ws.getRow(3).height = 19;
+
+            const hdrs = [
+                { col: 4,  label: 'Mes a  pagar', color: C_YELLOW },
+                { col: 5,  label: 'Legajo',        color: C_GREEN  },
+                { col: 6,  label: 'Apellido y Nombre', color: C_YELLOW },
+                { col: 7,  label: 'Fecha',         color: C_YELLOW },
+                { col: 8,  label: 'dia',           color: C_GREEN  },
+                { col: 9,  label: 'Desde',         color: C_YELLOW },   // Desde — ahora con título y amarillo
+                { col: 10, label: 'Hasta',         color: C_YELLOW },
+                { col: 11, label: 'Total',         color: C_GREEN  },
+                { col: 12, label: '50%',           color: C_BLUE, sz: 12 },
+                { col: 13, label: '100%',          color: C_BLUE, sz: 12 },
+            ];
+
+            hdrs.forEach(h => {
+                const cell = ws.getCell(3, h.col);
+                cell.value = h.label;
+                styleCell(cell, {
+                    fill:      fillOf(h.color),
+                    font:      fontHdr(h.sz || 14),
+                    alignment: alignCenter,
+                    border:    borderHdr
+                });
+            });
+
+            // ── Filas de datos (4 … 4+MAX_ROWS-1) ─────────────────────────
+            for (let i = 0; i < MAX_ROWS; i++) {
+                const rowNum = 4 + i;
+                ws.getRow(rowNum).height = 16;
+                const item = datosMes[i];
+
+                // Helper: escribe y estila celda de datos
+                function dCell(col, value, color, extraStyle) {
+                    const cell = ws.getCell(rowNum, col);
+                    cell.value = value !== undefined ? value : null;
+                    styleCell(cell, {
+                        fill:      fillOf(color),
+                        font:      fontDat(),
+                        alignment: alignCenter,
+                        border:    borderDat,
+                        ...extraStyle
+                    });
+                    return cell;
+                }
+
+                if (item) {
+                    const [y, m, d] = item.fecha.split('-').map(Number);
+                    const fechaDate = new Date(y, m-1, d);
+
+                    // Horas como fracción decimal (Excel: 1.0 = 24h, 0.5 = 12h)
+                    const inicioFrac = item.hStartVal / 24;
+                    const finFrac    = item.hEndVal   / 24;
+
+                    dCell(4,  mesNombreCompleto, C_YELLOW);
+                    dCell(5,  LEGAJO,            C_GREEN);
+                    dCell(6,  NOMBRE,            C_YELLOW);
+
+                    // Fecha
+                    const cFecha = dCell(7, fechaDate, C_YELLOW);
+                    cFecha.numFmt = 'dd/mm/yyyy';
+
+                    // Dia (formula)
+                    const cDia = ws.getCell(rowNum, 8);
+                    cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
+                    styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                    // Desde (fracción decimal → formato [h]:mm)
+                    const cDesde = dCell(9, inicioFrac, C_YELLOW);
+                    cDesde.numFmt = '[h]:mm';
+
+                    // Hasta (fracción decimal → formato [h]:mm)
+                    const cHasta = dCell(10, finFrac, C_YELLOW);
+                    cHasta.numFmt = '[h]:mm';
+
+                    // Total (formula)
+                    const cTotal = ws.getCell(rowNum, 11);
+                    cTotal.value = { formula: `J${rowNum}-I${rowNum}` };
+                    cTotal.numFmt = '[h]:mm';
+                    styleCell(cTotal, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                    dCell(12, null, C_BLUE);   // 50%
+                    dCell(13, null, C_BLUE);   // 100%
+
+                    // Descripción (alineada a la izquierda)
+                    const cDesc = ws.getCell(rowNum, 14);
+                    cDesc.value = item.tareas || "";
+                    styleCell(cDesc, { fill: fillOf(C_YELLOW), font: fontDat(), alignment: alignLeft, border: borderDat });
+
+                } else {
+                    // Fila vacía con colores
+                    dCell(4,  null, C_YELLOW);
+                    dCell(5,  null, C_GREEN);
+                    dCell(6,  null, C_YELLOW);
+                    dCell(7,  null, C_YELLOW);
+
+                    const cDia = ws.getCell(rowNum, 8);
+                    cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
+                    styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                    const cDesde = dCell(9,  null, C_YELLOW);
+                    cDesde.numFmt = '[h]:mm';
+                    const cHasta = dCell(10, null, C_YELLOW);
+                    cHasta.numFmt = '[h]:mm';
+
+                    const cTotal = ws.getCell(rowNum, 11);
+                    cTotal.value = { formula: `J${rowNum}-I${rowNum}` };
+                    cTotal.numFmt = '[h]:mm';
+                    styleCell(cTotal, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                    dCell(12, null, C_BLUE);
+                    dCell(13, null, C_BLUE);
+                    dCell(14, null, C_YELLOW);
+                }
+            }
+
+            // ── Exportar ───────────────────────────────────────────────────
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url    = URL.createObjectURL(blob);
+            const a      = document.createElement('a');
+            a.href       = url;
+            a.download   = `Planilla_HHEE_${mesAbreviado}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
