@@ -13,16 +13,16 @@
     <style>
         /* ==================== VARIABLES DE TEMA ==================== */
         :root {
-            --bg-base: #0f172a;     
-            --bg-card: #1e293b;     
-            --bg-input: #0f172a;    
-            --primary: #6366f1;     
-            --primary-hover: #4f46e5;
-            --success: #10b981;     
-            --danger: #f43f5e;      
-            --text-main: #f8fafc;   
-            --text-muted: #94a3b8;  
-            --border: #334155;      
+            --bg-base: #0a0e27;     
+            --bg-card: #141d3a;     
+            --bg-input: #0a0e27;    
+            --primary: #00d4ff;     
+            --primary-hover: #00a8cc;
+            --success: #00d98e;     
+            --danger: #ff6b6b;      
+            --text-main: #f0f4f8;   
+            --text-muted: #8892b0;  
+            --border: #1e2a47;      
         }
 
         /* ==================== RESET Y BASE ==================== */
@@ -47,14 +47,14 @@
         /* Botones */
         .btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: all 0.3s ease; color: white; }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .btn-success { background: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-        .btn-danger { background: var(--danger); box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); }
+        .btn-primary { background: var(--primary); box-shadow: 0 2px 8px rgba(0, 212, 255, 0.15); }
+        .btn-success { background: var(--success); box-shadow: 0 2px 8px rgba(0, 217, 142, 0.15); }
+        .btn-danger { background: var(--danger); box-shadow: 0 2px 8px rgba(255, 107, 107, 0.15); }
         .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); box-shadow: none; padding: 12px; font-size: 0.9rem; }
         .btn-outline-danger:hover { background: rgba(244, 63, 94, 0.1); }
 
         /* Tarjeta Resumen Financiero */
-        .balance-card { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); position: relative; overflow: hidden; }
+        .balance-card { background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15); position: relative; overflow: hidden; }
         .balance-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
         .balance-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 5px; }
         .balance-card h2 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; }
@@ -84,18 +84,18 @@
         /* Badges de horas por registro */
         .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
         .horas-badge span { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-        .badge-total { background: rgba(99,102,241,0.15); color: #818cf8; }
-        .badge-50    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
-        .badge-100   { background: rgba(16,185,129,0.15);  color: #10b981; }
+        .badge-total { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+        .badge-50    { background: rgba(255, 159, 64, 0.15);  color: #ff9f40; }
+        .badge-100   { background: rgba(179, 102, 255, 0.15);  color: #b366ff; }
 
         /* Resumen 50% / 100% / Total horas */
-        .horas-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .breakdown-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 6px; text-align: center; }
-        .breakdown-box p { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 4px; }
-        .breakdown-box h3 { font-size: 1.05rem; font-weight: 700; }
-        .c-total { color: #818cf8; }
-        .c-50    { color: #fbbf24; }
-        .c-100   { color: #10b981; }
+        .horas-breakdown { display: flex; gap: 12px; margin-bottom: 20px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .breakdown-box { flex: 1; text-align: center; }
+        .breakdown-box p { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
+        .breakdown-box h3 { font-size: 0.9rem; font-weight: 600; }
+        .c-total { color: #8892b0; }
+        .c-50    { color: #ff9f40; }
+        .c-100   { color: #b366ff; }
 
         /* Modal edición */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -146,21 +146,21 @@
             <div class="card" style="text-align: center; padding: 15px; background: linear-gradient(to right, #1e293b, #0f172a);">
                 <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Total a Cobrar Estimado</p>
                 <h1 id="view-total-neto" style="font-size: 2rem; color: var(--success); margin-bottom: 5px;">$0</h1>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span> | Total Extras: <strong id="view-total-horas" style="color:var(--text-main)">0h</strong></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span> </p>
             </div>
 
-            <!-- Resumen horas breakdown -->
+            <!-- Resumen horas breakdown discreto -->
             <div class="horas-breakdown">
+                <div class="breakdown-box">
+                    <p>Al 50%</p>
+                    <h3 id="bd-50" class="c-50">0h</h3>
+                </div>
                 <div class="breakdown-box">
                     <p>⏱ Total Extras</p>
                     <h3 id="bd-total" class="c-total">0h</h3>
                 </div>
                 <div class="breakdown-box">
-                    <p>🟡 Al 50%</p>
-                    <h3 id="bd-50" class="c-50">0h</h3>
-                </div>
-                <div class="breakdown-box">
-                    <p>🟢 Al 100%</p>
+                    <p>Al 100%</p>
                     <h3 id="bd-100" class="c-100">0h</h3>
                 </div>
             </div>
@@ -218,8 +218,8 @@
                 <p>Plata Disponible a Fin de Mes</p>
                 <h2 id="view-fin-disponible">$0</h2>
                 <div class="balance-row">
-                    <span>Proyectado<strong id="view-fin-ingresos" style="color: #6ee7b7;">$0</strong></span>
-                    <span style="text-align: right;">Gastos<strong id="view-fin-gastos" style="color: #fca5a5;">$0</strong></span>
+                    <span>Proyectado<strong id="view-fin-ingresos" style="color: #00d98e;">$0</strong></span>
+                    <span style="text-align: right;">Gastos<strong id="view-fin-gastos" style="color: #ff6b6b;">$0</strong></span>
                 </div>
             </div>
 
@@ -320,11 +320,9 @@
             const hi = parseInt(document.getElementById('in-inicio').value), hf = parseInt(document.getElementById('in-fin').value);
             if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
             
-            const [y, m, d] = f.split('-').map(Number);
-            const diaSemana = new Date(y, m-1, d).getDay(); 
             let h50 = 0, h100 = 0;
             for (let h = hi; h < hf; h++) {
-                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) h100++; else h50++;
+                if (h >= 13) h100++; else h50++;
             }
 
             dbHoras.push({
@@ -415,7 +413,6 @@
             });
             
             document.getElementById('view-extra-neto').innerText = fmt(tNeto);
-            document.getElementById('view-total-horas').innerText = tHoras + "h";
             // Breakdown 50% / 100%
             const t50 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h50||0),0);
             const t100 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h100||0),0);
@@ -451,7 +448,7 @@
             const disponible = totalIngresosMes - tGastos;
             const elDisponible = document.getElementById('view-fin-disponible');
             elDisponible.innerText = fmt(disponible);
-            elDisponible.style.color = disponible < 0 ? '#fca5a5' : '#ffffff';
+            elDisponible.style.color = disponible < 0 ? '#ff6b6b' : '#f0f4f8';
             
             if(listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">No hay turnos registrados en este mes.</p>`;
             if(listGastos.innerHTML === "") listGastos.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">Aún no anotaste gastos este mes.</p>`;
@@ -491,11 +488,9 @@
             const hf = parseInt(document.getElementById('edit-fin').value);
             if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
 
-            const [y, m, d] = f.split('-').map(Number);
-            const diaSemana = new Date(y, m-1, d).getDay();
             let h50 = 0, h100 = 0;
             for (let h = hi; h < hf; h++) {
-                if (diaSemana === 0 || (diaSemana === 6 && h >= 13)) h100++; else h50++;
+                if (h >= 13) h100++; else h50++;
             }
 
             dbHoras = dbHoras.map(x => x.id !== id ? x : {
@@ -530,10 +525,10 @@
             const MAX_ROWS = 30;
 
             // ── Colores ────────────────────────────────────────────────────
-            const C_YELLOW = "FFE598";  // Mes, Nombre, Fecha, Hasta + descripción
-            const C_GREEN  = "A8D08D";  // Legajo, Dia, Desde, Total
-            const C_BLUE   = "BDD6EE";  // 50% y 100%
-            const C_WHITE  = "FFFFFF";  // Completa RRHH
+            const C_YELLOW = "C8E6F5";  // Cian claro - Mes, Nombre, Fecha, Hasta + descripción
+            const C_GREEN  = "B8F3D8";  // Verde mint claro - Legajo, Dia, Desde, Total
+            const C_BLUE   = "D8D0FF";  // Azul lavanda claro - 50% y 100%
+            const C_WHITE  = "F0F4F8";  // Blanco cálido - Completa RRHH
 
             // ── Helpers de estilo ExcelJS ──────────────────────────────────
             const bMed = { style: 'medium', color: { argb: 'FF000000' } };
