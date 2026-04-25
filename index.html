@@ -11,93 +11,95 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
     <style>
-        /* ==================== VARIABLES DE TEMA ==================== */
         :root {
-            --bg-base: #0a0e27;     
-            --bg-card: #141d3a;     
-            --bg-input: #0a0e27;    
-            --primary: #00d4ff;     
+            --bg-base: #0a0e27;
+            --bg-card: #141d3a;
+            --bg-input: #0a0e27;
+            --primary: #00d4ff;
             --primary-hover: #00a8cc;
-            --success: #00d98e;     
-            --danger: #ff6b6b;      
-            --text-main: #f0f4f8;   
-            --text-muted: #8892b0;  
-            --border: #1e2a47;      
+            --success: #00d98e;
+            --danger: #ff6b6b;
+            --text-main: #f0f4f8;
+            --text-muted: #8892b0;
+            --border: #1e2a47;
         }
 
-        /* ==================== RESET Y BASE ==================== */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
         .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
 
-        /* ==================== COMPONENTES UI ==================== */
         .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
         .header-top h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
         .select-modern { background: var(--bg-card); color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; outline: none; cursor: pointer; appearance: none; }
-        
-        .card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+
+        .card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-        
+
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .input { width: 100%; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; }
-        .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+        .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,212,255,0.15); }
 
         /* Botones */
-        .btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: all 0.3s ease; color: white; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.3s ease; color: white; }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); box-shadow: 0 2px 8px rgba(0, 212, 255, 0.15); }
-        .btn-success { background: var(--success); box-shadow: 0 2px 8px rgba(0, 217, 142, 0.15); }
-        .btn-danger { background: var(--danger); box-shadow: 0 2px 8px rgba(255, 107, 107, 0.15); }
+        .btn-primary { background: var(--primary); color: #0a0e27; box-shadow: 0 2px 8px rgba(0,212,255,0.2); }
+        .btn-success { background: var(--success); box-shadow: 0 2px 8px rgba(0,217,142,0.2); }
+        .btn-danger  { background: var(--danger);  box-shadow: 0 2px 8px rgba(255,107,107,0.2); }
         .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); box-shadow: none; padding: 12px; font-size: 0.9rem; }
-        .btn-outline-danger:hover { background: rgba(244, 63, 94, 0.1); }
+        .btn-outline-danger:hover { background: rgba(255,107,107,0.08); }
 
-        /* Tarjeta Resumen Financiero */
-        .balance-card { background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15); position: relative; overflow: hidden; }
-        .balance-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
-        .balance-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 5px; }
-        .balance-card h2 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; }
-        .balance-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; backdrop-filter: blur(5px); }
-        .balance-row span strong { display: block; font-size: 1.1rem; margin-top: 2px; }
 
-        /* Resumen Horas */
+        /* Cards resumen */
         .horas-stats { display: flex; gap: 10px; margin-bottom: 20px; }
         .stat-box { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
         .stat-box p { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
         .stat-box h3 { font-size: 1.2rem; color: var(--text-main); }
         .stat-box h3.highlight { color: var(--success); }
 
+        /* Balance */
+        .balance-card { background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 16px rgba(0,212,255,0.15); position: relative; overflow: hidden; }
+        .balance-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+        .balance-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 5px; }
+        .balance-card h2 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; }
+        .balance-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; backdrop-filter: blur(5px); }
+        .balance-row span strong { display: block; font-size: 1.1rem; margin-top: 2px; }
+
         /* Listas */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); gap: 10px; }
         .list-item:last-child { border-bottom: none; padding-bottom: 0; }
         .item-info { flex: 1; min-width: 0; }
         .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-info p { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-info p  { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
-        .item-action { border: none; width: 35px; height: 35px; min-width: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: rgba(244,63,94,0.1); color: var(--danger); }
+        .item-action { border: none; width: 35px; height: 35px; min-width: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: rgba(255,107,107,0.1); color: var(--danger); }
         .item-action:hover { background: var(--danger); color: white; }
-        .item-action.edit { background: rgba(99,102,241,0.1); color: var(--primary); }
-        .item-action.edit:hover { background: var(--primary); color: white; }
+        .item-action.edit { background: rgba(0,212,255,0.1); color: var(--primary); }
+        .item-action.edit:hover { background: var(--primary); color: #0a0e27; }
         .item-monto { font-weight: 700; color: var(--danger); font-size: 1rem; margin-right: 8px; text-align: right; flex-shrink: 0; }
 
-        /* Badges de horas por registro */
-        .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
+        /* Badges */
+        .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
         .horas-badge span { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-        .badge-total { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
-        .badge-50    { background: rgba(255, 159, 64, 0.15);  color: #ff9f40; }
-        .badge-100   { background: rgba(179, 102, 255, 0.15);  color: #b366ff; }
+        .badge-total    { background: rgba(0,212,255,0.15);   color: #00d4ff; }
+        .badge-50       { background: rgba(255,159,64,0.15);  color: #ff9f40; }
+        .badge-100      { background: rgba(179,102,255,0.15); color: #b366ff; }
+        .badge-coordinar{ background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px dashed rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 4px; }
 
-        /* Resumen 50% / 100% / Total horas */
+        /* Item "a coordinar" */
+        .coordinar-item { border-left: 3px solid #f59e0b; padding-left: 10px; margin-left: -10px; background: rgba(245,158,11,0.025); }
+
+        /* Breakdown horas */
         .horas-breakdown { display: flex; gap: 12px; margin-bottom: 20px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .breakdown-box { flex: 1; text-align: center; }
-        .breakdown-box p { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
+        .breakdown-box p  { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
         .breakdown-box h3 { font-size: 0.9rem; font-weight: 600; }
         .c-total { color: #8892b0; }
         .c-50    { color: #ff9f40; }
         .c-100   { color: #b366ff; }
 
-        /* Modal edición */
+        /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-overlay.open { display: flex; }
         .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; width: 92%; max-width: 420px; animation: fadeUp 0.3s ease; }
@@ -105,14 +107,14 @@
         .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
         .modal-actions .btn { flex: 1; padding: 12px; font-size: 0.9rem; }
 
-        /* Navegación */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
+        /* Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,14,39,0.9); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
         .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; width: 50%; transition: 0.3s; }
         .nav-btn i { font-size: 1.3rem; transition: transform 0.3s; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn.active i { transform: translateY(-3px); }
 
-        .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1); }
         .tab-content.active { display: block; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
@@ -120,314 +122,371 @@
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <header class="header-top">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://images.icon-icons.com/403/PNG/512/cash_40532.png" alt="Logo" width="30"">
-                <h1>Control Financiero</h1>
-            </div>
-            <select id="select-mes" class="select-modern" onchange="renderTodo()"></select>
-        </header>
+<div class="app-container">
 
-        <main class="tab-content active" id="tab-horas">
-            
-            <div class="horas-stats">
-                <div class="stat-box">
-                    <p>Neto Base</p>
-                    <h3 id="view-neto-base">$0</h3>
-                </div>
-                <div class="stat-box">
-                    <p>Horas Extras</p>
-                    <h3 class="highlight" id="view-extra-neto">$0</h3>
-                </div>
-            </div>
+    <header class="header-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <img src="https://images.icon-icons.com/403/PNG/512/cash_40532.png" alt="Logo" width="30">
+            <h1>Control Financiero</h1>
+        </div>
+        <select id="select-mes" class="select-modern" onchange="renderTodo()"></select>
+    </header>
 
-            <div class="card" style="text-align: center; padding: 15px; background: linear-gradient(to right, #1e293b, #0f172a);">
-                <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px;">Total a Cobrar Estimado</p>
-                <h1 id="view-total-neto" style="font-size: 2rem; color: var(--success); margin-bottom: 5px;">$0</h1>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span> </p>
-            </div>
+    <main class="tab-content active" id="tab-horas">
 
-            <!-- Resumen horas breakdown discreto -->
-            <div class="horas-breakdown">
-                <div class="breakdown-box">
-                    <p>Al 50%</p>
-                    <h3 id="bd-50" class="c-50">0h</h3>
-                </div>
-                <div class="breakdown-box">
-                    <p>⏱ Total Extras</p>
-                    <h3 id="bd-total" class="c-total">0h</h3>
-                </div>
-                <div class="breakdown-box">
-                    <p>Al 100%</p>
-                    <h3 id="bd-100" class="c-100">0h</h3>
-                </div>
+        <div class="horas-stats">
+            <div class="stat-box">
+                <p>Neto Base</p>
+                <h3 id="view-neto-base">$0</h3>
             </div>
-
-            <!-- Modal edición -->
-            <div class="modal-overlay" id="modal-edit">
-                <div class="modal">
-                    <h3><i class="fa-solid fa-pen-to-square"></i> Editar Turno</h3>
-                    <input type="hidden" id="edit-id">
-                    <div class="grid-2">
-                        <div class="form-group"><label>Fecha</label><input type="date" id="edit-fecha" class="input"></div>
-                        <div class="form-group"><label>Tarea</label><input type="text" id="edit-tareas" class="input"></div>
-                    </div>
-                    <div class="grid-2">
-                        <div class="form-group"><label>Desde las:</label><select id="edit-inicio" class="input"></select></div>
-                        <div class="form-group"><label>Hasta las:</label><select id="edit-fin" class="input"></select></div>
-                    </div>
-                    <div class="modal-actions">
-                        <button onclick="cerrarModal()" class="btn btn-outline-danger"><i class="fa-solid fa-xmark"></i> Cancelar</button>
-                        <button onclick="guardarEdicion()" class="btn btn-primary"><i class="fa-solid fa-check"></i> Guardar</button>
-                    </div>
-                </div>
+            <div class="stat-box">
+                <p>Horas Extras</p>
+                <h3 class="highlight" id="view-extra-neto">$0</h3>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-clock"></i> Registrar Turno</div>
+        <div class="card" style="text-align:center;padding:15px;background:linear-gradient(to right,#141d3a,#0a0e27);">
+            <p style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:5px;">Total a Cobrar Estimado</p>
+            <h1 id="view-total-neto" style="font-size:2rem;color:var(--success);margin-bottom:5px;">$0</h1>
+            <p style="font-size:0.8rem;color:var(--text-muted);">Bruto: <span id="view-total-bruto">$0</span></p>
+        </div>
+
+        <!-- Breakdown horas -->
+        <div class="horas-breakdown">
+            <div class="breakdown-box">
+                <p>Al 50%</p>
+                <h3 id="bd-50" class="c-50">0h</h3>
+            </div>
+            <div class="breakdown-box">
+                <p>⏱ Total Extras</p>
+                <h3 id="bd-total" class="c-total">0h</h3>
+            </div>
+            <div class="breakdown-box">
+                <p>Al 100%</p>
+                <h3 id="bd-100" class="c-100">0h</h3>
+            </div>
+        </div>
+
+        <!-- Modal edición -->
+        <div class="modal-overlay" id="modal-edit">
+            <div class="modal">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Editar Turno</h3>
+                <input type="hidden" id="edit-id">
                 <div class="grid-2">
-                    <div class="form-group"><label>Fecha</label><input type="date" id="in-fecha" class="input"></div>
-                    <div class="form-group"><label>Tarea</label><input type="text" id="in-tareas" class="input" ></div>
+                    <div class="form-group"><label>Fecha</label><input type="date" id="edit-fecha" class="input"></div>
+                    <div class="form-group"><label>Tarea</label><input type="text" id="edit-tareas" class="input"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="form-group"><label>Desde las:</label><select id="in-inicio" class="input"></select></div>
-                    <div class="form-group"><label>Hasta las:</label><select id="in-fin" class="input"></select></div>
+                    <div class="form-group"><label>Desde las:</label><select id="edit-inicio" class="input"></select></div>
+                    <div class="form-group"><label>Hasta las:</label><select id="edit-fin" class="input"></select></div>
                 </div>
-                <button onclick="handleSaveTurno()" class="btn btn-primary" style="margin-top:10px"><i class="fa-solid fa-plus"></i> Añadir Turno</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes</div>
-                <ul id="list-data" style="list-style:none; margin-bottom: 20px;"></ul>
-                
-            
-                <button onclick="descargarExcel()" class="btn btn-success" style="margin-bottom:10px">
-                    <i class="fa-solid fa-file-excel"></i> Descargar Planilla Excel
-                </button>
-                <button onclick="resetHoras()" class="btn btn-outline-danger">
-                    <i class="fa-solid fa-trash-can"></i> Borrar Todo el Historial
-                </button>
-            </div>
-        </main>
-
-        <main class="tab-content" id="tab-finanzas">
-            
-            <div class="balance-card">
-                <p>Plata Disponible a Fin de Mes</p>
-                <h2 id="view-fin-disponible">$0</h2>
-                <div class="balance-row">
-                    <span>Proyectado<strong id="view-fin-ingresos" style="color: #00d98e;">$0</strong></span>
-                    <span style="text-align: right;">Gastos<strong id="view-fin-gastos" style="color: #ff6b6b;">$0</strong></span>
+                <div class="modal-actions">
+                    <button onclick="cerrarModal()" class="btn btn-outline-danger"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+                    <button onclick="guardarEdicion()" class="btn btn-primary"><i class="fa-solid fa-check"></i> Guardar</button>
                 </div>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-wallet"></i> Anotar un Gasto</div>
-                <div class="grid-2">
-                    <div class="form-group"><label>Fecha</label><input type="date" id="gasto-fecha" class="input"></div>
-                    <div class="form-group"><label>Monto ($)</label><input type="number" id="gasto-monto" class="input" placeholder="0.00"></div>
-                </div>
-                <div class="form-group">
-                    <label>Concepto</label>
-                    <input type="text" id="gasto-concepto" class="input" placeholder="Ej: Almuerzo, Viáticos, SUBE...">
-                </div>
-                <button onclick="handleSaveGasto()" class="btn btn-danger" style="margin-top:10px"><i class="fa-solid fa-minus"></i> Restar Gasto</button>
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-clock"></i> Registrar Turno</div>
+            <div class="grid-2">
+                <div class="form-group"><label>Fecha</label><input type="date" id="in-fecha" class="input"></div>
+                <div class="form-group"><label>Tarea</label><input type="text" id="in-tareas" class="input"></div>
             </div>
-
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-receipt"></i> Movimientos</div>
-                <ul id="list-gastos" style="list-style:none; margin-bottom: 20px;"></ul>
-                
-                <button onclick="resetGastos()" class="btn btn-outline-danger">
-                    <i class="fa-solid fa-trash-can"></i> Borrar Historial de Gastos
-                </button>
+            <div class="grid-2" id="horas-row">
+                <div class="form-group"><label>Desde las:</label><select id="in-inicio" class="input"></select></div>
+                <div class="form-group"><label>Hasta las:</label><select id="in-fin" class="input"></select></div>
             </div>
-        </main>
+            <!-- Switch "A coordinar" -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:#f59e0b;font-size:0.85rem;"></i>
+                    <span style="font-size:0.85rem;font-weight:600;color:var(--text-muted);">Horario a coordinar</span>
+                </div>
+                <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
+                    <input type="checkbox" id="switch-coordinar" onchange="toggleCoordi()" style="opacity:0;width:0;height:0;position:absolute;">
+                    <span id="slider-coordinar" style="position:absolute;inset:0;background:#1e2a47;border-radius:24px;transition:0.3s;border:1px solid #334155;">
+                        <span style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#475569;border-radius:50%;transition:0.3s;display:block;" id="knob-coordinar"></span>
+                    </span>
+                </label>
+            </div>
+            <button onclick="handleSaveTurno()" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Añadir Turno
+            </button>
+        </div>
 
-    </div>
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes</div>
+            <ul id="list-data" style="list-style:none;margin-bottom:20px;"></ul>
+            <button onclick="descargarExcel()" class="btn btn-success" style="margin-bottom:10px;">
+                <i class="fa-solid fa-file-excel"></i> Descargar Planilla Excel
+            </button>
+            <button onclick="resetHoras()" class="btn btn-outline-danger">
+                <i class="fa-solid fa-trash-can"></i> Borrar Todo el Historial
+            </button>
+        </div>
+    </main>
 
-    <nav class="bottom-nav">
-        <button class="nav-btn active" id="btn-tab-horas" onclick="switchTab('horas')">
-            <i class="fa-solid fa-briefcase"></i> Trabajo
-        </button>
-        <button class="nav-btn" id="btn-tab-finanzas" onclick="switchTab('finanzas')">
-            <i class="fa-solid fa-wallet"></i> Finanzas
-        </button>
-    </nav>
+    <main class="tab-content" id="tab-finanzas">
 
-    <script>
-        const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
+        <div class="balance-card">
+            <p>Plata Disponible a Fin de Mes</p>
+            <h2 id="view-fin-disponible">$0</h2>
+            <div class="balance-row">
+                <span>Proyectado<strong id="view-fin-ingresos" style="color:#00d98e;">$0</strong></span>
+                <span style="text-align:right;">Gastos<strong id="view-fin-gastos" style="color:#ff6b6b;">$0</strong></span>
+            </div>
+        </div>
 
-        let dbHoras = JSON.parse(localStorage.getItem('db_horas_v1')) || [];
-        let dbGastos = JSON.parse(localStorage.getItem('db_gastos_v1')) || [];
-        let totalIngresosMes = 0; 
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-wallet"></i> Anotar un Gasto</div>
+            <div class="grid-2">
+                <div class="form-group"><label>Fecha</label><input type="date" id="gasto-fecha" class="input"></div>
+                <div class="form-group"><label>Monto ($)</label><input type="number" id="gasto-monto" class="input" placeholder="0.00"></div>
+            </div>
+            <div class="form-group">
+                <label>Concepto</label>
+                <input type="text" id="gasto-concepto" class="input" placeholder="Ej: Almuerzo, Viáticos, SUBE...">
+            </div>
+            <button onclick="handleSaveGasto()" class="btn btn-danger" style="margin-top:10px;"><i class="fa-solid fa-minus"></i> Restar Gasto</button>
+        </div>
 
-        window.onload = () => {
-            const hoy = new Date().toISOString().split('T')[0];
-            document.getElementById('in-fecha').value = hoy;
-            document.getElementById('gasto-fecha').value = hoy;
-            document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
-            
-            const selInicio = document.getElementById('in-inicio'), selFin = document.getElementById('in-fin');
-            for(let i=0; i<24; i++) {
-                let h = (i < 10 ? '0'+i : i) + ':00';
-                selInicio.options[selInicio.options.length] = new Option(h, i);
-                selFin.options[selFin.options.length] = new Option(h, i);
-            }
-            selInicio.value = 18; selFin.value = 21;
-            
-            setupMonthSelector(); 
-            renderTodo();
-        };
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-receipt"></i> Movimientos</div>
+            <ul id="list-gastos" style="list-style:none;margin-bottom:20px;"></ul>
+            <button onclick="resetGastos()" class="btn btn-outline-danger">
+                <i class="fa-solid fa-trash-can"></i> Borrar Historial de Gastos
+            </button>
+        </div>
+    </main>
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.getElementById(`btn-tab-${tab}`).classList.add('active');
-            window.scrollTo({top:0, behavior:'smooth'});
+</div>
+
+<nav class="bottom-nav">
+    <button class="nav-btn active" id="btn-tab-horas" onclick="switchTab('horas')">
+        <i class="fa-solid fa-briefcase"></i> Trabajo
+    </button>
+    <button class="nav-btn" id="btn-tab-finanzas" onclick="switchTab('finanzas')">
+        <i class="fa-solid fa-wallet"></i> Finanzas
+    </button>
+</nav>
+
+<script>
+    const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
+
+    let dbHoras  = JSON.parse(localStorage.getItem('db_horas_v1'))  || [];
+    let dbGastos = JSON.parse(localStorage.getItem('db_gastos_v1')) || [];
+    let totalIngresosMes = 0;
+
+    window.onload = () => {
+        const hoy = new Date().toISOString().split('T')[0];
+        document.getElementById('in-fecha').value    = hoy;
+        document.getElementById('gasto-fecha').value = hoy;
+        document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
+
+        const selInicio = document.getElementById('in-inicio');
+        const selFin    = document.getElementById('in-fin');
+        for (let i = 0; i < 24; i++) {
+            const h = (i < 10 ? '0' : '') + i + ':00';
+            selInicio.options[selInicio.options.length] = new Option(h, i);
+            selFin.options[selFin.options.length]       = new Option(h, i);
         }
+        selInicio.value = 18; selFin.value = 21;
 
-        function formatFechaUS(fechaStr) {
-            if (!fechaStr) return "";
-            const [y, m, d] = fechaStr.split('-');
-            return `${d}/${m}`;
-        }
+        setupMonthSelector();
+        renderTodo();
+    };
 
-        function setupMonthSelector() {
-            const sel = document.getElementById('select-mes');
-            const mesesNombres = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-            let mesesHoras = dbHoras.filter(i => i && i.fecha).map(item => item.fecha.substring(0, 7));
-            let mesesGastos = dbGastos.filter(i => i && i.fecha).map(item => item.fecha.substring(0, 7));
-            let mesesConDatos = [...mesesHoras, ...mesesGastos];
-            const ahora = new Date();
-            const mesActualStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
-            mesesConDatos.push(mesActualStr);
-            let mesesUnicos = [...new Set(mesesConDatos)].sort().reverse();
-            const valorPrevio = sel.value;
-            sel.innerHTML = "";
-            mesesUnicos.forEach(m => {
-                const [anio, mesNum] = m.split('-');
-                sel.add(new Option(`${mesesNombres[parseInt(mesNum)-1]} ${anio}`, m));
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        document.getElementById(`btn-tab-${tab}`).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function formatFechaUS(fechaStr) {
+        if (!fechaStr) return "";
+        const [y, m, d] = fechaStr.split('-');
+        return `${d}/${m}`;
+    }
+
+    function setupMonthSelector() {
+        const sel = document.getElementById('select-mes');
+        const mesesNombres = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        const ahora = new Date();
+        const mesActualStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+        const todos = [
+            ...dbHoras.filter(i => i && i.fecha).map(i => i.fecha.substring(0,7)),
+            ...dbGastos.filter(i => i && i.fecha).map(i => i.fecha.substring(0,7)),
+            mesActualStr
+        ];
+        const mesesUnicos = [...new Set(todos)].sort().reverse();
+        const valorPrevio = sel.value;
+        sel.innerHTML = "";
+        mesesUnicos.forEach(m => {
+            const [anio, mesNum] = m.split('-');
+            sel.add(new Option(`${mesesNombres[parseInt(mesNum)-1]} ${anio}`, m));
+        });
+        sel.value = valorPrevio || mesActualStr;
+    }
+
+    // ── Switch coordinar ──────────────────────────────────────────────────
+    function toggleCoordi() {
+        const on = document.getElementById('switch-coordinar').checked;
+        const horasRow = document.getElementById('horas-row');
+        const knob     = document.getElementById('knob-coordinar');
+        const slider   = document.getElementById('slider-coordinar');
+        horasRow.style.display  = on ? 'none' : 'grid';
+        knob.style.left         = on ? '23px' : '3px';
+        knob.style.background   = on ? '#f59e0b' : '#475569';
+        slider.style.background = on ? 'rgba(245,158,11,0.15)' : '#1e2a47';
+        slider.style.borderColor= on ? 'rgba(245,158,11,0.4)' : '#334155';
+    }
+
+    // ── Guardar turno ──────────────────────────────────────────────────────
+    function handleSaveTurno() {
+        const f = document.getElementById('in-fecha').value;
+        const t = document.getElementById('in-tareas').value;
+        const coordinar = document.getElementById('switch-coordinar').checked;
+        if (!f) return alert("Completá la fecha.");
+
+        if (coordinar) {
+            // Registrar el día sin definir las horas — se edita después
+            dbHoras.push({
+                id: Date.now(), fecha: f, tareas: t,
+                hStartVal: null, hEndVal: null,
+                txt: 'A coordinar',
+                h50: 0, h100: 0, neto: 0, bruto: 0,
+                coordinar: true
             });
-            sel.value = valorPrevio || mesActualStr;
-        }
-
-        function handleSaveTurno() {
-            const f = document.getElementById('in-fecha').value, t = document.getElementById('in-tareas').value;
-            const hi = parseInt(document.getElementById('in-inicio').value), hf = parseInt(document.getElementById('in-fin').value);
-            if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
-            
+        } else {
+            const hi = parseInt(document.getElementById('in-inicio').value);
+            const hf = parseInt(document.getElementById('in-fin').value);
+            if (hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
             let h50 = 0, h100 = 0;
             for (let h = hi; h < hf; h++) {
                 if (h >= 13) h100++; else h50++;
             }
-
             dbHoras.push({
                 id: Date.now(), fecha: f, tareas: t,
-                hStartVal: hi, hEndVal: hf, txt: `${hi}:00 a ${hf}:00`, h50, h100,
-                neto: (h50 * VALORES.HORA_NETA * 1.5) + (h100 * VALORES.HORA_NETA * 2),
-                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
+                hStartVal: hi, hEndVal: hf,
+                txt: `${hi}:00 a ${hf}:00`, h50, h100,
+                neto:  (h50 * VALORES.HORA_NETA  * 1.5) + (h100 * VALORES.HORA_NETA  * 2),
+                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2),
+                coordinar: false
             });
+        }
 
+        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+        document.getElementById('in-tareas').value = "";
+        // Resetear switch
+        document.getElementById('switch-coordinar').checked = false;
+        toggleCoordi();
+        setupMonthSelector(); renderTodo();
+    }
+
+    function delTurno(id) {
+        if (confirm("¿Eliminar este turno?")) {
+            dbHoras = dbHoras.filter(x => x.id !== id);
             localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
-            document.getElementById('in-tareas').value = ""; 
             setupMonthSelector(); renderTodo();
         }
+    }
 
-        function delTurno(id) {
-            if(confirm("¿Eliminar este turno?")) {
-                dbHoras = dbHoras.filter(x => x.id !== id);
-                localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
-                setupMonthSelector(); renderTodo();
-            }
-        }
+    function handleSaveGasto() {
+        const f = document.getElementById('gasto-fecha').value;
+        const c = document.getElementById('gasto-concepto').value;
+        const m = parseFloat(document.getElementById('gasto-monto').value);
+        if (!f || !c || !m || isNaN(m)) return alert("Completá todos los campos.");
+        dbGastos.push({ id: Date.now(), fecha: f, concepto: c, monto: m });
+        localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
+        document.getElementById('gasto-concepto').value = "";
+        document.getElementById('gasto-monto').value    = "";
+        setupMonthSelector(); renderTodo();
+    }
 
-        function handleSaveGasto() {
-            const f = document.getElementById('gasto-fecha').value;
-            const c = document.getElementById('gasto-concepto').value;
-            const m = parseFloat(document.getElementById('gasto-monto').value);
-
-            if (!f || !c || !m || isNaN(m)) return alert("Completá todos los campos.");
-
-            dbGastos.push({ id: Date.now(), fecha: f, concepto: c, monto: m });
+    function delGasto(id) {
+        if (confirm("¿Eliminar este gasto?")) {
+            dbGastos = dbGastos.filter(x => x.id !== id);
             localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-            
-            document.getElementById('gasto-concepto').value = "";
-            document.getElementById('gasto-monto').value = "";
             setupMonthSelector(); renderTodo();
         }
+    }
 
-        function delGasto(id) {
-            if(confirm("¿Eliminar este gasto?")) {
-                dbGastos = dbGastos.filter(x => x.id !== id);
-                localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-                setupMonthSelector(); renderTodo();
-            }
+    function resetHoras() {
+        if (confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
+            dbHoras = [];
+            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+            setupMonthSelector(); renderTodo();
         }
+    }
 
-        // --- NUEVAS FUNCIONES DE BORRADO MASIVO ---
-        function resetHoras() {
-            if(confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
-                dbHoras = [];
-                localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
-                setupMonthSelector(); renderTodo();
-            }
+    function resetGastos() {
+        if (confirm("⚠️ ¿Estás seguro de borrar TODOS los gastos guardados? Esta acción no se puede deshacer.")) {
+            dbGastos = [];
+            localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
+            setupMonthSelector(); renderTodo();
         }
+    }
 
-        function resetGastos() {
-            if(confirm("⚠️ ¿Estás seguro de borrar TODOS los gastos guardados? Esta acción no se puede deshacer.")) {
-                dbGastos = [];
-                localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-                setupMonthSelector(); renderTodo();
-            }
-        }
+    function renderTodo() {
+        const mesSel    = document.getElementById('select-mes').value;
+        const listHoras = document.getElementById('list-data');
+        listHoras.innerHTML = "";
+        let tNeto = 0, tBruto = 0, tHoras = 0, t50 = 0, t100 = 0;
 
-        function renderTodo() {
-            const mesSel = document.getElementById('select-mes').value;
-            
-            const listHoras = document.getElementById('list-data'); listHoras.innerHTML = "";
-            let tNeto = 0, tBruto = 0, tHoras = 0;
-            
-            dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
-                tNeto += i.neto || 0; tBruto += i.bruto || 0; tHoras += ((i.h50 || 0) + (i.h100 || 0));
-                const h50i = i.h50 || 0, h100i = i.h100 || 0, htot = h50i + h100i;
+        dbHoras
+            .filter(i => i.fecha && i.fecha.startsWith(mesSel))
+            .sort((a, b) => b.fecha.localeCompare(a.fecha))
+            .forEach(i => {
+                tNeto  += i.neto  || 0;
+                tBruto += i.bruto || 0;
+                const h50i  = i.h50  || 0;
+                const h100i = i.h100 || 0;
+                tHoras += h50i + h100i;
+                t50    += h50i;
+                t100   += h100i;
+
+                const esCoord = !!i.coordinar;
                 listHoras.innerHTML += `
-                    <li class="list-item">
+                    <li class="list-item${esCoord ? ' coordinar-item' : ''}">
                         <div class="item-info">
-                            <h4>${formatFechaUS(i.fecha)} <span style="font-weight:400; color:var(--text-muted)">| ${i.txt}</span></h4>
+                            <h4>${formatFechaUS(i.fecha)} <span style="font-weight:400;color:var(--text-muted)">| ${i.txt}</span></h4>
                             <p>${i.tareas || 'Soporte IT'}</p>
                             <div class="horas-badge">
-                                <span class="badge-total">${htot}h total</span>
-                                ${h50i > 0 ? `<span class="badge-50">${h50i}h al 50%</span>` : ''}
-                                ${h100i > 0 ? `<span class="badge-100">${h100i}h al 100%</span>` : ''}
+                                ${esCoord
+                                    ? `<span class="badge-coordinar"><i class="fa-solid fa-clock-rotate-left" style="font-size:0.6rem"></i> Horario a confirmar</span>`
+                                    : `<span class="badge-total">${h50i+h100i}h total</span>
+                                       ${h50i  > 0 ? `<span class="badge-50">${h50i}h al 50%</span>`   : ''}
+                                       ${h100i > 0 ? `<span class="badge-100">${h100i}h al 100%</span>` : ''}`
+                                }
                             </div>
                         </div>
                         <div class="item-actions">
                             <button class="item-action edit" onclick="abrirEdicion(${i.id})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="item-action" onclick="delTurno(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="item-action"      onclick="delTurno(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </li>`;
             });
-            
-            document.getElementById('view-extra-neto').innerText = fmt(tNeto);
-            // Breakdown 50% / 100%
-            const t50 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h50||0),0);
-            const t100 = dbHoras.filter(i => i.fecha && i.fecha.startsWith(mesSel)).reduce((s,i)=>s+(i.h100||0),0);
-            document.getElementById('bd-total').innerText = tHoras + 'h';
-            document.getElementById('bd-50').innerText   = t50   + 'h';
-            document.getElementById('bd-100').innerText  = t100  + 'h';
-            
-            totalIngresosMes = VALORES.NETO_BASE + tNeto;
-            document.getElementById('view-total-neto').innerText = fmt(totalIngresosMes);
-            document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
 
-            const listGastos = document.getElementById('list-gastos'); listGastos.innerHTML = "";
-            let tGastos = 0;
+        document.getElementById('view-extra-neto').innerText = fmt(tNeto);
+        document.getElementById('bd-total').innerText = tHoras + 'h';
+        document.getElementById('bd-50').innerText    = t50    + 'h';
+        document.getElementById('bd-100').innerText   = t100   + 'h';
 
-            dbGastos.filter(i => i.fecha && i.fecha.startsWith(mesSel)).sort((a,b) => b.fecha.localeCompare(a.fecha)).forEach(i => {
+        totalIngresosMes = VALORES.NETO_BASE + tNeto;
+        document.getElementById('view-total-neto').innerText  = fmt(totalIngresosMes);
+        document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
+
+        const listGastos = document.getElementById('list-gastos');
+        listGastos.innerHTML = "";
+        let tGastos = 0;
+
+        dbGastos
+            .filter(i => i.fecha && i.fecha.startsWith(mesSel))
+            .sort((a, b) => b.fecha.localeCompare(a.fecha))
+            .forEach(i => {
                 tGastos += i.monto;
                 listGastos.innerHTML += `
                     <li class="list-item">
@@ -435,285 +494,259 @@
                             <h4>${formatFechaUS(i.fecha)}</h4>
                             <p>${i.concepto}</p>
                         </div>
-                        <div style="display:flex; align-items:center;">
+                        <div style="display:flex;align-items:center;">
                             <span class="item-monto">- ${fmt(i.monto)}</span>
                             <button class="item-action" onclick="delGasto(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </li>`;
             });
 
-            document.getElementById('view-fin-ingresos').innerText = fmt(totalIngresosMes);
-            document.getElementById('view-fin-gastos').innerText = fmt(tGastos);
-            
-            const disponible = totalIngresosMes - tGastos;
-            const elDisponible = document.getElementById('view-fin-disponible');
-            elDisponible.innerText = fmt(disponible);
-            elDisponible.style.color = disponible < 0 ? '#ff6b6b' : '#f0f4f8';
-            
-            if(listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">No hay turnos registrados en este mes.</p>`;
-            if(listGastos.innerHTML === "") listGastos.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 10px;">Aún no anotaste gastos este mes.</p>`;
-        }
+        document.getElementById('view-fin-ingresos').innerText = fmt(totalIngresosMes);
+        document.getElementById('view-fin-gastos').innerText   = fmt(tGastos);
+        const disponible = totalIngresosMes - tGastos;
+        const elDisp = document.getElementById('view-fin-disponible');
+        elDisp.innerText   = fmt(disponible);
+        elDisp.style.color = disponible < 0 ? '#ff6b6b' : '#f0f4f8';
 
-        function fmt(v) { return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS', maximumFractionDigits: 0}).format(v); }
+        if (listHoras.innerHTML  === "") listHoras.innerHTML  = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este mes.</p>`;
+        if (listGastos.innerHTML === "") listGastos.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">Aún no anotaste gastos este mes.</p>`;
+    }
 
-        // ── Modal edición ─────────────────────────────────────────────────
-        function abrirEdicion(id) {
-            const item = dbHoras.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('edit-id').value    = id;
-            document.getElementById('edit-fecha').value  = item.fecha;
-            document.getElementById('edit-tareas').value = item.tareas || '';
+    function fmt(v) {
+        return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v);
+    }
 
-            // Poblar selects si están vacíos
-            ['edit-inicio','edit-fin'].forEach(selId => {
-                const sel = document.getElementById(selId);
-                if (sel.options.length === 0) {
-                    for(let h=0; h<24; h++) sel.add(new Option((h<10?'0':'')+h+':00', h));
-                }
-            });
-            document.getElementById('edit-inicio').value = item.hStartVal;
-            document.getElementById('edit-fin').value    = item.hEndVal;
-            document.getElementById('modal-edit').classList.add('open');
-        }
+    // ── Modal edición ──────────────────────────────────────────────────────
+    function abrirEdicion(id) {
+        const item = dbHoras.find(x => x.id === id);
+        if (!item) return;
+        document.getElementById('edit-id').value     = id;
+        document.getElementById('edit-fecha').value  = item.fecha;
+        document.getElementById('edit-tareas').value = item.tareas || '';
 
-        function cerrarModal() {
-            document.getElementById('modal-edit').classList.remove('open');
-        }
-
-        function guardarEdicion() {
-            const id = parseInt(document.getElementById('edit-id').value);
-            const f  = document.getElementById('edit-fecha').value;
-            const t  = document.getElementById('edit-tareas').value;
-            const hi = parseInt(document.getElementById('edit-inicio').value);
-            const hf = parseInt(document.getElementById('edit-fin').value);
-            if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
-
-            let h50 = 0, h100 = 0;
-            for (let h = hi; h < hf; h++) {
-                if (h >= 13) h100++; else h50++;
+        ['edit-inicio', 'edit-fin'].forEach(selId => {
+            const sel = document.getElementById(selId);
+            if (sel.options.length === 0) {
+                for (let h = 0; h < 24; h++) sel.add(new Option((h < 10 ? '0' : '') + h + ':00', h));
             }
-
-            dbHoras = dbHoras.map(x => x.id !== id ? x : {
-                ...x, fecha: f, tareas: t, hStartVal: hi, hEndVal: hf,
-                txt: `${hi}:00 a ${hf}:00`, h50, h100,
-                neto:  (h50 * VALORES.HORA_NETA * 1.5)  + (h100 * VALORES.HORA_NETA * 2),
-                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
-            });
-            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
-            cerrarModal();
-            setupMonthSelector(); renderTodo();
-        }
-
-        // Cerrar modal al tocar fuera
-        document.addEventListener('click', e => {
-            if (e.target.id === 'modal-edit') cerrarModal();
         });
-        
-        async function descargarExcel() {
-            const sel = document.getElementById('select-mes');
-            if (!sel.value) return;
-            const [anioSel, mesNumSel] = sel.value.split('-');
-            const mesesAbr    = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-            const mesesNombre = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
-            const mesAbreviado     = mesesAbr[parseInt(mesNumSel,10)-1] || "";
-            const mesNombreCompleto = mesesNombre[parseInt(mesNumSel,10)-1] || "";
-            const datosMes = dbHoras.filter(i => i.fecha && i.fecha.startsWith(sel.value)).sort((a,b) => a.fecha.localeCompare(b.fecha));
-            if (datosMes.length === 0) return alert("No hay datos para exportar este mes.");
+        // Si era "a coordinar", usar horario por defecto para que el usuario elija
+        document.getElementById('edit-inicio').value = item.hStartVal ?? 18;
+        document.getElementById('edit-fin').value    = item.hEndVal   ?? 21;
+        document.getElementById('modal-edit').classList.add('open');
+    }
 
-            const LEGAJO   = 13509;
-            const NOMBRE   = "JOSE LAGO";
-            const MAX_ROWS = 30;
+    function cerrarModal() {
+        document.getElementById('modal-edit').classList.remove('open');
+    }
 
-            // ── Colores ────────────────────────────────────────────────────
-            const C_YELLOW = "C8E6F5";  // Cian claro - Mes, Nombre, Fecha, Hasta + descripción
-            const C_GREEN  = "B8F3D8";  // Verde mint claro - Legajo, Dia, Desde, Total
-            const C_BLUE   = "D8D0FF";  // Azul lavanda claro - 50% y 100%
-            const C_WHITE  = "F0F4F8";  // Blanco cálido - Completa RRHH
+    function guardarEdicion() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const f  = document.getElementById('edit-fecha').value;
+        const t  = document.getElementById('edit-tareas').value;
+        const hi = parseInt(document.getElementById('edit-inicio').value);
+        const hf = parseInt(document.getElementById('edit-fin').value);
+        if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
 
-            // ── Helpers de estilo ExcelJS ──────────────────────────────────
-            const bMed = { style: 'medium', color: { argb: 'FF000000' } };
-            const bThin = { style: 'thin',  color: { argb: 'FF000000' } };
-
-            function fillOf(hex)  { return { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + hex } }; }
-            function fontHdr(sz)  { return { name: 'Calibri', size: sz || 14, bold: true, color: { argb: 'FF000000' } }; }
-            function fontDat()    { return { name: 'Calibri', size: 11, color: { argb: 'FF000000' } }; }
-            const alignCenter = { horizontal: 'center', vertical: 'middle' };
-            const alignLeft   = { horizontal: 'left',   vertical: 'middle' };
-            const borderHdr   = { top: bMed, bottom: bMed, left: bMed, right: bMed };
-            const borderDat   = { top: bThin, bottom: bThin, left: bThin, right: bThin };
-
-            // Aplica estilo completo a una celda
-            function styleCell(cell, { fill, font, alignment, border, numFmt }) {
-                if (fill)      cell.fill      = fill;
-                if (font)      cell.font      = font;
-                if (alignment) cell.alignment = alignment;
-                if (border)    cell.border    = border;
-                if (numFmt)    cell.numFmt    = numFmt;
-            }
-
-            // ── Crear workbook ─────────────────────────────────────────────
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('BASE');
-
-            // Anchos de columna (A=1 … O=15)
-            ws.getColumn(1).width  = 11.45;
-            ws.getColumn(2).width  = 8;
-            ws.getColumn(3).width  = 8;
-            ws.getColumn(4).width  = 19.73;   // D - Mes
-            ws.getColumn(5).width  = 11.45;   // E - Legajo
-            ws.getColumn(6).width  = 45.45;   // F - Nombre
-            ws.getColumn(7).width  = 20.82;   // G - Fecha
-            ws.getColumn(8).width  = 16.45;   // H - Dia
-            ws.getColumn(9).width  = 17.18;   // I - Desde
-            ws.getColumn(10).width = 18.54;   // J - Hasta
-            ws.getColumn(11).width = 13.36;   // K - Total
-            ws.getColumn(12).width = 24.0;    // L - 50%
-            ws.getColumn(13).width = 21.54;   // M - 100%
-            ws.getColumn(14).width = 39.82;   // N - Descripción
-            ws.getColumn(15).width = 66.27;   // O
-
-            // ── Fila 1: vacía ──────────────────────────────────────────────
-            ws.getRow(1).height = 15;
-
-            // ── Fila 2: "Completa RRHH" en L2:M2, fondo blanco con borde ──
-            ws.getRow(2).height = 19;
-            ws.mergeCells('L2:M2');
-            const cRRHH = ws.getCell('L2');
-            cRRHH.value = 'Completa RRHH';
-            styleCell(cRRHH, {
-                fill:      fillOf(C_WHITE),
-                font:      fontHdr(14),
-                alignment: alignCenter,
-                border:    borderHdr
-            });
-
-            // ── Fila 3: encabezados ────────────────────────────────────────
-            ws.getRow(3).height = 19;
-
-            const hdrs = [
-                { col: 4,  label: 'Mes a  pagar', color: C_YELLOW },
-                { col: 5,  label: 'Legajo',        color: C_GREEN  },
-                { col: 6,  label: 'Apellido y Nombre', color: C_YELLOW },
-                { col: 7,  label: 'Fecha',         color: C_YELLOW },
-                { col: 8,  label: 'dia',           color: C_GREEN  },
-                { col: 9,  label: 'Desde',         color: C_YELLOW },   // Desde — ahora con título y amarillo
-                { col: 10, label: 'Hasta',         color: C_YELLOW },
-                { col: 11, label: 'Total',         color: C_GREEN  },
-                { col: 12, label: '50%',           color: C_BLUE, sz: 12 },
-                { col: 13, label: '100%',          color: C_BLUE, sz: 12 },
-            ];
-
-            hdrs.forEach(h => {
-                const cell = ws.getCell(3, h.col);
-                cell.value = h.label;
-                styleCell(cell, {
-                    fill:      fillOf(h.color),
-                    font:      fontHdr(h.sz || 14),
-                    alignment: alignCenter,
-                    border:    borderHdr
-                });
-            });
-
-            // ── Filas de datos (4 … 4+MAX_ROWS-1) ─────────────────────────
-            for (let i = 0; i < MAX_ROWS; i++) {
-                const rowNum = 4 + i;
-                ws.getRow(rowNum).height = 16;
-                const item = datosMes[i];
-
-                // Helper: escribe y estila celda de datos
-                function dCell(col, value, color, extraStyle) {
-                    const cell = ws.getCell(rowNum, col);
-                    cell.value = value !== undefined ? value : null;
-                    styleCell(cell, {
-                        fill:      fillOf(color),
-                        font:      fontDat(),
-                        alignment: alignCenter,
-                        border:    borderDat,
-                        ...extraStyle
-                    });
-                    return cell;
-                }
-
-                if (item) {
-                    const [y, m, d] = item.fecha.split('-').map(Number);
-                    const fechaDate = new Date(y, m-1, d);
-
-                    // Horas como fracción decimal (Excel: 1.0 = 24h, 0.5 = 12h)
-                    const inicioFrac = item.hStartVal / 24;
-                    const finFrac    = item.hEndVal   / 24;
-
-                    dCell(4,  mesNombreCompleto, C_YELLOW);
-                    dCell(5,  LEGAJO,            C_GREEN);
-                    dCell(6,  NOMBRE,            C_YELLOW);
-
-                    // Fecha
-                    const cFecha = dCell(7, fechaDate, C_YELLOW);
-                    cFecha.numFmt = 'dd/mm/yyyy';
-
-                    // Dia (formula)
-                    const cDia = ws.getCell(rowNum, 8);
-                    cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
-                    styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
-
-                    // Desde (fracción decimal → formato [h]:mm)
-                    const cDesde = dCell(9, inicioFrac, C_YELLOW);
-                    cDesde.numFmt = '[h]:mm';
-
-                    // Hasta (fracción decimal → formato [h]:mm)
-                    const cHasta = dCell(10, finFrac, C_YELLOW);
-                    cHasta.numFmt = '[h]:mm';
-
-                    // Total (formula)
-                    const cTotal = ws.getCell(rowNum, 11);
-                    cTotal.value = { formula: `J${rowNum}-I${rowNum}` };
-                    cTotal.numFmt = '[h]:mm';
-                    styleCell(cTotal, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
-
-                    dCell(12, null, C_BLUE);   // 50%
-                    dCell(13, null, C_BLUE);   // 100%
-
-                    // Descripción (alineada a la izquierda)
-                    const cDesc = ws.getCell(rowNum, 14);
-                    cDesc.value = item.tareas || "";
-                    styleCell(cDesc, { fill: fillOf(C_YELLOW), font: fontDat(), alignment: alignLeft, border: borderDat });
-
-                } else {
-                    // Fila vacía con colores
-                    dCell(4,  null, C_YELLOW);
-                    dCell(5,  null, C_GREEN);
-                    dCell(6,  null, C_YELLOW);
-                    dCell(7,  null, C_YELLOW);
-
-                    const cDia = ws.getCell(rowNum, 8);
-                    cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
-                    styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
-
-                    const cDesde = dCell(9,  null, C_YELLOW);
-                    cDesde.numFmt = '[h]:mm';
-                    const cHasta = dCell(10, null, C_YELLOW);
-                    cHasta.numFmt = '[h]:mm';
-
-                    const cTotal = ws.getCell(rowNum, 11);
-                    cTotal.value = { formula: `J${rowNum}-I${rowNum}` };
-                    cTotal.numFmt = '[h]:mm';
-                    styleCell(cTotal, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
-
-                    dCell(12, null, C_BLUE);
-                    dCell(13, null, C_BLUE);
-                    dCell(14, null, C_YELLOW);
-                }
-            }
-
-            // ── Exportar ───────────────────────────────────────────────────
-            const buffer = await wb.xlsx.writeBuffer();
-            const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url    = URL.createObjectURL(blob);
-            const a      = document.createElement('a');
-            a.href       = url;
-            a.download   = `Planilla_HHEE_${mesAbreviado}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        let h50 = 0, h100 = 0;
+        for (let h = hi; h < hf; h++) {
+            if (h >= 13) h100++; else h50++;
         }
-    </script>
+
+        dbHoras = dbHoras.map(x => x.id !== id ? x : {
+            ...x, fecha: f, tareas: t,
+            hStartVal: hi, hEndVal: hf,
+            txt: `${hi}:00 a ${hf}:00`, h50, h100,
+            coordinar: false,  // al confirmar horas ya no es "a coordinar"
+            neto:  (h50 * VALORES.HORA_NETA  * 1.5) + (h100 * VALORES.HORA_NETA  * 2),
+            bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
+        });
+        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+        cerrarModal();
+        setupMonthSelector(); renderTodo();
+    }
+
+    document.addEventListener('click', e => {
+        if (e.target.id === 'modal-edit') cerrarModal();
+    });
+
+    // ── Exportar Excel ─────────────────────────────────────────────────────
+    async function descargarExcel() {
+        const sel = document.getElementById('select-mes');
+        if (!sel.value) return;
+        const [, mesNumSel] = sel.value.split('-');
+        const mesesAbr    = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+        const mesesNombre = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+        const mesAbreviado      = mesesAbr[parseInt(mesNumSel,10)-1]    || "";
+        const mesNombreCompleto = mesesNombre[parseInt(mesNumSel,10)-1] || "";
+        const datosMes = dbHoras
+            .filter(i => i.fecha && i.fecha.startsWith(sel.value))
+            .sort((a, b) => a.fecha.localeCompare(b.fecha));
+        if (datosMes.length === 0) return alert("No hay datos para exportar este mes.");
+
+        const LEGAJO   = 13509;
+        const NOMBRE   = "JOSE LAGO";
+        const MAX_ROWS = 30;
+
+        const C_YELLOW = "FFE598";
+        const C_GREEN  = "A8D08D";
+        const C_BLUE   = "BDD6EE";
+        const C_WHITE  = "FFFFFF";
+        const C_COORD  = "FFF3CD";  // fondo ámbar muy suave para filas "a coordinar"
+
+        const bMed  = { style: 'medium', color: { argb: 'FF000000' } };
+        const bThin = { style: 'thin',   color: { argb: 'FF000000' } };
+
+        const fillOf     = hex  => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + hex } });
+        const fontHdr    = sz   => ({ name: 'Calibri', size: sz || 14, bold: true,  color: { argb: 'FF000000' } });
+        const fontDat    = ()   => ({ name: 'Calibri', size: 11,        bold: false, color: { argb: 'FF000000' } });
+        const alignCenter = { horizontal: 'center', vertical: 'middle' };
+        const alignLeft   = { horizontal: 'left',   vertical: 'middle' };
+        const borderHdr   = { top: bMed, bottom: bMed, left: bMed, right: bMed };
+        const borderDat   = { top: bThin, bottom: bThin, left: bThin, right: bThin };
+
+        function styleCell(cell, { fill, font, alignment, border, numFmt } = {}) {
+            if (fill)      cell.fill      = fill;
+            if (font)      cell.font      = font;
+            if (alignment) cell.alignment = alignment;
+            if (border)    cell.border    = border;
+            if (numFmt)    cell.numFmt    = numFmt;
+        }
+
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet('BASE');
+
+        ws.getColumn(1).width  = 11.45;
+        ws.getColumn(2).width  = 8;
+        ws.getColumn(3).width  = 8;
+        ws.getColumn(4).width  = 19.73;
+        ws.getColumn(5).width  = 11.45;
+        ws.getColumn(6).width  = 45.45;
+        ws.getColumn(7).width  = 20.82;
+        ws.getColumn(8).width  = 16.45;
+        ws.getColumn(9).width  = 17.18;
+        ws.getColumn(10).width = 18.54;
+        ws.getColumn(11).width = 13.36;
+        ws.getColumn(12).width = 24.0;
+        ws.getColumn(13).width = 21.54;
+        ws.getColumn(14).width = 39.82;
+        ws.getColumn(15).width = 66.27;
+
+        ws.getRow(1).height = 15;
+        ws.getRow(2).height = 19;
+        ws.mergeCells('L2:M2');
+        const cRRHH = ws.getCell('L2');
+        cRRHH.value = 'Completa RRHH';
+        styleCell(cRRHH, { fill: fillOf(C_WHITE), font: fontHdr(14), alignment: alignCenter, border: borderHdr });
+
+        ws.getRow(3).height = 19;
+        [
+            { col: 4,  label: 'Mes a  pagar',     color: C_YELLOW },
+            { col: 5,  label: 'Legajo',            color: C_GREEN  },
+            { col: 6,  label: 'Apellido y Nombre', color: C_YELLOW },
+            { col: 7,  label: 'Fecha',             color: C_YELLOW },
+            { col: 8,  label: 'dia',               color: C_GREEN  },
+            { col: 9,  label: 'Desde',             color: C_YELLOW },
+            { col: 10, label: 'Hasta',             color: C_YELLOW },
+            { col: 11, label: 'Total',             color: C_GREEN  },
+            { col: 12, label: '50%',               color: C_BLUE,  sz: 12 },
+            { col: 13, label: '100%',              color: C_BLUE,  sz: 12 },
+        ].forEach(h => {
+            const cell = ws.getCell(3, h.col);
+            cell.value = h.label;
+            styleCell(cell, { fill: fillOf(h.color), font: fontHdr(h.sz || 14), alignment: alignCenter, border: borderHdr });
+        });
+
+        for (let i = 0; i < MAX_ROWS; i++) {
+            const rowNum = 4 + i;
+            ws.getRow(rowNum).height = 16;
+            const item = datosMes[i];
+
+            function dCell(col, value, color) {
+                const cell = ws.getCell(rowNum, col);
+                cell.value = value !== undefined ? value : null;
+                styleCell(cell, { fill: fillOf(color), font: fontDat(), alignment: alignCenter, border: borderDat });
+                return cell;
+            }
+
+            if (item && !item.coordinar) {
+                const [y, m, d]  = item.fecha.split('-').map(Number);
+                const inicioFrac = item.hStartVal / 24;
+                const finFrac    = item.hEndVal   / 24;
+
+                dCell(4, mesNombreCompleto, C_YELLOW);
+                dCell(5, LEGAJO,            C_GREEN);
+                dCell(6, NOMBRE,            C_YELLOW);
+                const cF = dCell(7, new Date(y, m-1, d), C_YELLOW); cF.numFmt = 'dd/mm/yyyy';
+
+                const cDia = ws.getCell(rowNum, 8);
+                cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
+                styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                const cD = dCell(9,  inicioFrac, C_YELLOW); cD.numFmt = '[h]:mm';
+                const cH = dCell(10, finFrac,    C_YELLOW); cH.numFmt = '[h]:mm';
+
+                const cT = ws.getCell(rowNum, 11);
+                cT.value  = { formula: `J${rowNum}-I${rowNum}` };
+                cT.numFmt = '[h]:mm';
+                styleCell(cT, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                dCell(12, null, C_BLUE);
+                dCell(13, null, C_BLUE);
+                const cDesc = ws.getCell(rowNum, 14);
+                cDesc.value = item.tareas || "";
+                styleCell(cDesc, { fill: fillOf(C_YELLOW), font: fontDat(), alignment: alignLeft, border: borderDat });
+
+            } else if (item && item.coordinar) {
+                // Fila "a coordinar": fecha sí, horas vacías, fondo ámbar claro
+                const [y, m, d] = item.fecha.split('-').map(Number);
+                dCell(4, mesNombreCompleto,     C_COORD);
+                dCell(5, LEGAJO,                C_COORD);
+                dCell(6, NOMBRE,                C_COORD);
+                const cF = dCell(7, new Date(y,m-1,d), C_COORD); cF.numFmt = 'dd/mm/yyyy';
+
+                const cDia = ws.getCell(rowNum, 8);
+                cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
+                styleCell(cDia, { fill: fillOf(C_COORD), font: fontDat(), alignment: alignCenter, border: borderDat });
+
+                // Celda "Desde" con texto indicativo
+                const cCoord = ws.getCell(rowNum, 9);
+                cCoord.value = 'A coordinar';
+                styleCell(cCoord, {
+                    fill: fillOf(C_COORD),
+                    font: { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF92660A' } },
+                    alignment: alignCenter, border: borderDat
+                });
+
+                [10, 11, 12, 13].forEach(c => dCell(c, null, C_COORD));
+                const cDesc = ws.getCell(rowNum, 14);
+                cDesc.value = item.tareas || "";
+                styleCell(cDesc, { fill: fillOf(C_COORD), font: fontDat(), alignment: alignLeft, border: borderDat });
+
+            } else {
+                // Fila vacía con colores de columna
+                dCell(4, null, C_YELLOW); dCell(5, null, C_GREEN); dCell(6, null, C_YELLOW); dCell(7, null, C_YELLOW);
+                const cDia = ws.getCell(rowNum, 8);
+                cDia.value = { formula: `IF(G${rowNum}="","",TEXT(G${rowNum},"dddd"))` };
+                styleCell(cDia, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+                const cDe = dCell(9, null, C_YELLOW); cDe.numFmt = '[h]:mm';
+                const cHa = dCell(10, null, C_YELLOW); cHa.numFmt = '[h]:mm';
+                const cTot = ws.getCell(rowNum, 11);
+                cTot.value = { formula: `J${rowNum}-I${rowNum}` };
+                cTot.numFmt = '[h]:mm';
+                styleCell(cTot, { fill: fillOf(C_GREEN), font: fontDat(), alignment: alignCenter, border: borderDat });
+                dCell(12, null, C_BLUE); dCell(13, null, C_BLUE); dCell(14, null, C_YELLOW);
+            }
+        }
+
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url    = URL.createObjectURL(blob);
+        const a      = document.createElement('a');
+        a.href = url; a.download = `Planilla_HHEE_${mesAbreviado}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
 </body>
-</html> 
+</html>
