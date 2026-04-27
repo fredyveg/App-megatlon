@@ -58,13 +58,7 @@
         .stat-box h3 { font-size: 1.2rem; color: var(--text-main); }
         .stat-box h3.highlight { color: var(--success); }
 
-        /* Balance */
-        .balance-card { background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 16px rgba(0,212,255,0.15); position: relative; overflow: hidden; }
-        .balance-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
-        .balance-card p { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-bottom: 5px; }
-        .balance-card h2 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 15px; }
-        .balance-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; backdrop-filter: blur(5px); }
-        .balance-row span strong { display: block; font-size: 1.1rem; margin-top: 2px; }
+
 
         /* Listas */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); gap: 10px; }
@@ -236,35 +230,97 @@
 
     <main class="tab-content" id="tab-finanzas">
 
-        <div class="balance-card">
-            <p>Plata Disponible a Fin de Mes</p>
-            <h2 id="view-fin-disponible">$0</h2>
-            <div class="balance-row">
-                <span>Proyectado<strong id="view-fin-ingresos" style="color:#00d98e;">$0</strong></span>
-                <span style="text-align:right;">Gastos<strong id="view-fin-gastos" style="color:#ff6b6b;">$0</strong></span>
+        <!-- Ingreso del mes -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:20px;padding:18px 20px;margin-bottom:14px;">
+            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Ingreso neto del mes</div>
+            <div id="fin-ingreso-display" style="font-size:1.9rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;margin-bottom:12px;">$0</div>
+            <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">Gastos fijos mensuales</div>
+            <div id="gastos-fijos-lista" style="margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="gf-nombre" class="input" placeholder="Ej: Alquiler" style="flex:1;padding:9px 12px;font-size:0.85rem;">
+                <input type="number" id="gf-monto" class="input" placeholder="Monto" style="width:120px;padding:9px 12px;font-size:0.85rem;">
+                <button onclick="agregarGastoFijo()" style="background:#1f6feb;color:#e6edf3;border:none;border-radius:10px;padding:9px 14px;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">+ Agregar</button>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-title"><i class="fa-solid fa-wallet"></i> Anotar un Gasto</div>
-            <div class="grid-2">
-                <div class="form-group"><label>Fecha</label><input type="date" id="gasto-fecha" class="input"></div>
-                <div class="form-group"><label>Monto ($)</label><input type="number" id="gasto-monto" class="input" placeholder="0.00"></div>
+        <!-- Distribución interactiva -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;">
+                    <i class="fa-solid fa-sliders" style="color:#a5b4fc;font-size:0.85rem;"></i> Distribuir dinero
+                </div>
+                <div style="font-size:0.7rem;color:var(--text-muted);">Disponible: <span id="fin-disponible" style="color:var(--c-green);font-weight:600;">$0</span></div>
             </div>
-            <div class="form-group">
-                <label>Concepto</label>
-                <input type="text" id="gasto-concepto" class="input" placeholder="Ej: Almuerzo, Viáticos, SUBE...">
+            <!-- Barra apilada visual -->
+            <div id="dist-stack" style="display:flex;height:10px;border-radius:8px;overflow:hidden;margin-bottom:16px;gap:1px;"></div>
+            <!-- Resumen sin distribuir -->
+            <div id="dist-restante-row" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-input);border-radius:10px;padding:8px 12px;margin-bottom:14px;">
+                <span style="font-size:0.75rem;color:var(--text-muted);">Sin asignar</span>
+                <span id="dist-restante" style="font-size:0.85rem;font-weight:700;color:#f87171;">$0</span>
             </div>
-            <button onclick="handleSaveGasto()" class="btn btn-danger" style="margin-top:10px;"><i class="fa-solid fa-minus"></i> Restar Gasto</button>
+            <!-- Sliders por categoría -->
+            <div id="dist-sliders" style="display:flex;flex-direction:column;gap:14px;"></div>
+            <button onclick="resetDistribucion()" style="margin-top:14px;width:100%;padding:9px;background:transparent;border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.78rem;font-weight:500;cursor:pointer;">↺ Restablecer sugeridos</button>
         </div>
 
-        <div class="card">
-            <div class="card-title"><i class="fa-solid fa-receipt"></i> Movimientos</div>
-            <ul id="list-gastos" style="list-style:none;margin-bottom:20px;"></ul>
-            <button onclick="resetGastos()" class="btn btn-outline-danger">
-                <i class="fa-solid fa-trash-can"></i> Borrar Historial de Gastos
-            </button>
+        <!-- Metas -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+                <i class="fa-solid fa-bullseye" style="color:var(--c-amber);font-size:0.85rem;"></i> Mis metas
+            </div>
+            <div id="metas-lista" style="margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;margin-bottom:6px;">
+                <input type="text" id="meta-nombre" class="input" placeholder="Ej: Fondo de emergencia" style="flex:1;padding:9px 12px;font-size:0.85rem;">
+                <input type="number" id="meta-monto" class="input" placeholder="Meta $" style="width:120px;padding:9px 12px;font-size:0.85rem;">
+            </div>
+            <button onclick="agregarMeta()" style="width:100%;padding:10px;background:#1a1f35;border:0.5px solid #30363d;border-radius:10px;color:var(--c-amber);font-size:0.85rem;font-weight:600;cursor:pointer;">+ Agregar meta</button>
         </div>
+
+    </main>
+
+    <!-- ── Stats Tab ── -->
+    <main class="tab-content" id="tab-stats">
+
+        <!-- Selector de año -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Comparativa anual</span>
+            <select id="stats-anio" class="select-modern" onchange="renderStats()" style="font-size:0.72rem;padding:4px 10px;"></select>
+        </div>
+
+        <!-- Gráfico de barras -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;">
+                    <i class="fa-solid fa-chart-bar" style="color:#a5b4fc;font-size:0.85rem;"></i> Horas por mes
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <span style="font-size:0.65rem;color:var(--c-amber);display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:var(--c-amber);border-radius:2px;display:inline-block;"></span>50%</span>
+                    <span style="font-size:0.65rem;color:#b366ff;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#b366ff;border-radius:2px;display:inline-block;"></span>100%</span>
+                </div>
+            </div>
+            <canvas id="chart-horas" style="width:100%;height:160px;display:block;"></canvas>
+        </div>
+
+        <!-- Gráfico ganancias -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;margin-bottom:16px;">
+                <i class="fa-solid fa-dollar-sign" style="color:var(--c-green);font-size:0.85rem;"></i> Extra cobrado por mes
+            </div>
+            <canvas id="chart-neto" style="width:100%;height:140px;display:block;"></canvas>
+        </div>
+
+        <!-- Historial de meses -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;margin-bottom:14px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color:#388bfd;font-size:0.85rem;"></i> Historial mensual
+            </div>
+            <div id="stats-historial"></div>
+        </div>
+
+        <!-- Totales del año -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;" id="stats-totales"></div>
+
     </main>
 
 </div>
@@ -276,19 +332,20 @@
     <button class="nav-btn" id="btn-tab-finanzas" onclick="switchTab('finanzas')">
         <i class="fa-solid fa-wallet"></i> Finanzas
     </button>
+    <button class="nav-btn" id="btn-tab-stats" onclick="switchTab('stats')">
+        <i class="fa-solid fa-chart-line"></i> Stats
+    </button>
 </nav>
 
 <script>
     const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
 
     let dbHoras  = JSON.parse(localStorage.getItem('db_horas_v1'))  || [];
-    let dbGastos = JSON.parse(localStorage.getItem('db_gastos_v1')) || [];
     let totalIngresosMes = 0;
 
     window.onload = () => {
         const hoy = new Date().toISOString().split('T')[0];
         document.getElementById('in-fecha').value    = hoy;
-        document.getElementById('gasto-fecha').value = hoy;
         document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
 
         const selInicio = document.getElementById('in-inicio');
@@ -310,6 +367,7 @@
         document.getElementById(`tab-${tab}`).classList.add('active');
         document.getElementById(`btn-tab-${tab}`).classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (tab === 'stats') { setupStatsAnio(); renderStats(); }
     }
 
     function formatFechaUS(fechaStr) {
@@ -325,7 +383,6 @@
         const mesActualStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
         const todos = [
             ...dbHoras.filter(i => i && i.fecha).map(i => i.fecha.substring(0,7)),
-            ...dbGastos.filter(i => i && i.fecha).map(i => i.fecha.substring(0,7)),
             mesActualStr
         ];
         const mesesUnicos = [...new Set(todos)].sort().reverse();
@@ -401,25 +458,251 @@
         }
     }
 
-    function handleSaveGasto() {
-        const f = document.getElementById('gasto-fecha').value;
-        const c = document.getElementById('gasto-concepto').value;
-        const m = parseFloat(document.getElementById('gasto-monto').value);
-        if (!f || !c || !m || isNaN(m)) return alert("Completá todos los campos.");
-        dbGastos.push({ id: Date.now(), fecha: f, concepto: c, monto: m });
-        localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-        document.getElementById('gasto-concepto').value = "";
-        document.getElementById('gasto-monto').value    = "";
-        setupMonthSelector(); renderTodo();
+    // ── Finanzas ────────────────────────────────────────────────────────────
+    const GEMINI_KEY = 'AIzaSyBQWbhQUwDlYJxG5vg4KtJ9MyooMnaOqcY';
+    const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY;
+
+    let dbGastosFijos = JSON.parse(localStorage.getItem('db_gastos_fijos')) || [
+        { id: 1, nombre: 'Alquiler',           monto: 0 },
+        { id: 2, nombre: 'Gas',                monto: 0 },
+        { id: 3, nombre: 'Cuotas heladera (6)', monto: 0 }
+    ];
+    let dbMetas = JSON.parse(localStorage.getItem('db_metas')) || [];
+
+    function saveGastosFijos() { localStorage.setItem('db_gastos_fijos', JSON.stringify(dbGastosFijos)); }
+    function saveMetas()       { localStorage.setItem('db_metas',        JSON.stringify(dbMetas)); }
+
+    function agregarGastoFijo() {
+        const n = document.getElementById('gf-nombre').value.trim();
+        const m = parseFloat(document.getElementById('gf-monto').value);
+        if (!n || !m || isNaN(m)) return;
+        dbGastosFijos.push({ id: Date.now(), nombre: n, monto: m });
+        saveGastosFijos();
+        document.getElementById('gf-nombre').value = '';
+        document.getElementById('gf-monto').value  = '';
+        renderFinanzas();
     }
 
-    function delGasto(id) {
-        if (confirm("¿Eliminar este gasto?")) {
-            dbGastos = dbGastos.filter(x => x.id !== id);
-            localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-            setupMonthSelector(); renderTodo();
+    function eliminarGastoFijo(id) {
+        dbGastosFijos = dbGastosFijos.filter(x => x.id !== id);
+        saveGastosFijos();
+        renderFinanzas();
+    }
+
+    function actualizarGastoFijo(id, valor) {
+        const g = dbGastosFijos.find(x => x.id === id);
+        if (g) { g.monto = parseFloat(valor) || 0; saveGastosFijos(); renderFinanzas(); }
+    }
+
+    function agregarMeta() {
+        const n = document.getElementById('meta-nombre').value.trim();
+        const m = parseFloat(document.getElementById('meta-monto').value);
+        if (!n || !m || isNaN(m)) return;
+        dbMetas.push({ id: Date.now(), nombre: n, monto: m, ahorrado: 0 });
+        saveMetas();
+        document.getElementById('meta-nombre').value = '';
+        document.getElementById('meta-monto').value  = '';
+        renderFinanzas();
+    }
+
+    function eliminarMeta(id) {
+        dbMetas = dbMetas.filter(x => x.id !== id);
+        saveMetas();
+        renderFinanzas();
+    }
+
+    function aportarAutoMeta(id) {
+        const totalFijos  = dbGastosFijos.reduce((s, g) => s + (g.monto || 0), 0);
+        const disponible  = totalIngresosMes - totalFijos;
+        const aporte      = Math.round(disponible * 0.20);
+        const m = dbMetas.find(x => x.id === id);
+        if (!m || aporte <= 0) return alert('Definí tus gastos fijos primero para calcular el disponible.');
+        m.ahorrado = Math.min(m.monto, (m.ahorrado || 0) + aporte);
+        saveMetas();
+        renderFinanzas();
+    }
+
+    function aportarManualMeta(id) {
+        const val = parseFloat(document.getElementById('aportar-input-' + id).value);
+        if (!val || isNaN(val) || val <= 0) return;
+        const m = dbMetas.find(x => x.id === id);
+        if (!m) return;
+        m.ahorrado = Math.min(m.monto, (m.ahorrado || 0) + val);
+        saveMetas();
+        document.getElementById('aportar-input-' + id).value = '';
+        renderFinanzas();
+    }
+
+    // ── Distribución interactiva ─────────────────────────────────────────
+    const DIST_CATS = [
+        { id: 'necesidades', nombre: 'Necesidades',    icon: '🛒', color: '#388bfd', pctSug: 40 },
+        { id: 'ahorro',      nombre: 'Ahorro',         icon: '🏦', color: '#34d399', pctSug: 20 },
+        { id: 'inversion',   nombre: 'Inversión',      icon: '📈', color: '#a5b4fc', pctSug: 15 },
+        { id: 'ocio',        nombre: 'Ocio',           icon: '🎯', color: '#fbbf24', pctSug: 15 },
+        { id: 'emergencia',  nombre: 'Emergencia',     icon: '🛡', color: '#f87171', pctSug: 10 },
+    ];
+
+    // Cargar porcentajes guardados o usar sugeridos
+    let distPcts = JSON.parse(localStorage.getItem('dist_pcts')) || null;
+    if (!distPcts) {
+        distPcts = {};
+        DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
+    }
+
+    function saveDistPcts() { localStorage.setItem('dist_pcts', JSON.stringify(distPcts)); }
+
+    function resetDistribucion() {
+        DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
+        saveDistPcts();
+        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - totalFijos);
+    }
+
+    function renderDistribucion(disponible) {
+        const sliders = document.getElementById('dist-sliders');
+        const stack   = document.getElementById('dist-stack');
+        const restEl  = document.getElementById('dist-restante');
+        const restRow = document.getElementById('dist-restante-row');
+        const dispEl  = document.getElementById('fin-disponible');
+        if (!sliders) return;
+
+        if (dispEl) dispEl.innerText = fmt(Math.max(0, disponible));
+
+        const totalPct  = DIST_CATS.reduce((s,c) => s + (distPcts[c.id]||0), 0);
+        const restante  = disponible > 0 ? Math.round(disponible * (1 - totalPct/100)) : 0;
+        const overLimit = totalPct > 100;
+
+        // Barra apilada
+        if (stack) {
+            stack.innerHTML = DIST_CATS.map(c => {
+                const w = Math.min(distPcts[c.id]||0, 100);
+                return `<div style="flex:${w};background:${c.color};min-width:${w>0?'2px':'0'};transition:flex 0.3s;"></div>`;
+            }).join('') + (totalPct < 100 ? `<div style="flex:${100-totalPct};background:#21262d;"></div>` : '');
+        }
+
+        // Restante
+        if (restEl) {
+            restEl.innerText   = disponible > 0 ? fmt(Math.abs(restante)) : '$0';
+            restEl.style.color = overLimit ? '#f87171' : restante === 0 ? '#34d399' : '#fbbf24';
+        }
+        if (restRow) {
+            const label = restRow.querySelector('span');
+            if (label) label.innerText = overLimit ? '⚠ Excedés el 100%' : restante === 0 ? '✓ Todo asignado' : 'Sin asignar';
+        }
+
+        // Sliders
+        sliders.innerHTML = DIST_CATS.map(c => {
+            const pct   = distPcts[c.id] || 0;
+            const monto = disponible > 0 ? Math.round(disponible * pct / 100) : 0;
+            return `
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:0.82rem;color:var(--text-main);">${c.icon} ${c.nombre}</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:0.82rem;font-weight:700;color:${c.color};">${fmt(monto)}</span>
+                        <div style="display:flex;align-items:center;gap:3px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:3px 6px;">
+                            <button onclick="ajustarPct('${c.id}',-5)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;line-height:1;padding:0 2px;">−</button>
+                            <span style="font-size:0.8rem;font-weight:700;color:${c.color};min-width:28px;text-align:center;">${pct}%</span>
+                            <button onclick="ajustarPct('${c.id}',+5)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;line-height:1;padding:0 2px;">+</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="range" min="0" max="100" step="5" value="${pct}"
+                    oninput="distPcts['${c.id}']=parseInt(this.value);saveDistPcts();renderDistribucion(${Math.round(disponible)});"
+                    style="width:100%;accent-color:${c.color};height:4px;cursor:pointer;">
+            </div>`;
+        }).join('');
+    }
+
+    function ajustarPct(id, delta) {
+        distPcts[id] = Math.max(0, Math.min(100, (distPcts[id]||0) + delta));
+        saveDistPcts();
+        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - totalFijos);
+    }
+
+    function renderFinanzas() {
+        const ingreso    = totalIngresosMes;
+        const totalFijos = dbGastosFijos.reduce((s, g) => s + (g.monto || 0), 0);
+        const disponible = ingreso - totalFijos;
+
+        document.getElementById('fin-ingreso-display').innerText = fmt(ingreso);
+        document.getElementById('fin-disponible').innerText      = fmt(Math.max(0, disponible));
+
+        // ── Gastos fijos lista ──
+        const gfl = document.getElementById('gastos-fijos-lista');
+        if (dbGastosFijos.length === 0) {
+            gfl.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);padding:4px 0;">Sin gastos fijos cargados.</p>';
+        } else {
+            gfl.innerHTML = dbGastosFijos.map(g => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);">
+                    <span style="font-size:0.82rem;color:var(--text-main);flex:1;">${g.nombre}</span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <input type="text" inputmode="numeric" value="${g.monto||0}"
+                            onblur="actualizarGastoFijo(${g.id},this.value)"
+                            onkeydown="if(event.key==='Enter')this.blur()"
+                            style="-moz-appearance:textfield;appearance:textfield;width:110px;background:var(--bg-input);color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.82rem;text-align:right;outline:none;">
+                        <button onclick="eliminarGastoFijo(${g.id})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;line-height:1;">✕</button>
+                    </div>
+                </div>`).join('');
+
+            // Resumen gastos fijos + sueldo restante
+            const pctFijos = ingreso > 0 ? Math.round((totalFijos / ingreso) * 100) : 0;
+            gfl.innerHTML += `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 10px;background:var(--bg-input);border-radius:10px;">
+                    <span style="font-size:0.75rem;color:var(--text-muted);">Total fijos</span>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.85rem;font-weight:600;color:#f87171;">${fmt(totalFijos)}</span>
+                        <span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px;">${pctFijos}% del sueldo</span>
+                    </div>
+                </div>`;
+        }
+
+        // ── Distribución interactiva ──
+        renderDistribucion(disponible);
+
+        // ── Metas ──
+        const ml = document.getElementById('metas-lista');
+        const aporte20 = disponible > 0 ? Math.round(disponible * 0.20) : 0;
+        if (dbMetas.length === 0) {
+            ml.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">Sin metas definidas todavía.</p>';
+        } else {
+            ml.innerHTML = dbMetas.map(m => {
+                const ahorrado  = m.ahorrado || 0;
+                const pct       = Math.min(100, Math.round((ahorrado / m.monto) * 100));
+                const faltan    = Math.max(0, m.monto - ahorrado);
+                const mesesRest = aporte20 > 0 ? Math.ceil(faltan / aporte20) : '?';
+                const completa  = pct >= 100;
+                return `
+                <div style="margin-bottom:14px;padding:12px;background:var(--bg-input);border-radius:12px;border:0.5px solid ${completa ? '#34d399' : 'var(--border)'};position:relative;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                        <span style="font-size:0.85rem;font-weight:600;color:var(--text-main);">${m.nombre}</span>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            ${completa ? '<span style="font-size:0.7rem;background:rgba(52,211,153,0.15);color:#34d399;padding:2px 8px;border-radius:20px;font-weight:600;">✓ Completada</span>' : ''}
+                            <button onclick="eliminarMeta(${m.id})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;">✕</button>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;">
+                        <span>Ahorrado: <strong style="color:var(--c-amber);">${fmt(ahorrado)}</strong></span>
+                        <span>Meta: <strong style="color:var(--text-main);">${fmt(m.monto)}</strong></span>
+                    </div>
+                    <div style="background:#0d1117;border-radius:6px;height:7px;overflow:hidden;margin-bottom:4px;">
+                        <div style="width:${pct}%;height:100%;background:${completa ? '#34d399' : 'var(--c-amber)'};border-radius:6px;transition:width 0.4s;"></div>
+                    </div>
+                    <div style="font-size:0.63rem;color:var(--text-muted);margin-bottom:${completa ? '0' : '10px'};">${pct}% · ${completa ? 'Meta alcanzada 🎉' : 'Faltan ' + fmt(faltan) + ' · ~' + mesesRest + ' mes' + (mesesRest !== 1 ? 'es' : '') + ' al 20%'}</div>
+                    ${!completa ? `
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <input type="text" inputmode="numeric" id="aportar-input-${m.id}" placeholder="Ingresar monto"
+                            style="flex:1;background:var(--bg-card);color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.78rem;outline:none;-moz-appearance:textfield;appearance:textfield;">
+                        <button onclick="aportarManualMeta(${m.id})" style="background:#1a2a1a;border:0.5px solid #2d5a3a;color:#34d399;border-radius:8px;padding:6px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;">+ Aportar</button>
+                        <button onclick="aportarAutoMeta(${m.id})" title="Aportar 20% del disponible (${fmt(aporte20)})" style="background:#1a2237;border:0.5px solid #30363d;color:#a5b4fc;border-radius:8px;padding:6px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;">20% auto</button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
         }
     }
+
+
 
     function resetHoras() {
         if (confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
@@ -429,13 +712,7 @@
         }
     }
 
-    function resetGastos() {
-        if (confirm("⚠️ ¿Estás seguro de borrar TODOS los gastos guardados? Esta acción no se puede deshacer.")) {
-            dbGastos = [];
-            localStorage.setItem('db_gastos_v1', JSON.stringify(dbGastos));
-            setupMonthSelector(); renderTodo();
-        }
-    }
+
 
     function renderTodo() {
         const mesSel    = document.getElementById('select-mes').value;
@@ -486,37 +763,10 @@
         document.getElementById('view-total-neto').innerText  = fmt(totalIngresosMes);
         document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
 
-        const listGastos = document.getElementById('list-gastos');
-        listGastos.innerHTML = "";
-        let tGastos = 0;
+        if (listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este mes.</p>`;
 
-        dbGastos
-            .filter(i => i.fecha && i.fecha.startsWith(mesSel))
-            .sort((a, b) => b.fecha.localeCompare(a.fecha))
-            .forEach(i => {
-                tGastos += i.monto;
-                listGastos.innerHTML += `
-                    <li class="list-item">
-                        <div class="item-info">
-                            <h4>${formatFechaUS(i.fecha)}</h4>
-                            <p>${i.concepto}</p>
-                        </div>
-                        <div style="display:flex;align-items:center;">
-                            <span class="item-monto">- ${fmt(i.monto)}</span>
-                            <button class="item-action" onclick="delGasto(${i.id})"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </li>`;
-            });
-
-        document.getElementById('view-fin-ingresos').innerText = fmt(totalIngresosMes);
-        document.getElementById('view-fin-gastos').innerText   = fmt(tGastos);
-        const disponible = totalIngresosMes - tGastos;
-        const elDisp = document.getElementById('view-fin-disponible');
-        elDisp.innerText   = fmt(disponible);
-        elDisp.style.color = disponible < 0 ? '#ff6b6b' : '#f0f4f8';
-
-        if (listHoras.innerHTML  === "") listHoras.innerHTML  = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este mes.</p>`;
-        if (listGastos.innerHTML === "") listGastos.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">Aún no anotaste gastos este mes.</p>`;
+        // Actualizar panel finanzas
+        renderFinanzas();
     }
 
     function fmt(v) {
@@ -576,6 +826,229 @@
     document.addEventListener('click', e => {
         if (e.target.id === 'modal-edit') cerrarModal();
     });
+
+    // ── Stats ─────────────────────────────────────────────────────────────
+    function setupStatsAnio() {
+        const sel = document.getElementById('stats-anio');
+        const anios = [...new Set(dbHoras.filter(i=>i.fecha).map(i=>i.fecha.substring(0,4)))];
+        const anioActual = new Date().getFullYear().toString();
+        if (!anios.includes(anioActual)) anios.push(anioActual);
+        anios.sort().reverse();
+        const prev = sel.value;
+        sel.innerHTML = '';
+        anios.forEach(a => sel.add(new Option(a, a)));
+        sel.value = prev || anioActual;
+    }
+
+    function getMesesData(anio) {
+        const mesesNombre = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        return mesesNombre.map((nombre, idx) => {
+            const key = `${anio}-${String(idx+1).padStart(2,'0')}`;
+            const registros = dbHoras.filter(i => i.fecha && i.fecha.startsWith(key) && !i.coordinar);
+            const h50   = registros.reduce((s,i) => s+(i.h50||0), 0);
+            const h100  = registros.reduce((s,i) => s+(i.h100||0), 0);
+            const neto  = registros.reduce((s,i) => s+(i.neto||0), 0);
+            const bruto = registros.reduce((s,i) => s+(i.bruto||0), 0);
+            return { nombre, key, h50, h100, hTotal: h50+h100, neto, bruto, registros: registros.length };
+        });
+    }
+
+    function drawBarChart(canvasId, data, maxVal, colorFn) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const dpr = window.devicePixelRatio || 1;
+        const W = canvas.offsetWidth || 280;
+        const H = parseInt(canvas.style.height) || 160;
+        canvas.width  = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width  = W + 'px';
+        canvas.style.height = H + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, W, H);
+
+        const pad = { top: 10, bottom: 28, left: 4, right: 4 };
+        const chartW = W - pad.left - pad.right;
+        const chartH = H - pad.top - pad.bottom;
+        const n = data.length;
+        const barW = Math.floor(chartW / n) - 4;
+
+        // Grid lines
+        ctx.strokeStyle = '#21262d';
+        ctx.lineWidth = 0.5;
+        [0.25, 0.5, 0.75, 1].forEach(p => {
+            const y = pad.top + chartH * (1 - p);
+            ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        });
+
+        data.forEach((d, i) => {
+            const x = pad.left + i * (chartW / n) + 2;
+            colorFn(ctx, x, barW, chartH, pad, d, maxVal);
+
+            // Label mes
+            ctx.fillStyle = '#7d8590';
+            ctx.font = `${Math.min(9, barW)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(d.nombre, x + barW/2, H - 6);
+        });
+    }
+
+    function renderStats() {
+        const anio = document.getElementById('stats-anio')?.value;
+        if (!anio) return;
+        const data = getMesesData(anio);
+        const maxH   = Math.max(...data.map(d => d.hTotal), 1);
+        const maxN   = Math.max(...data.map(d => d.neto),   1);
+
+        // Gráfico horas (barras apiladas: 50% + 100%)
+        setTimeout(() => {
+            drawBarChart('chart-horas', data, maxH, (ctx, x, bw, ch, pad, d, max) => {
+                const total = d.h50 + d.h100;
+                if (total === 0) {
+                    ctx.fillStyle = '#21262d';
+                    ctx.beginPath();
+                    ctx.roundRect(x, pad.top + ch - 3, bw, 3, 2);
+                    ctx.fill();
+                    return;
+                }
+                const fullH = (total / max) * ch;
+                const h100H = (d.h100 / total) * fullH;
+                const h50H  = fullH - h100H;
+                const baseY = pad.top + ch;
+
+                // barra 50%
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(x, baseY - h50H, bw, h50H, [0,0,0,0]);
+                else ctx.rect(x, baseY - h50H, bw, h50H);
+                ctx.fill();
+
+                // barra 100% encima
+                if (d.h100 > 0) {
+                    ctx.fillStyle = '#b366ff';
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(x, baseY - fullH, bw, h100H, [3,3,0,0]);
+                    else ctx.rect(x, baseY - fullH, bw, h100H);
+                    ctx.fill();
+                }
+
+                // valor encima
+                if (total > 0) {
+                    ctx.fillStyle = '#e6edf3';
+                    ctx.font = `bold ${Math.min(9, bw)}px Inter, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(total + 'h', x + bw/2, pad.top + ch - fullH - 3);
+                }
+            });
+
+            // Gráfico neto (línea + área)
+            const canvas = document.getElementById('chart-neto');
+            if (!canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const W = canvas.offsetWidth || 280;
+            const H = parseInt(canvas.style.height) || 140;
+            canvas.width  = W * dpr;
+            canvas.height = H * dpr;
+            canvas.style.width  = W + 'px';
+            canvas.style.height = H + 'px';
+            const ctx2 = canvas.getContext('2d');
+            ctx2.scale(dpr, dpr);
+            ctx2.clearRect(0, 0, W, H);
+
+            const pad = { top: 16, bottom: 28, left: 4, right: 4 };
+            const cW = W - pad.left - pad.right;
+            const cH = H - pad.top - pad.bottom;
+            const n  = data.length;
+            const step = cW / (n - 1);
+
+            const pts = data.map((d, i) => ({
+                x: pad.left + i * step,
+                y: pad.top + cH - (d.neto / maxN) * cH
+            }));
+
+            // Área
+            const grad = ctx2.createLinearGradient(0, pad.top, 0, pad.top + cH);
+            grad.addColorStop(0, 'rgba(52,211,153,0.25)');
+            grad.addColorStop(1, 'rgba(52,211,153,0)');
+            ctx2.beginPath();
+            ctx2.moveTo(pts[0].x, pad.top + cH);
+            pts.forEach(p => ctx2.lineTo(p.x, p.y));
+            ctx2.lineTo(pts[pts.length-1].x, pad.top + cH);
+            ctx2.closePath();
+            ctx2.fillStyle = grad;
+            ctx2.fill();
+
+            // Línea
+            ctx2.beginPath();
+            ctx2.strokeStyle = '#34d399';
+            ctx2.lineWidth = 2;
+            ctx2.lineJoin = 'round';
+            pts.forEach((p, i) => i === 0 ? ctx2.moveTo(p.x, p.y) : ctx2.lineTo(p.x, p.y));
+            ctx2.stroke();
+
+            // Puntos + etiquetas
+            pts.forEach((p, i) => {
+                ctx2.beginPath();
+                ctx2.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx2.fillStyle = data[i].neto > 0 ? '#34d399' : '#21262d';
+                ctx2.fill();
+
+                // Etiqueta mes
+                ctx2.fillStyle = '#7d8590';
+                ctx2.font = '8px Inter, sans-serif';
+                ctx2.textAlign = 'center';
+                ctx2.fillText(data[i].nombre, p.x, H - 6);
+
+                // Valor encima del punto
+                if (data[i].neto > 0) {
+                    ctx2.fillStyle = '#34d399';
+                    ctx2.font = 'bold 8px Inter, sans-serif';
+                    const label = '$' + Math.round(data[i].neto / 1000) + 'k';
+                    ctx2.fillText(label, p.x, p.y - 7);
+                }
+            });
+        }, 50);
+
+        // ── Historial de meses ──
+        const hist = document.getElementById('stats-historial');
+        const mesesConDatos = data.filter(d => d.registros > 0);
+        if (mesesConDatos.length === 0) {
+            hist.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:10px 0;">No hay registros en ' + anio + '.</p>';
+        } else {
+            hist.innerHTML = data.slice().reverse().filter(d => d.registros > 0).map(d => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);">
+                    <div style="flex:1;">
+                        <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);">${d.nombre} ${anio}</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">
+                            ${d.registros} turno${d.registros !== 1 ? 's' : ''} ·
+                            <span style="color:var(--c-amber);">${d.h50}h al 50%</span> ·
+                            <span style="color:#b366ff;">${d.h100}h al 100%</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.9rem;font-weight:700;color:var(--c-green);">${fmt(d.neto)}</div>
+                        <div style="font-size:0.68rem;color:var(--text-muted);">bruto ${fmt(d.bruto)}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ── Totales del año ──
+        const totH    = data.reduce((s,d) => s+d.hTotal, 0);
+        const totNeto = data.reduce((s,d) => s+d.neto,   0);
+        const totBruto= data.reduce((s,d) => s+d.bruto,  0);
+        const mejorMes= data.reduce((a,b) => a.neto > b.neto ? a : b);
+        const totBox = document.getElementById('stats-totales');
+        totBox.innerHTML = [
+            { label: 'Horas totales',    val: totH + 'h',     color: '#a5b4fc' },
+            { label: 'Extra neto total', val: fmt(totNeto),   color: '#34d399' },
+            { label: 'Extra bruto',      val: fmt(totBruto),  color: '#388bfd' },
+            { label: 'Mejor mes',        val: mejorMes.neto > 0 ? mejorMes.nombre : '-', color: '#fbbf24' },
+        ].map(b => `
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:14px;text-align:center;">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">${b.label}</div>
+                <div style="font-size:1.05rem;font-weight:700;color:${b.color};">${b.val}</div>
+            </div>`).join('');
+    }
 
     // ── Exportar Excel ─────────────────────────────────────────────────────
     async function descargarExcel() {
