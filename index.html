@@ -103,7 +103,7 @@
 
         /* Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(13,17,23,0.94); backdrop-filter: blur(12px); border-top: 0.5px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
-        .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; width: 50%; transition: 0.3s; }
+        .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; width: 33.33%; transition: 0.3s; }
         .nav-btn i { font-size: 1.3rem; transition: transform 0.3s; }
         .nav-btn.active { color: #58a6ff; }
         .nav-btn.active i { transform: translateY(-3px); }
@@ -230,55 +230,187 @@
 
     <main class="tab-content" id="tab-finanzas">
 
-        <!-- Ingreso del mes -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:20px;padding:18px 20px;margin-bottom:14px;">
-            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Ingreso neto del mes</div>
-            <div id="fin-ingreso-display" style="font-size:1.9rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;margin-bottom:12px;">$0</div>
-            <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">Gastos fijos mensuales</div>
-            <div id="gastos-fijos-lista" style="margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="gf-nombre" class="input" placeholder="Ej: Alquiler" style="flex:1;padding:9px 12px;font-size:0.85rem;">
-                <input type="number" id="gf-monto" class="input" placeholder="Monto" style="width:120px;padding:9px 12px;font-size:0.85rem;">
-                <button onclick="agregarGastoFijo()" style="background:#1f6feb;color:#e6edf3;border:none;border-radius:10px;padding:9px 14px;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">+ Agregar</button>
-            </div>
-        </div>
-
-        <!-- Distribución interactiva -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;">
-                    <i class="fa-solid fa-sliders" style="color:#a5b4fc;font-size:0.85rem;"></i> Distribuir dinero
+        <!-- ── Resumen top ── -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
+            <div style="display:grid;grid-template-columns:1fr 0.5px 1fr 0.5px 1fr;gap:0;align-items:center;">
+                <div style="text-align:center;padding:0 6px;">
+                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Neto del mes</div>
+                    <div id="fin-neto-top" style="font-size:1rem;font-weight:700;color:var(--text-main);">$0</div>
                 </div>
-                <div style="font-size:0.7rem;color:var(--text-muted);">Disponible: <span id="fin-disponible" style="color:var(--c-green);font-weight:600;">$0</span></div>
+                <div style="background:var(--border);height:30px;"></div>
+                <div style="text-align:center;padding:0 6px;">
+                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Fijos</div>
+                    <div id="fin-fijos-top" style="font-size:1rem;font-weight:700;color:#f87171;">$0</div>
+                </div>
+                <div style="background:var(--border);height:30px;"></div>
+                <div style="text-align:center;padding:0 6px;">
+                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Disponible</div>
+                    <div id="fin-disponible" style="font-size:1rem;font-weight:700;color:var(--c-green);">$0</div>
+                </div>
             </div>
-            <!-- Barra apilada visual -->
-            <div id="dist-stack" style="display:flex;height:10px;border-radius:8px;overflow:hidden;margin-bottom:16px;gap:1px;"></div>
-            <!-- Resumen sin distribuir -->
-            <div id="dist-restante-row" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-input);border-radius:10px;padding:8px 12px;margin-bottom:14px;">
-                <span style="font-size:0.75rem;color:var(--text-muted);">Sin asignar</span>
-                <span id="dist-restante" style="font-size:0.85rem;font-weight:700;color:#f87171;">$0</span>
-            </div>
-            <!-- Sliders por categoría -->
-            <div id="dist-sliders" style="display:flex;flex-direction:column;gap:14px;"></div>
-            <button onclick="resetDistribucion()" style="margin-top:14px;width:100%;padding:9px;background:transparent;border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.78rem;font-weight:500;cursor:pointer;">↺ Restablecer sugeridos</button>
         </div>
 
-        <!-- Metas -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
-            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);margin-bottom:12px;display:flex;align-items:center;gap:7px;">
-                <i class="fa-solid fa-bullseye" style="color:var(--c-amber);font-size:0.85rem;"></i> Mis metas
+        <!-- ── Sub-tabs ── -->
+        <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
+            <button onclick="switchFinTab('presupuesto')" id="ftab-presupuesto"
+                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
+                💰 Presupuesto
+            </button>
+            <button onclick="switchFinTab('metas')" id="ftab-metas"
+                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                🎯 Metas
+            </button>
+            <button onclick="switchFinTab('cuotas')" id="ftab-cuotas"
+                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                💳 Cuotas
+            </button>
+        </div>
+
+        <!-- ══ SUB-TAB: PRESUPUESTO ══ -->
+        <div id="fin-presupuesto" style="display:block;">
+
+            <!-- Gastos fijos -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:0.9rem;">📌</span> Gastos fijos
+                    </div>
+                    <button onclick="toggleFormFijo()" id="btn-toggle-fijo"
+                        style="background:rgba(31,111,235,0.12);border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 10px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">
+                        + Agregar
+                    </button>
+                </div>
+                <div id="gastos-fijos-lista" style="margin-bottom:4px;"></div>
+                <!-- Form inline -->
+                <div id="form-fijo" style="display:none;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);">
+                    <div style="display:flex;gap:6px;">
+                        <input type="text" id="gf-nombre" class="input" placeholder="Ej: Alquiler" style="flex:1;padding:8px 10px;font-size:0.82rem;">
+                        <input type="text" id="gf-monto" class="input" inputmode="numeric" placeholder="$" style="width:90px;padding:8px 10px;font-size:0.82rem;text-align:right;">
+                        <button onclick="agregarGastoFijo()"
+                            style="background:#1f6feb;color:#e6edf3;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;">✓</button>
+                    </div>
+                </div>
             </div>
-            <div id="metas-lista" style="margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;margin-bottom:6px;">
-                <input type="text" id="meta-nombre" class="input" placeholder="Ej: Fondo de emergencia" style="flex:1;padding:9px 12px;font-size:0.85rem;">
-                <input type="number" id="meta-monto" class="input" placeholder="Meta $" style="width:120px;padding:9px 12px;font-size:0.85rem;">
+
+            <!-- Distribución -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
+                        <span>📊</span> Distribuir disponible
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="toggleNuevaCat()"
+                            style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.68rem;font-weight:600;cursor:pointer;">
+                            + Cat
+                        </button>
+                        <button onclick="resetDistribucion()"
+                            style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.68rem;cursor:pointer;">
+                            ↺
+                        </button>
+                    </div>
+                </div>
+                <!-- Sliders -->
+                <div id="dist-sliders" style="display:flex;flex-direction:column;gap:10px;"></div>
+                <!-- Nueva categoría form -->
+                <div id="nueva-cat-form" style="display:none;margin-top:12px;padding:12px;background:var(--bg-input);border-radius:12px;border:0.5px solid var(--border);">
+                    <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Nueva categoría</div>
+                    <div style="display:flex;gap:6px;margin-bottom:8px;">
+                        <input id="nueva-cat-icon" class="input" placeholder="🏷" style="width:46px;padding:7px;font-size:1.1rem;text-align:center;">
+                        <input id="nueva-cat-nombre" class="input" placeholder="Nombre" style="flex:1;padding:7px 10px;font-size:0.83rem;">
+                        <input id="nueva-cat-color" type="color" value="#a5b4fc" style="width:36px;height:36px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg-input);cursor:pointer;padding:2px;">
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="agregarCat()" style="flex:1;padding:8px;background:#1f6feb;color:#e6edf3;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;">+ Agregar</button>
+                        <button onclick="document.getElementById('nueva-cat-form').style.display='none'" style="padding:8px 12px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--text-muted);cursor:pointer;">✕</button>
+                    </div>
+                </div>
+                <!-- Gráfico barra apilada + sin asignar -->
+                <div style="margin-top:14px;">
+                    <div id="dist-stack" style="display:flex;height:7px;border-radius:8px;overflow:hidden;gap:1px;margin-bottom:6px;"></div>
+                    <div id="dist-restante-row" style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:var(--bg-input);border-radius:8px;">
+                        <span style="font-size:0.68rem;color:var(--text-muted);">Sin asignar</span>
+                        <span id="dist-restante" style="font-size:0.78rem;font-weight:700;color:#f87171;">$0</span>
+                    </div>
+                </div>
+                <!-- Leyenda -->
+                <div id="dist-leyenda" style="display:none;"></div>
             </div>
-            <button onclick="agregarMeta()" style="width:100%;padding:10px;background:#1a1f35;border:0.5px solid #30363d;border-radius:10px;color:var(--c-amber);font-size:0.85rem;font-weight:600;cursor:pointer;">+ Agregar meta</button>
+
+            <!-- Historial de aportes colapsable -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+                <button onclick="toggleHistorial()"
+                    style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="color:#388bfd;font-size:0.75rem;"></i>
+                        <span style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Historial de aportes</span>
+                        <span id="hist-badge" style="font-size:0.62rem;background:rgba(56,139,253,0.12);color:#388bfd;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
+                    </div>
+                    <span id="hist-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
+                </button>
+                <div id="historial-wrapper" style="display:none;padding:0 16px 12px;">
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:8px;">Tocá ↩ para revertir cualquier aporte.</div>
+                    <div id="historial-aportes"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SUB-TAB: METAS ══ -->
+        <div id="fin-metas" style="display:none;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
+                        <span>🎯</span> Mis metas
+                    </div>
+                    <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid rgba(251,191,36,0.3);border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
+                </div>
+                <div id="metas-lista"></div>
+                <!-- Form meta inline -->
+                <div id="form-meta" style="display:none;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);">
+                    <div style="display:flex;gap:6px;">
+                        <input type="text" id="meta-nombre" class="input" placeholder="Ej: Vacaciones" style="flex:1;padding:8px 10px;font-size:0.82rem;">
+                        <input type="text" id="meta-monto" class="input" inputmode="numeric" placeholder="Meta $" style="width:100px;padding:8px 10px;font-size:0.82rem;text-align:right;">
+                        <button onclick="agregarMeta()" style="background:var(--c-amber);color:#0d1117;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;">✓</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SUB-TAB: CUOTAS ══ -->
+        <div id="fin-cuotas" style="display:none;">
+            <!-- Resumen cuotas -->
+            <div id="cuotas-resumen" style="margin-bottom:12px;"></div>
+
+            <!-- Lista cuotas -->
+            <div id="cuotas-lista" style="margin-bottom:12px;"></div>
+
+            <!-- Form nueva cuota -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:12px;">Nueva compra en cuotas</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
+                        <input type="text" id="cuota-nombre" class="input" placeholder="Ej: Heladera" style="padding:8px 10px;font-size:0.83rem;">
+                    </div>
+                    <div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto por cuota</div>
+                        <input type="text" id="cuota-monto" class="input" inputmode="numeric" placeholder="$0" style="padding:8px 10px;font-size:0.83rem;text-align:right;">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Total cuotas</div>
+                        <input type="text" id="cuota-total" class="input" inputmode="numeric" placeholder="Ej: 6" style="padding:8px 10px;font-size:0.83rem;text-align:center;">
+                    </div>
+                    <div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Ya pagadas</div>
+                        <input type="text" id="cuota-pagadas" class="input" inputmode="numeric" placeholder="0" style="padding:8px 10px;font-size:0.83rem;text-align:center;" value="0">
+                    </div>
+                </div>
+                <button onclick="agregarCuota()" style="width:100%;padding:11px;background:#1f6feb;color:#e6edf3;border:none;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">+ Agregar cuota</button>
+            </div>
         </div>
 
     </main>
-
     <!-- ── Stats Tab ── -->
     <main class="tab-content" id="tab-stats">
 
@@ -367,7 +499,8 @@
         document.getElementById(`tab-${tab}`).classList.add('active');
         document.getElementById(`btn-tab-${tab}`).classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (tab === 'stats') { setupStatsAnio(); renderStats(); }
+        if (tab === 'stats')    { setupStatsAnio(); renderStats(); }
+        if (tab === 'finanzas') { renderFinanzas(); }
     }
 
     function formatFechaUS(fechaStr) {
@@ -462,16 +595,13 @@
     const GEMINI_KEY = 'AIzaSyBQWbhQUwDlYJxG5vg4KtJ9MyooMnaOqcY';
     const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY;
 
-    let dbGastosFijos = JSON.parse(localStorage.getItem('db_gastos_fijos')) || [
-        { id: 1, nombre: 'Alquiler',           monto: 0 },
-        { id: 2, nombre: 'Gas',                monto: 0 },
-        { id: 3, nombre: 'Cuotas heladera (6)', monto: 0 }
+    let dbGastosFijos    = JSON.parse(localStorage.getItem('db_gastos_fijos'))      || [
+        { id: 1, nombre: 'Alquiler', monto: 0 },
+        { id: 2, nombre: 'Gas',      monto: 0 }
     ];
-    let dbMetas = JSON.parse(localStorage.getItem('db_metas')) || [];
-
-    function saveGastosFijos() { localStorage.setItem('db_gastos_fijos', JSON.stringify(dbGastosFijos)); }
-    function saveMetas()       { localStorage.setItem('db_metas',        JSON.stringify(dbMetas)); }
-
+    let dbMetas          = JSON.parse(localStorage.getItem('db_metas'))             || [];
+    const saveGastosFijos  = () => localStorage.setItem('db_gastos_fijos',     JSON.stringify(dbGastosFijos));
+    const saveMetas        = () => localStorage.setItem('db_metas',            JSON.stringify(dbMetas));
     function agregarGastoFijo() {
         const n = document.getElementById('gf-nombre').value.trim();
         const m = parseFloat(document.getElementById('gf-monto').value);
@@ -480,20 +610,19 @@
         saveGastosFijos();
         document.getElementById('gf-nombre').value = '';
         document.getElementById('gf-monto').value  = '';
+        document.getElementById('form-fijo').style.display = 'none';
         renderFinanzas();
     }
-
     function eliminarGastoFijo(id) {
         dbGastosFijos = dbGastosFijos.filter(x => x.id !== id);
-        saveGastosFijos();
-        renderFinanzas();
+        saveGastosFijos(); renderFinanzas();
     }
-
     function actualizarGastoFijo(id, valor) {
         const g = dbGastosFijos.find(x => x.id === id);
         if (g) { g.monto = parseFloat(valor) || 0; saveGastosFijos(); renderFinanzas(); }
     }
 
+    // ── Metas ─────────────────────────────────────────────────────────────
     function agregarMeta() {
         const n = document.getElementById('meta-nombre').value.trim();
         const m = parseFloat(document.getElementById('meta-monto').value);
@@ -502,208 +631,553 @@
         saveMetas();
         document.getElementById('meta-nombre').value = '';
         document.getElementById('meta-monto').value  = '';
-        renderFinanzas();
+        document.getElementById('form-meta').style.display = 'none';
+        renderMetas();
     }
-
     function eliminarMeta(id) {
-        dbMetas = dbMetas.filter(x => x.id !== id);
-        saveMetas();
-        renderFinanzas();
+        dbMetas = dbMetas.filter(x => x.id !== id); saveMetas(); renderMetas();
     }
-
     function aportarAutoMeta(id) {
-        const totalFijos  = dbGastosFijos.reduce((s, g) => s + (g.monto || 0), 0);
-        const disponible  = totalIngresosMes - totalFijos;
-        const aporte      = Math.round(disponible * 0.20);
+        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const disponible = totalIngresosMes - totalFijos;
+        const aporte = Math.round(disponible * 0.20);
         const m = dbMetas.find(x => x.id === id);
-        if (!m || aporte <= 0) return alert('Definí tus gastos fijos primero para calcular el disponible.');
-        m.ahorrado = Math.min(m.monto, (m.ahorrado || 0) + aporte);
-        saveMetas();
-        renderFinanzas();
+        if (!m || aporte <= 0) return;
+        _realizarAporte(m, aporte);
     }
-
     function aportarManualMeta(id) {
         const val = parseFloat(document.getElementById('aportar-input-' + id).value);
         if (!val || isNaN(val) || val <= 0) return;
         const m = dbMetas.find(x => x.id === id);
         if (!m) return;
-        m.ahorrado = Math.min(m.monto, (m.ahorrado || 0) + val);
-        saveMetas();
         document.getElementById('aportar-input-' + id).value = '';
-        renderFinanzas();
+        _realizarAporte(m, val);
     }
-
-    // ── Distribución interactiva ─────────────────────────────────────────
     const DIST_CATS = [
-        { id: 'necesidades', nombre: 'Necesidades',    icon: '🛒', color: '#388bfd', pctSug: 40 },
-        { id: 'ahorro',      nombre: 'Ahorro',         icon: '🏦', color: '#34d399', pctSug: 20 },
-        { id: 'inversion',   nombre: 'Inversión',      icon: '📈', color: '#a5b4fc', pctSug: 15 },
-        { id: 'ocio',        nombre: 'Ocio',           icon: '🎯', color: '#fbbf24', pctSug: 15 },
-        { id: 'emergencia',  nombre: 'Emergencia',     icon: '🛡', color: '#f87171', pctSug: 10 },
+        { id: 'necesidades', nombre: 'Necesidades', icon: '🛒', color: '#388bfd', pctSug: 40 },
+        { id: 'ahorro',      nombre: 'Ahorro',      icon: '🏦', color: '#34d399', pctSug: 20 },
+        { id: 'inversion',   nombre: 'Inversión',   icon: '📈', color: '#a5b4fc', pctSug: 25 },
+        { id: 'ocio',        nombre: 'Ocio',        icon: '🎯', color: '#fbbf24', pctSug: 15 },
     ];
+    let distPcts         = JSON.parse(localStorage.getItem('dist_pcts'))        || null;
+    let distMontos       = JSON.parse(localStorage.getItem('dist_montos'))      || {};
+    let distModo         = JSON.parse(localStorage.getItem('dist_modo'))        || {};
+    let distVinculos     = JSON.parse(localStorage.getItem('dist_vinculos'))    || {};
 
-    // Cargar porcentajes guardados o usar sugeridos
-    let distPcts = JSON.parse(localStorage.getItem('dist_pcts')) || null;
-    if (!distPcts) {
-        distPcts = {};
-        DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
+    if (!distPcts) { distPcts = {}; DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; }); }
+
+    let dbGastosVar      = JSON.parse(localStorage.getItem('db_gastos_var'))        || {};
+    let dbHistorialAport = JSON.parse(localStorage.getItem('db_historial_aport'))   || [];
+
+    const saveDistPcts     = () => localStorage.setItem('dist_pcts',            JSON.stringify(distPcts));
+    const saveDistVinc     = () => localStorage.setItem('dist_vinculos',        JSON.stringify(distVinculos));
+    const saveDistMontos   = () => localStorage.setItem('dist_montos',          JSON.stringify(distMontos));
+    const saveDistModo     = () => localStorage.setItem('dist_modo',            JSON.stringify(distModo));
+    const saveGastosVar    = () => localStorage.setItem('db_gastos_var',        JSON.stringify(dbGastosVar));
+    const saveHistAport    = () => localStorage.setItem('db_historial_aport',   JSON.stringify(dbHistorialAport));
+    function toggleDistModo(catId, disponible) {
+        distModo[catId] = distModo[catId] === 'monto' ? 'pct' : 'monto';
+        saveDistModo();
+        if (distModo[catId] === 'monto') { distMontos[catId] = Math.round(disponible*(distPcts[catId]||0)/100); saveDistMontos(); }
+        renderDistribucion(disponible);
+    }
+    function setDistMonto(catId, valor, disponible) {
+        const m = parseInt(valor) || 0;
+        distMontos[catId] = m;
+        if (disponible > 0) distPcts[catId] = Math.round(m/disponible*100);
+        saveDistMontos(); saveDistPcts();
+        renderDistribucion(disponible);
+    }
+    function eliminarGastoVar(mes, id) {
+        if (!dbGastosVar[mes]) return;
+        dbGastosVar[mes] = dbGastosVar[mes].filter(g => g.id !== id);
+        saveGastosVar();
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+    function vincularDistMeta(catId, metaId) {
+        if (metaId) distVinculos[catId] = parseInt(metaId);
+        else delete distVinculos[catId];
+        saveDistVinc();
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+    function aportarDistAMeta(catId, monto) {
+        const metaId = distVinculos[catId];
+        const m = metaId ? dbMetas.find(x => x.id === metaId) : null;
+        if (!m) return alert('Primero vinculá esta categoría a una meta.');
+        _realizarAporte(m, monto);
+    }
+    function revertirAporte(id) {
+        const ap = dbHistorialAport.find(x => x.id === id);
+        if (!ap) return;
+        if (!confirm('¿Revertir aporte de ' + fmt(ap.monto) + ' a "' + ap.metaNombre + '"?')) return;
+        const m = dbMetas.find(x => x.id === ap.metaId);
+        if (m) { m.ahorrado = Math.max(0, (m.ahorrado||0) - ap.monto); saveMetas(); }
+        dbHistorialAport = dbHistorialAport.filter(x => x.id !== id);
+        saveHistAport(); renderMetas(); renderHistorialAportes();
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
     }
 
-    function saveDistPcts() { localStorage.setItem('dist_pcts', JSON.stringify(distPcts)); }
+    let historialOpen = false;
+    function toggleHistorial() {
+        const w = document.getElementById('historial-wrapper');
+        const ic = document.getElementById('hist-chevron');
+        const open = w.style.display === 'none';
+        w.style.display = open ? 'block' : 'none';
+        if (ic) ic.innerText = open ? '▲' : '▼';
+    }
+
+    // ── Gastos fijos ──────────────────────────────────────────────────────
+    let dbCuotas         = JSON.parse(localStorage.getItem('db_cuotas_v1'))         || [];
+    const saveCuotas       = () => localStorage.setItem('db_cuotas_v1',        JSON.stringify(dbCuotas));
+    function agregarCuota() {
+        const nombre  = document.getElementById('cuota-nombre').value.trim();
+        const monto   = parseFloat(document.getElementById('cuota-monto').value);
+        const total   = parseInt(document.getElementById('cuota-total').value);
+        const pagadas = parseInt(document.getElementById('cuota-pagadas').value) || 0;
+        if (!nombre || !monto || !total || total < 1) return alert('Completá todos los campos.');
+        if (pagadas > total) return alert('Las cuotas pagadas no pueden superar el total.');
+        const nueva = { id: Date.now(), nombre, monto, total, pagadas, historial: [],
+            fechaInicio: new Date().toISOString().split('T')[0] };
+        dbCuotas.push(nueva);
+        saveCuotas();
+        if (pagadas < total) {
+            const restantes = total - pagadas;
+            dbGastosFijos.push({ id: 'cuota_'+nueva.id, nombre: nombre+' ('+restantes+' cuotas)', monto, esCuota: true, cuotaRef: nueva.id });
+            saveGastosFijos();
+        }
+        document.getElementById('cuota-nombre').value  = '';
+        document.getElementById('cuota-monto').value   = '';
+        document.getElementById('cuota-total').value   = '';
+        document.getElementById('cuota-pagadas').value = '0';
+        renderFinanzas(); renderCuotas();
+    }
+    function pagarCuota(id) {
+        const c = dbCuotas.find(x => x.id === id);
+        if (!c || c.pagadas >= c.total) return;
+        const cats = getCatsActivas();
+        const opciones = cats.map((cat, i) => (i+1) + '. ' + cat.icon + ' ' + cat.nombre).join('\n');
+        const sel = prompt('Cuota ' + (c.pagadas+1) + '/' + c.total + ' de "' + c.nombre + '" · ' + fmt(c.monto) + '\n\n¿De qué categoría descontás?\n\n' + opciones + '\n\nIngresá el número:');
+        if (!sel || !sel.trim()) return;
+        const idx = parseInt(sel) - 1;
+        if (idx < 0 || idx >= cats.length) return alert('Número inválido.');
+        const cat = cats[idx];
+        const hoy = new Date().toISOString().split('T')[0];
+        const mes = hoy.substring(0, 7);
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push({ id: Date.now(), catId: cat.id, desc: 'Cuota '+(c.pagadas+1)+'/'+c.total+' '+c.nombre, monto: c.monto });
+        saveGastosVar();
+        c.pagadas++;
+        if (!c.historial) c.historial = [];
+        c.historial.push({ num: c.pagadas, fecha: hoy, monto: c.monto, catDesc: cat.icon+' '+cat.nombre, catId: cat.id });
+        saveCuotas();
+        const fijoIdx = dbGastosFijos.findIndex(g => g.cuotaRef === c.id);
+        if (fijoIdx !== -1) {
+            const rest = c.total - c.pagadas;
+            if (rest <= 0) dbGastosFijos.splice(fijoIdx, 1);
+            else dbGastosFijos[fijoIdx].nombre = c.nombre + ' (' + rest + ' cuota' + (rest===1?'':'s') + ')';
+            saveGastosFijos();
+        }
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+        renderFinanzas(); renderCuotas();
+    }
+    function deshacerCuota(id) {
+        const c = dbCuotas.find(x => x.id === id);
+        if (!c || c.pagadas <= 0) return;
+        c.pagadas--;
+        if (c.historial && c.historial.length > 0) c.historial.pop();
+        saveCuotas();
+        const fijoIdx = dbGastosFijos.findIndex(g => g.cuotaRef === c.id);
+        if (fijoIdx !== -1) {
+            const rest = c.total - c.pagadas;
+            dbGastosFijos[fijoIdx].nombre = c.nombre + ' (' + rest + ' cuota' + (rest===1?'':'s') + ')';
+            saveGastosFijos();
+        }
+        renderFinanzas(); renderCuotas();
+    }
+    function eliminarCuotaItem(id) {
+        if (!confirm('¿Eliminar esta cuota?')) return;
+        dbCuotas = dbCuotas.filter(x => x.id !== id);
+        dbGastosFijos = dbGastosFijos.filter(g => g.cuotaRef !== id);
+        saveCuotas(); saveGastosFijos();
+        renderFinanzas(); renderCuotas();
+    }
+    function renderCuotas() {
+        const el = document.getElementById('cuotas-lista');
+        const res = document.getElementById('cuotas-resumen');
+        if (!el) return;
+        const activas    = dbCuotas.filter(c => c.pagadas < c.total);
+        const completadas = dbCuotas.filter(c => c.pagadas >= c.total);
+        // Resumen
+        if (res) {
+            const totalMes = activas.reduce((s,c) => s+c.monto, 0);
+            res.innerHTML = activas.length > 0
+                ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(248,113,113,0.07);border:0.5px solid rgba(248,113,113,0.2);border-radius:12px;padding:10px 14px;">'
+                  + '<div><div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Compromiso mensual</div>'
+                  + '<div style="font-size:0.95rem;font-weight:700;color:#f87171;">' + fmt(totalMes) + '</div></div>'
+                  + '<div style="text-align:right;"><div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;">Cuotas activas</div>'
+                  + '<div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">' + activas.length + '</div></div>'
+                  + '</div>' : '';
+        }
+        if (dbCuotas.length === 0) {
+            el.innerHTML = '<div style="text-align:center;padding:20px 0;"><div style="font-size:1.5rem;margin-bottom:8px;">💳</div><div style="font-size:0.82rem;color:var(--text-muted);">Sin cuotas. Agregá una abajo.</div></div>';
+            return;
+        }
+        let html = '';
+        activas.forEach(c => {
+            const rest = c.total - c.pagadas;
+            const pct  = Math.round((c.pagadas / c.total) * 100);
+            let burbujas = '';
+            for (let i = 0; i < c.total; i++) {
+                const done = i < c.pagadas;
+                burbujas += '<div style="width:20px;height:20px;border-radius:50%;background:' + (done?'#1f6feb':'#21262d') + ';border:1.5px solid ' + (done?'#388bfd':'#30363d') + ';display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:' + (done?'#e6edf3':'#7d8590') + ';">' + (done?'✓':(i+1)) + '</div>';
+            }
+            let histHtml = '';
+            if (c.historial && c.historial.length > 0) {
+                histHtml = '<div style="margin-bottom:10px;border-top:0.5px solid #21262d;padding-top:8px;">'
+                    + c.historial.map(h => '<div style="display:flex;justify-content:space-between;font-size:0.65rem;padding:2px 0;">'
+                        + '<span style="color:var(--text-muted);">Cuota ' + h.num + ' · ' + h.catDesc + '</span>'
+                        + '<span style="color:#34d399;">' + fmt(h.monto) + ' · ' + h.fecha.split('-').reverse().join('/') + '</span>'
+                        + '</div>').join('')
+                    + '</div>';
+            }
+            html += '<div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
+                +   '<div><div style="font-size:0.85rem;font-weight:600;color:var(--text-main);">' + c.nombre + '</div>'
+                +   '<div style="font-size:0.68rem;color:var(--text-muted);margin-top:1px;">' + fmt(c.monto) + '/mes · ' + fmt(rest*c.monto) + ' restante</div></div>'
+                +   '<button onclick="eliminarCuotaItem(' + c.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:2px;">✕</button>'
+                + '</div>'
+                + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
+                +   '<span style="font-size:0.68rem;color:var(--text-muted);"><span style="color:#388bfd;font-weight:700;">' + c.pagadas + '</span> pagadas de ' + c.total + '</span>'
+                +   '<span style="font-size:0.68rem;color:#f87171;font-weight:700;">' + rest + ' restantes</span>'
+                + '</div>'
+                + '<div style="background:#21262d;border-radius:6px;height:5px;overflow:hidden;margin-bottom:10px;">'
+                +   '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#1f6feb,#388bfd);border-radius:6px;"></div>'
+                + '</div>'
+                + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:' + (histHtml?'0':'10px') + ';">' + burbujas + '</div>'
+                + histHtml
+                + '<div style="display:flex;gap:8px;">'
+                +   '<button onclick="pagarCuota(' + c.id + ')" style="flex:1;padding:9px;background:#1f2d3d;border:0.5px solid #1f6feb;border-radius:9px;color:#388bfd;font-size:0.82rem;font-weight:600;cursor:pointer;">✓ Pagar cuota ' + (c.pagadas+1) + '</button>'
+                +   (c.pagadas > 0 ? '<button onclick="deshacerCuota(' + c.id + ')" style="padding:9px 12px;background:transparent;border:0.5px solid var(--border);border-radius:9px;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">↩</button>' : '')
+                + '</div>'
+                + '</div>';
+        });
+        if (completadas.length > 0) {
+            html += '<div style="margin-top:6px;"><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Completadas (' + completadas.length + ')</div>';
+            completadas.forEach(c => {
+                html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(52,211,153,0.05);border:0.5px solid rgba(52,211,153,0.15);border-radius:10px;margin-bottom:6px;">'
+                    + '<div style="display:flex;align-items:center;gap:8px;">'
+                    +   '<span>✅</span>'
+                    +   '<div><div style="font-size:0.8rem;color:var(--text-muted);text-decoration:line-through;">' + c.nombre + '</div>'
+                    +   '<div style="font-size:0.65rem;color:var(--text-muted);">' + c.total + ' cuotas · ' + fmt(c.total*c.monto) + '</div></div>'
+                    + '</div>'
+                    + '<button onclick="eliminarCuotaItem(' + c.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;">✕</button>'
+                    + '</div>';
+            });
+            html += '</div>';
+        }
+        el.innerHTML = html;
+    }
+
+    // ── Categorías custom ─────────────────────────────────────────────────
+    function renderHistorialAportes() {
+        const badge = document.getElementById('hist-badge');
+        if (badge) badge.innerText = dbHistorialAport.length > 0 ? dbHistorialAport.length + '' : '';
+        const el = document.getElementById('historial-aportes');
+        if (!el) return;
+        if (dbHistorialAport.length === 0) {
+            el.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:4px 0;">Sin aportes registrados.</p>';
+            return;
+        }
+        const sorted = [...dbHistorialAport].sort((a,b) => b.id - a.id);
+        el.innerHTML = sorted.map(ap => {
+            const [y,m,d] = ap.fecha.split('-');
+            return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);">'
+                + '<div style="flex:1;min-width:0;">'
+                +   '<div style="font-size:0.78rem;font-weight:600;color:var(--text-main);">' + ap.metaNombre + '</div>'
+                +   '<div style="font-size:0.65rem;color:var(--text-muted);">' + d+'/'+m+'/'+y + ' · ' + (ap.catDesc||ap.catId) + '</div>'
+                + '</div>'
+                + '<div style="text-align:right;flex-shrink:0;">'
+                +   '<div style="font-size:0.82rem;font-weight:700;color:#34d399;">+' + fmt(ap.monto) + '</div>'
+                +   '<button onclick="revertirAporte(' + ap.id + ')" style="font-size:0.6rem;color:#f87171;background:none;border:none;cursor:pointer;">↩ revertir</button>'
+                + '</div>'
+                + '</div>';
+        }).join('')
+        + '<div style="text-align:center;padding-top:8px;font-size:0.7rem;color:var(--text-muted);">Total aportado: <strong style="color:#34d399;">' + fmt(sorted.reduce((s,a)=>s+a.monto,0)) + '</strong></div>';
+    }
+
+    // ── Cuotas ────────────────────────────────────────────────────────────
+    let DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom')) || [];
+    const saveCatsCustom   = () => localStorage.setItem('dist_cats_custom',     JSON.stringify(DIST_CATS_CUSTOM));
+
+    function getCatsActivas() { return DIST_CATS_CUSTOM.length ? DIST_CATS_CUSTOM : DIST_CATS; }
+
+    // ── Sub-tabs ──────────────────────────────────────────────────────────
+    function toggleNuevaCat() {
+        const f = document.getElementById('nueva-cat-form');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+    function agregarCat() {
+        const icon   = document.getElementById('nueva-cat-icon').value.trim()   || '📦';
+        const nombre = document.getElementById('nueva-cat-nombre').value.trim();
+        const color  = document.getElementById('nueva-cat-color').value;
+        if (!nombre) return alert('Ponele un nombre a la categoría.');
+        if (DIST_CATS_CUSTOM.length === 0) DIST_CATS_CUSTOM = JSON.parse(JSON.stringify(DIST_CATS));
+        const id = 'cat_' + Date.now();
+        DIST_CATS_CUSTOM.push({ id, nombre, icon, color, pctSug: 0 });
+        distPcts[id] = 0;
+        saveCatsCustom(); saveDistPcts();
+        document.getElementById('nueva-cat-icon').value   = '';
+        document.getElementById('nueva-cat-nombre').value = '';
+        document.getElementById('nueva-cat-form').style.display = 'none';
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+    function renombrarCat(id) {
+        const cats = getCatsActivas();
+        const cat  = cats.find(c => c.id === id);
+        if (!cat) return;
+        const nuevo = prompt('Nuevo nombre para "' + cat.nombre + '":', cat.nombre);
+        if (!nuevo || !nuevo.trim()) return;
+        cat.nombre = nuevo.trim();
+        const nuevoIcon = prompt('Nuevo ícono (emoji):', cat.icon);
+        if (nuevoIcon !== null) cat.icon = nuevoIcon.trim() || cat.icon;
+        saveCatsCustom();
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+    function eliminarCat(id) {
+        const cats = getCatsActivas();
+        const cat  = cats.find(c => c.id === id);
+        if (!cat) return;
+        if (!confirm('¿Eliminar la categoría "' + cat.nombre + '"?')) return;
+        DIST_CATS_CUSTOM = cats.filter(c => c.id !== id);
+        delete distPcts[id]; delete distMontos[id]; delete distModo[id]; delete distVinculos[id];
+        saveCatsCustom(); saveDistPcts(); saveDistMontos(); saveDistModo(); saveDistVinc();
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+
+    // ── Distribución ──────────────────────────────────────────────────────
+    function registrarGastoVar(catId, disponible) {
+        const desc  = prompt('Descripción del gasto:');
+        if (!desc) return;
+        const monto = parseInt(prompt('Monto ($):'));
+        if (!monto || isNaN(monto)) return;
+        const mes = document.getElementById('select-mes').value;
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push({ id: Date.now(), catId, desc, monto });
+        saveGastosVar();
+        renderDistribucion(disponible);
+    }
 
     function resetDistribucion() {
         DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
+        DIST_CATS_CUSTOM.forEach(c => { distPcts[c.id] = c.pctSug || 0; });
         saveDistPcts();
-        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        renderDistribucion(totalIngresosMes - totalFijos);
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
     }
-
     function renderDistribucion(disponible) {
-        const sliders = document.getElementById('dist-sliders');
-        const stack   = document.getElementById('dist-stack');
-        const restEl  = document.getElementById('dist-restante');
-        const restRow = document.getElementById('dist-restante-row');
-        const dispEl  = document.getElementById('fin-disponible');
+        const sliders  = document.getElementById('dist-sliders');
+        const stack    = document.getElementById('dist-stack');
+        const restEl   = document.getElementById('dist-restante');
+        const restRow  = document.getElementById('dist-restante-row');
+        const dispEl   = document.getElementById('fin-disponible');
         if (!sliders) return;
-
         if (dispEl) dispEl.innerText = fmt(Math.max(0, disponible));
 
-        const totalPct  = DIST_CATS.reduce((s,c) => s + (distPcts[c.id]||0), 0);
-        const restante  = disponible > 0 ? Math.round(disponible * (1 - totalPct/100)) : 0;
-        const overLimit = totalPct > 100;
+        const ACTIVE = getCatsActivas();
+        const mes = new Date().toISOString().split('T')[0].substring(0,7);
+        const gastosVarMes = dbGastosVar[mes] || [];
+        const totalPct = ACTIVE.reduce((s,c) => s+(distPcts[c.id]||0), 0);
 
         // Barra apilada
         if (stack) {
-            stack.innerHTML = DIST_CATS.map(c => {
-                const w = Math.min(distPcts[c.id]||0, 100);
-                return `<div style="flex:${w};background:${c.color};min-width:${w>0?'2px':'0'};transition:flex 0.3s;"></div>`;
-            }).join('') + (totalPct < 100 ? `<div style="flex:${100-totalPct};background:#21262d;"></div>` : '');
+            stack.innerHTML = ACTIVE.map(c => {
+                const pct = distPcts[c.id] || 0;
+                return '<div style="flex:' + pct + ';background:' + c.color + ';min-width:' + (pct>0?'2px':'0') + ';"></div>';
+            }).join('') + (totalPct < 100 ? '<div style="flex:' + (100-totalPct) + ';background:#21262d;min-width:2px;"></div>' : '');
+        }
+
+        // Leyenda compacta
+        const leyEl = document.getElementById('dist-leyenda');
+        if (leyEl) {
+            leyEl.innerHTML = ACTIVE.map(c => {
+                const pct = distPcts[c.id] || 0;
+                return '<div style="display:flex;align-items:center;gap:3px;">'
+                    + '<div style="width:6px;height:6px;border-radius:50%;background:' + c.color + ';flex-shrink:0;"></div>'
+                    + '<span style="font-size:0.6rem;color:var(--text-muted);">' + c.icon + ' ' + pct + '%</span>'
+                    + '</div>';
+            }).join('');
         }
 
         // Restante
         if (restEl) {
-            restEl.innerText   = disponible > 0 ? fmt(Math.abs(restante)) : '$0';
-            restEl.style.color = overLimit ? '#f87171' : restante === 0 ? '#34d399' : '#fbbf24';
-        }
-        if (restRow) {
-            const label = restRow.querySelector('span');
-            if (label) label.innerText = overLimit ? '⚠ Excedés el 100%' : restante === 0 ? '✓ Todo asignado' : 'Sin asignar';
+            const asignado = disponible > 0 ? Math.round(disponible * Math.min(totalPct, 100) / 100) : 0;
+            const restante = disponible - asignado;
+            restEl.innerText = fmt(restante);
+            if (restRow) restRow.style.display = totalPct >= 100 ? 'none' : 'flex';
         }
 
-        // Sliders
-        sliders.innerHTML = DIST_CATS.map(c => {
+        // Categorías
+        const metasOptions = dbMetas.filter(m => (m.ahorrado||0) < m.monto)
+            .map(m => '<option value="' + m.id + '">' + m.nombre + '</option>').join('');
+
+        sliders.innerHTML = ACTIVE.map(c => {
             const pct   = distPcts[c.id] || 0;
-            const monto = disponible > 0 ? Math.round(disponible * pct / 100) : 0;
-            return `
-            <div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <span style="font-size:0.82rem;color:var(--text-main);">${c.icon} ${c.nombre}</span>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:0.82rem;font-weight:700;color:${c.color};">${fmt(monto)}</span>
-                        <div style="display:flex;align-items:center;gap:3px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:3px 6px;">
-                            <button onclick="ajustarPct('${c.id}',-5)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;line-height:1;padding:0 2px;">−</button>
-                            <span style="font-size:0.8rem;font-weight:700;color:${c.color};min-width:28px;text-align:center;">${pct}%</span>
-                            <button onclick="ajustarPct('${c.id}',+5)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;line-height:1;padding:0 2px;">+</button>
-                        </div>
-                    </div>
-                </div>
-                <input type="range" min="0" max="100" step="5" value="${pct}"
-                    oninput="distPcts['${c.id}']=parseInt(this.value);saveDistPcts();renderDistribucion(${Math.round(disponible)});"
-                    style="width:100%;accent-color:${c.color};height:4px;cursor:pointer;">
-            </div>`;
+            const esMonto = distModo[c.id] === 'monto';
+            const monto = disponible > 0
+                ? (esMonto ? (distMontos[c.id]||0) : Math.round(disponible * pct / 100))
+                : 0;
+            const gastCat   = gastosVarMes.filter(g => g.catId === c.id);
+            const totalGast = gastCat.reduce((s,g) => s+g.monto, 0);
+            const libre     = Math.max(0, monto - totalGast);
+            const pctGast   = monto > 0 ? Math.min(100, Math.round(totalGast/monto*100)) : 0;
+            const superado  = totalGast > monto && monto > 0;
+            const metaVinc  = distVinculos[c.id] ? dbMetas.find(m => m.id===distVinculos[c.id]) : null;
+            const vinculable = (c.id==='ahorro'||c.id==='inversion'||c.id==='ocio'||String(c.id).startsWith('cat_')) && dbMetas.length > 0;
+
+            return '<div style="background:var(--bg-input);border-radius:12px;border:0.5px solid ' + (superado?'rgba(248,113,113,0.4)':'var(--border)') + ';padding:12px;">'
+                // Header
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+                +   '<div style="display:flex;align-items:center;gap:5px;">'
+                +     '<span style="font-size:0.85rem;font-weight:600;color:var(--text-main);">' + c.icon + ' ' + c.nombre + '</span>'
+                +     '<button onclick="renombrarCat(\' + c.id + \')" style="background:none;border:none;cursor:pointer;font-size:0.6rem;color:var(--text-muted);opacity:0.6;">✏️</button>'
+                +     '<button onclick="eliminarCat(\' + c.id + \')" style="background:none;border:none;cursor:pointer;font-size:0.6rem;color:#f87171;opacity:0.6;">✕</button>'
+                +   '</div>'
+                +   '<div style="display:flex;align-items:center;gap:5px;">'
+                +     '<span style="font-size:0.88rem;font-weight:700;color:' + c.color + ';">' + fmt(monto) + '</span>'
+                +     '<button onclick="toggleDistModo(\' + c.id + \',' + Math.round(disponible) + ')" style="background:none;border:0.5px solid var(--border);border-radius:6px;padding:2px 6px;font-size:0.6rem;color:var(--text-muted);cursor:pointer;">' + (esMonto?'📌':'%') + '</button>'
+                +   '</div>'
+                + '</div>'
+                // Control %/monto
+                + (esMonto
+                    ? '<input type="text" inputmode="numeric" value="' + (distMontos[c.id]||0) + '" onblur="setDistMonto(\' + c.id + \',this.value,' + Math.round(disponible) + ')" style="width:100%;background:#0d1117;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.82rem;margin-bottom:8px;-moz-appearance:textfield;outline:none;">'
+                    : '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">'
+                        + '<button onclick="ajustarPct(\' + c.id + \',-5)" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;color:var(--text-muted);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>'
+                        + '<input type="range" min="0" max="100" step="5" value="' + pct + '" oninput="distPcts[' + c.id + ']=parseInt(this.value);saveDistPcts();renderDistribucion(' + Math.round(disponible) + ');" style="flex:1;accent-color:' + c.color + ';height:4px;cursor:pointer;">'
+                        + '<button onclick="ajustarPct(\' + c.id + \',+5)" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;color:var(--text-muted);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>'
+                        + '<span style="font-size:0.8rem;font-weight:700;color:' + c.color + ';min-width:32px;text-align:right;">' + pct + '%</span>'
+                        + '</div>'
+                )
+                // Barra gasto vs asignado
+                + (monto > 0 ? (
+                    '<div style="margin-bottom:4px;">'
+                    + '<div style="background:#21262d;border-radius:6px;height:4px;overflow:hidden;">'
+                    +   '<div style="width:' + pctGast + '%;height:100%;background:' + (superado?'#f87171':c.color) + ';border-radius:6px;transition:width 0.4s;"></div>'
+                    + '</div>'
+                    + '<div style="display:flex;justify-content:space-between;margin-top:3px;">'
+                    +   '<span style="font-size:0.6rem;color:var(--text-muted);">Gastado: ' + fmt(totalGast) + (superado?' ⚠':'') + '</span>'
+                    +   '<span style="font-size:0.6rem;color:' + (superado?'#f87171':c.color) + ';">Libre: ' + fmt(libre) + '</span>'
+                    + '</div>'
+                    + '</div>'
+                ) : '')
+                // Gastos registrados
+                + (gastCat.length > 0
+                    ? '<div style="margin-bottom:6px;">'
+                        + gastCat.map(g => '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid #21262d;">'
+                            + '<span style="font-size:0.65rem;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + g.desc + '</span>'
+                            + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+                            +   '<span style="font-size:0.65rem;color:#f87171;">-' + fmt(g.monto) + '</span>'
+                            +   '<button onclick="eliminarGastoVar(' + mes + ',' + g.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.6rem;line-height:1;">✕</button>'
+                            + '</div>'
+                            + '</div>').join('')
+                        + '</div>'
+                    : '')
+                // Botón anotar gasto
+                + '<button onclick="agregarGastoVar(' + c.id + ',' + Math.round(disponible) + ')" style="width:100%;padding:5px;background:transparent;border:0.5px dashed var(--border);border-radius:7px;color:var(--text-muted);font-size:0.68rem;cursor:pointer;margin-top:4px;">+ Anotar gasto</button>'
+                // Vincular a meta
+                + (vinculable && metasOptions
+                    ? '<div style="display:flex;gap:6px;align-items:center;margin-top:8px;">'
+                        + '<select onchange="vincularDistMeta(\' + c.id + \',this.value)" style="flex:1;background:#0d1117;color:var(--text-muted);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.7rem;outline:none;">'
+                        +   '<option value="">↳ Destinar a meta...</option>' + metasOptions
+                        + '</select>'
+                        + (monto > 0 ? '<button onclick="aportarDistAMeta(\' + c.id + \',' + monto + ')" style="background:#1a2a1a;border:0.5px solid #2d5a3a;color:#34d399;border-radius:8px;padding:5px 10px;font-size:0.7rem;font-weight:600;cursor:pointer;white-space:nowrap;">→ Meta</button>' : '')
+                        + '</div>'
+                        + (metaVinc ? '<div style="font-size:0.62rem;color:var(--text-muted);margin-top:3px;">↳ <span style="color:var(--c-amber);">' + metaVinc.nombre + '</span> · ' + Math.round((metaVinc.ahorrado||0)/metaVinc.monto*100) + '%</div>' : '')
+                    : '')
+                + '</div>';
         }).join('');
     }
 
-    function ajustarPct(id, delta) {
-        distPcts[id] = Math.max(0, Math.min(100, (distPcts[id]||0) + delta));
+    // ── renderFinanzas (orquesta todo) ────────────────────────────────────
+    function ajustarPct(catId, delta) {
+        distPcts[catId] = Math.max(0, Math.min(100, (distPcts[catId]||0) + delta));
         saveDistPcts();
-        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        renderDistribucion(totalIngresosMes - totalFijos);
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+    }
+    let finTabActivo = 'presupuesto';
+    function switchFinTab(tab) {
+        currentFinTab = tab;
+        ['presupuesto','metas','cuotas'].forEach(t => {
+            const panel = document.getElementById('fin-panel-' + t);
+            const btn   = document.getElementById('ftab-' + t);
+            if (!panel || !btn) return;
+            const on = t === tab;
+            panel.style.display = on ? 'block' : 'none';
+            btn.style.background = on ? 'var(--bg-input)' : 'transparent';
+            btn.style.color = on ? 'var(--text-main)' : 'var(--text-muted)';
+        });
+        if (tab === 'cuotas') renderCuotas();
+        if (tab === 'metas')  renderMetas();
+    }
+
+    // ── Form toggles ──────────────────────────────────────────────────────
+    function toggleFormFijo() {
+        const f = document.getElementById('form-fijo');
+        f.style.display = f.style.display === 'none' ? 'flex' : 'none';
+    }
+    function toggleFormMeta() {
+        const f = document.getElementById('form-meta');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
     }
 
     function renderFinanzas() {
         const ingreso    = totalIngresosMes;
-        const totalFijos = dbGastosFijos.reduce((s, g) => s + (g.monto || 0), 0);
+        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
         const disponible = ingreso - totalFijos;
 
-        document.getElementById('fin-ingreso-display').innerText = fmt(ingreso);
-        document.getElementById('fin-disponible').innerText      = fmt(Math.max(0, disponible));
+        const finIngreso = document.getElementById('fin-neto-top');
+        if (finIngreso) finIngreso.innerText = fmt(ingreso);
 
-        // ── Gastos fijos lista ──
+        // Gastos fijos lista
         const gfl = document.getElementById('gastos-fijos-lista');
-        if (dbGastosFijos.length === 0) {
-            gfl.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);padding:4px 0;">Sin gastos fijos cargados.</p>';
-        } else {
-            gfl.innerHTML = dbGastosFijos.map(g => `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);">
-                    <span style="font-size:0.82rem;color:var(--text-main);flex:1;">${g.nombre}</span>
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <input type="text" inputmode="numeric" value="${g.monto||0}"
-                            onblur="actualizarGastoFijo(${g.id},this.value)"
-                            onkeydown="if(event.key==='Enter')this.blur()"
-                            style="-moz-appearance:textfield;appearance:textfield;width:110px;background:var(--bg-input);color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.82rem;text-align:right;outline:none;">
-                        <button onclick="eliminarGastoFijo(${g.id})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;line-height:1;">✕</button>
-                    </div>
-                </div>`).join('');
-
-            // Resumen gastos fijos + sueldo restante
-            const pctFijos = ingreso > 0 ? Math.round((totalFijos / ingreso) * 100) : 0;
-            gfl.innerHTML += `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 10px;background:var(--bg-input);border-radius:10px;">
-                    <span style="font-size:0.75rem;color:var(--text-muted);">Total fijos</span>
-                    <div style="text-align:right;">
-                        <span style="font-size:0.85rem;font-weight:600;color:#f87171;">${fmt(totalFijos)}</span>
-                        <span style="font-size:0.7rem;color:var(--text-muted);margin-left:5px;">${pctFijos}% del sueldo</span>
-                    </div>
-                </div>`;
+        if (gfl) {
+            if (dbGastosFijos.length === 0) {
+                gfl.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:10px 0;">Sin gastos fijos. Agregá uno arriba.</p>';
+            } else {
+                const pctFijos = ingreso > 0 ? Math.round((totalFijos/ingreso)*100) : 0;
+                gfl.innerHTML = dbGastosFijos.map(g => {
+                    const esCuota = !!g.esCuota;
+                    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);">'
+                        + '<span style="font-size:0.8rem;color:' + (esCuota?'var(--text-muted)':'var(--text-main)') + ';flex:1;">' + (esCuota?'🔗 ':'') + g.nombre + '</span>'
+                        + '<div style="display:flex;align-items:center;gap:8px;">'
+                         +   '<input type="text" inputmode="numeric" value="' + (g.monto||0) + '" ' + (esCuota ? 'disabled' : '') + ' onblur="actualizarGastoFijo(' + g.id + ',this.value)" style="-moz-appearance:textfield;appearance:textfield;width:100px;background:var(--bg-input);color:' + (esCuota ? '#7d8590' : 'var(--text-main)') + ';border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.8rem;text-align:right;outline:none;">'
+                        +   (esCuota
+                            ? '<span style="font-size:0.6rem;color:var(--text-muted);">auto</span>'
+                            : '<button onclick="eliminarGastoFijo(' + JSON.stringify(g.id) + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;">✕</button>')
+                        + '</div>'
+                        + '</div>';
+                }).join('')
+                + '<div style="display:flex;justify-content:space-between;padding:8px 0 4px;">'
+                +   '<span style="font-size:0.7rem;color:var(--text-muted);">Total fijos · ' + pctFijos + '% del sueldo</span>'
+                +   '<span style="font-size:0.8rem;font-weight:700;color:#f87171;">' + fmt(totalFijos) + '</span>'
+                + '</div>';
+            }
         }
 
-        // ── Distribución interactiva ──
         renderDistribucion(disponible);
-
-        // ── Metas ──
-        const ml = document.getElementById('metas-lista');
-        const aporte20 = disponible > 0 ? Math.round(disponible * 0.20) : 0;
-        if (dbMetas.length === 0) {
-            ml.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">Sin metas definidas todavía.</p>';
-        } else {
-            ml.innerHTML = dbMetas.map(m => {
-                const ahorrado  = m.ahorrado || 0;
-                const pct       = Math.min(100, Math.round((ahorrado / m.monto) * 100));
-                const faltan    = Math.max(0, m.monto - ahorrado);
-                const mesesRest = aporte20 > 0 ? Math.ceil(faltan / aporte20) : '?';
-                const completa  = pct >= 100;
-                return `
-                <div style="margin-bottom:14px;padding:12px;background:var(--bg-input);border-radius:12px;border:0.5px solid ${completa ? '#34d399' : 'var(--border)'};position:relative;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-                        <span style="font-size:0.85rem;font-weight:600;color:var(--text-main);">${m.nombre}</span>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            ${completa ? '<span style="font-size:0.7rem;background:rgba(52,211,153,0.15);color:#34d399;padding:2px 8px;border-radius:20px;font-weight:600;">✓ Completada</span>' : ''}
-                            <button onclick="eliminarMeta(${m.id})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;">✕</button>
-                        </div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;">
-                        <span>Ahorrado: <strong style="color:var(--c-amber);">${fmt(ahorrado)}</strong></span>
-                        <span>Meta: <strong style="color:var(--text-main);">${fmt(m.monto)}</strong></span>
-                    </div>
-                    <div style="background:#0d1117;border-radius:6px;height:7px;overflow:hidden;margin-bottom:4px;">
-                        <div style="width:${pct}%;height:100%;background:${completa ? '#34d399' : 'var(--c-amber)'};border-radius:6px;transition:width 0.4s;"></div>
-                    </div>
-                    <div style="font-size:0.63rem;color:var(--text-muted);margin-bottom:${completa ? '0' : '10px'};">${pct}% · ${completa ? 'Meta alcanzada 🎉' : 'Faltan ' + fmt(faltan) + ' · ~' + mesesRest + ' mes' + (mesesRest !== 1 ? 'es' : '') + ' al 20%'}</div>
-                    ${!completa ? `
-                    <div style="display:flex;gap:6px;align-items:center;">
-                        <input type="text" inputmode="numeric" id="aportar-input-${m.id}" placeholder="Ingresar monto"
-                            style="flex:1;background:var(--bg-card);color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.78rem;outline:none;-moz-appearance:textfield;appearance:textfield;">
-                        <button onclick="aportarManualMeta(${m.id})" style="background:#1a2a1a;border:0.5px solid #2d5a3a;color:#34d399;border-radius:8px;padding:6px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;">+ Aportar</button>
-                        <button onclick="aportarAutoMeta(${m.id})" title="Aportar 20% del disponible (${fmt(aporte20)})" style="background:#1a2237;border:0.5px solid #30363d;color:#a5b4fc;border-radius:8px;padding:6px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;">20% auto</button>
-                    </div>` : ''}
-                </div>`;
-            }).join('');
-        }
+        if (currentFinTab === 'metas')  renderMetas();
+        if (currentFinTab === 'cuotas') renderCuotas();
+        renderHistorialAportes();
     }
 
-
-
+    // ── Stats ─────────────────────────────────────────────────────────────
     function resetHoras() {
         if (confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
             dbHoras = [];
@@ -1226,6 +1700,97 @@
         a.href = url; a.download = `Planilla_HHEE_${mesAbreviado}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    let currentFinTab = 'presupuesto';
+    function toggleFormFijo() {
+        const f = document.getElementById('form-fijo');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+    function toggleFormMeta() {
+        const f = document.getElementById('form-meta');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    }
+    function _realizarAporte(m, monto) {
+        const cats = getCatsActivas();
+        const opciones = cats.map((c, i) => (i+1) + '. ' + c.icon + ' ' + c.nombre).join('\n');
+        const sel = prompt('Aportar ' + fmt(monto) + ' a "' + m.nombre + '"\n\n¿De qué categoría descontás?\n\n' + opciones + '\n\nIngresá el número:');
+        if (!sel || !sel.trim()) return;
+        const idx = parseInt(sel) - 1;
+        if (idx < 0 || idx >= cats.length) return alert('Número inválido.');
+        const cat = cats[idx];
+
+        const ant = m.ahorrado || 0;
+        m.ahorrado = Math.min(m.monto, ant + monto);
+        const real = m.ahorrado - ant;
+
+        const hoy = new Date().toISOString().split('T')[0];
+        const mes = hoy.substring(0, 7);
+        dbHistorialAport.push({ id: Date.now(), metaId: m.id, metaNombre: m.nombre, monto: real, fecha: hoy, catId: cat.id, catDesc: cat.icon + ' ' + cat.nombre });
+        saveHistAport();
+
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push({ id: Date.now()+1, catId: cat.id, desc: 'Meta: ' + m.nombre, monto: real });
+        saveGastosVar(); saveMetas();
+
+        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        renderDistribucion(totalIngresosMes - tf);
+        renderMetas(); renderHistorialAportes();
+    }
+    function renderMetas() {
+        const el = document.getElementById('metas-lista');
+        if (!el) return;
+        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const disponible = totalIngresosMes - totalFijos;
+        if (dbMetas.length === 0) {
+            el.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);padding:12px 0;text-align:center;">Sin metas. Agregá una arriba.</p>';
+            return;
+        }
+        el.innerHTML = dbMetas.map(m => {
+            const pct = Math.min(100, m.monto > 0 ? Math.round((m.ahorrado||0)/m.monto*100) : 0);
+            const faltan = m.monto - (m.ahorrado||0);
+            const mesesRest = disponible > 0 ? Math.ceil(faltan / (disponible * 0.20)) : '?';
+            const completa = pct >= 100;
+            return '<div style="padding:14px 0;border-bottom:0.5px solid var(--border);">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+                +   '<span style="font-size:0.85rem;font-weight:600;color:' + (completa ? '#34d399' : 'var(--text-main)') + ';">'
+                +     (completa ? '✅ ' : '') + m.nombre
+                +   '</span>'
+                +   '<div style="display:flex;align-items:center;gap:8px;">'
+                +     '<span style="font-size:0.72rem;color:var(--c-amber);font-weight:700;">' + fmt(m.ahorrado||0) + ' / ' + fmt(m.monto) + '</span>'
+                +     '<button onclick="eliminarMeta(' + m.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem;">✕</button>'
+                +   '</div>'
+                + '</div>'
+                + '<div style="background:#21262d;border-radius:6px;height:5px;overflow:hidden;margin-bottom:4px;">'
+                +   '<div style="width:' + pct + '%;height:100%;background:' + (completa ? '#34d399' : '#fbbf24') + ';border-radius:6px;transition:width 0.5s;"></div>'
+                + '</div>'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:' + (completa ? '0' : '10px') + ';">'
+                +   '<span style="font-size:0.62rem;color:var(--text-muted);">' + pct + '% · ' + (completa ? 'Completada 🎉' : '~' + mesesRest + ' meses') + '</span>'
+                +   '<span style="font-size:0.62rem;color:var(--text-muted);">Faltan ' + fmt(faltan) + '</span>'
+                + '</div>'
+                + (!completa ? (
+                    '<div style="display:flex;gap:6px;">'
+                    + '<input type="text" inputmode="numeric" id="aportar-input-' + m.id + '" class="input" placeholder="$ monto" style="flex:1;padding:7px 10px;font-size:0.78rem;">'
+                    + '<button onclick="aportarManualMeta(' + m.id + ')" style="padding:7px 12px;background:#1a2a1a;border:0.5px solid #2d5a3a;border-radius:8px;color:#34d399;font-size:0.75rem;font-weight:600;cursor:pointer;">+ Aportar</button>'
+                    + '<button onclick="aportarAutoMeta(' + m.id + ')" title="Aportar 20% del disponible" style="padding:7px 10px;background:#1a1f35;border:0.5px solid #30363d;border-radius:8px;color:#a5b4fc;font-size:0.72rem;cursor:pointer;">20%</button>'
+                    + '</div>'
+                ) : '')
+                + '</div>';
+        }).join('');
+    }
+
+    // ── Historial aportes ─────────────────────────────────────────────────
+    function agregarGastoVar(catId, disponible) {
+        const desc  = prompt('Descripción del gasto:');
+        if (!desc || !desc.trim()) return;
+        const montoStr = prompt('Monto $:');
+        const monto = parseFloat(montoStr);
+        if (!monto || isNaN(monto) || monto <= 0) return;
+        const mes = new Date().toISOString().split('T')[0].substring(0,7);
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push({ id: Date.now(), catId, desc: desc.trim(), monto });
+        saveGastosVar();
+        renderDistribucion(disponible);
     }
 </script>
 </body>
