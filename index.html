@@ -129,7 +129,7 @@
             <div style="position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:#1f6feb12;border-radius:50%;pointer-events:none;"></div>
             <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;background:#34d39910;border-radius:50%;pointer-events:none;"></div>
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;position:relative;">
-                <span style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar · período 15→16</span>
+                <span id="periodo-label" style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar</span>
                 <select id="select-mes" class="select-modern" onchange="renderTodo()" style="font-size:0.72rem;padding:4px 10px;"></select>
             </div>
             <div id="view-total-neto" style="font-size:2.1rem;font-weight:700;color:var(--text-main);letter-spacing:-1.5px;line-height:1.1;margin-bottom:3px;">$0</div>
@@ -310,6 +310,32 @@
                             ↺
                         </button>
                     </div>
+                </div>
+                <div id="dist-resumen" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+                    <div style="background:rgba(52,211,153,0.07);border:0.5px solid rgba(52,211,153,0.18);border-radius:10px;padding:8px 10px;">
+                        <div style="font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;margin-bottom:3px;">Disponible</div>
+                        <div id="dist-disponible" style="font-size:1.04rem;font-weight:800;color:#34d399;letter-spacing:-0.3px;line-height:1;">$0</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 9px;">
+                        <div style="font-size:0.54rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;margin-bottom:3px;">Asignado</div>
+                        <div id="dist-asignado" style="font-size:0.86rem;font-weight:800;color:var(--text-main);line-height:1.1;">$0</div>
+                    </div>
+                    <div id="dist-estado-card" style="background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 9px;transition:0.2s;">
+                        <div id="dist-estado-label" style="font-size:0.54rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;margin-bottom:3px;">Sin asignar</div>
+                        <div id="dist-sin-asignar-top" style="font-size:0.86rem;font-weight:800;color:#f87171;line-height:1.1;">$0</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:7px;">
+                    <select id="dist-prioridad" style="flex:1;min-width:0;background:#0d1117;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:7px 9px;font-size:0.76rem;outline:none;">
+                        <option value="equilibrado">Equilibrado</option>
+                        <option value="ahorro">Ahorrar más</option>
+                        <option value="ocio">Más ocio</option>
+                        <option value="inversion">Invertir más</option>
+                        <option value="ajustado">Mes ajustado</option>
+                    </select>
+                    <button onclick="aplicarAutoDistribucion()" style="background:rgba(56,139,253,0.1);border:0.5px solid rgba(56,139,253,0.25);border-radius:8px;padding:7px 10px;color:#79c0ff;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        Auto
+                    </button>
                 </div>
                 <!-- Sliders -->
                 <div id="dist-sliders" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -533,20 +559,62 @@
         return `${d}/${m}`;
     }
 
+    function parseFechaLocal(fechaStr) {
+        const [y, m, d] = fechaStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
+
+    function monthKeyFromDate(d) {
+        const periodo = new Date(d.getFullYear(), d.getMonth() - (d.getDate() < 15 ? 1 : 0), 1);
+        return periodo.getFullYear() + '-' + String(periodo.getMonth() + 1).padStart(2, '0');
+    }
+
+    function addMonthsToKey(key, delta) {
+        const [anio, mes] = key.split('-').map(Number);
+        const d = new Date(anio, mes - 1 + delta, 1);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    function getPeriodoBounds(key) {
+        const [anio, mes] = key.split('-').map(Number);
+        const start = new Date(anio, mes - 1, 15);
+        const end = new Date(anio, mes, 15);
+        return { start, end };
+    }
+
+    function fechaEnPeriodo(fechaStr, key) {
+        if (!fechaStr || !key) return false;
+        const f = parseFechaLocal(fechaStr);
+        const { start, end } = getPeriodoBounds(key);
+        return f >= start && f < end;
+    }
+
+    function formatPeriodoLabel(key) {
+        const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        const { start, end } = getPeriodoBounds(key);
+        return '15 ' + meses[start.getMonth()] + ' - 15 ' + meses[end.getMonth()];
+    }
+
+    function formatPeriodoCorto(key) {
+        const { start, end } = getPeriodoBounds(key);
+        return start.getDate() + '/' + (start.getMonth() + 1) + '-' + end.getDate() + '/' + (end.getMonth() + 1);
+    }
+
     function setupMonthSelector() {
         const sel = document.getElementById('select-mes');
         const mesesNombres = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
         const ahora = new Date();
-        const mesActualStr = ahora.getFullYear() + '-' + String(ahora.getMonth()+1).padStart(2,'0');
+        const mesActualStr = monthKeyFromDate(ahora);
+        const mesAnteriorStr = addMonthsToKey(mesActualStr, -1);
 
         // Recopilar todos los meses con datos
         const mesesConDatos = dbHoras
             .filter(i => i && i.fecha)
-            .map(i => i.fecha.substring(0, 7));
+            .map(i => monthKeyFromDate(parseFechaLocal(i.fecha)));
 
         // También guardar meses vistos antes para no perderlos
         const mesesGuardados = JSON.parse(localStorage.getItem('meses_vistos') || '[]');
-        const todosMeses = [...new Set([...mesesConDatos, ...mesesGuardados, mesActualStr])].sort().reverse();
+        const todosMeses = [...new Set([...mesesConDatos, ...mesesGuardados, mesActualStr, mesAnteriorStr])].sort().reverse();
         
         // Persistir meses conocidos
         localStorage.setItem('meses_vistos', JSON.stringify(todosMeses));
@@ -555,7 +623,7 @@
         sel.innerHTML = '';
         todosMeses.forEach(m => {
             const [anio, mesNum] = m.split('-');
-            sel.add(new Option(mesesNombres[parseInt(mesNum)-1] + ' ' + anio, m));
+            sel.add(new Option(mesesNombres[parseInt(mesNum)-1] + ' ' + anio.slice(2) + ' · ' + formatPeriodoCorto(m), m));
         });
         // Mantener selección previa si existe, si no usar mes actual
         sel.value = (valorPrevio && todosMeses.includes(valorPrevio)) ? valorPrevio : mesActualStr;
@@ -636,6 +704,7 @@
     let dbMetas          = JSON.parse(localStorage.getItem('db_metas'))             || [];
     const saveGastosFijos  = () => localStorage.setItem('db_gastos_fijos',     JSON.stringify(dbGastosFijos));
     const saveMetas        = () => localStorage.setItem('db_metas',            JSON.stringify(dbMetas));
+    const totalGastosFijosReales = () => dbGastosFijos.filter(g => !g.esCuota).reduce((s,g) => s+(g.monto||0), 0);
     function agregarGastoFijo() {
         const n = document.getElementById('gf-nombre').value.trim();
         const m = parseFloat(document.getElementById('gf-monto').value);
@@ -672,7 +741,7 @@
         dbMetas = dbMetas.filter(x => x.id !== id); saveMetas(); renderMetas();
     }
     function aportarAutoMeta(id) {
-        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const totalFijos = totalGastosFijosReales();
         const disponible = totalIngresosMes - totalFijos;
         const aporte = Math.round(disponible * 0.20);
         const m = dbMetas.find(x => x.id === id);
@@ -693,6 +762,13 @@
         { id: 'inversion',   nombre: 'Inversión',   icon: '📈', color: '#a5b4fc', pctSug: 25 },
         { id: 'ocio',        nombre: 'Ocio',        icon: '🎯', color: '#fbbf24', pctSug: 15 },
     ];
+    const DIST_PRESETS = {
+        equilibrado: { necesidades: 40, ahorro: 20, inversion: 25, ocio: 15 },
+        ahorro:      { necesidades: 35, ahorro: 35, inversion: 20, ocio: 10 },
+        ocio:        { necesidades: 35, ahorro: 15, inversion: 15, ocio: 35 },
+        inversion:   { necesidades: 35, ahorro: 20, inversion: 35, ocio: 10 },
+        ajustado:    { necesidades: 55, ahorro: 25, inversion: 15, ocio: 5  },
+    };
     let distPcts         = JSON.parse(localStorage.getItem('dist_pcts'))        || null;
     let distMontos       = JSON.parse(localStorage.getItem('dist_montos'))      || {};
     let distModo         = JSON.parse(localStorage.getItem('dist_modo'))        || {};
@@ -716,7 +792,7 @@
         renderDistribucion(disponible);
     }
     function setDistMonto(catId, valor, disponible) {
-        const m = parseInt(valor) || 0;
+        const m = Math.min(Math.max(parseInt(valor) || 0, 0), getMaxDistValue(catId, disponible));
         distMontos[catId] = m;
         if (disponible > 0) distPcts[catId] = Math.round(m/disponible*100);
         saveDistMontos(); saveDistPcts();
@@ -733,14 +809,27 @@
         if (metaId) distVinculos[catId] = parseInt(metaId);
         else delete distVinculos[catId];
         saveDistVinc();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
     function aportarDistAMeta(catId, monto) {
         const metaId = distVinculos[catId];
         const m = metaId ? dbMetas.find(x => x.id === metaId) : null;
         if (!m) return alert('Primero vinculá esta categoría a una meta.');
-        _realizarAporte(m, monto);
+        const cat = getCatsActivas().find(c => c.id === catId);
+        const { disponible } = calcDisponible();
+        const asignado = distModo[catId] === 'monto'
+            ? (parseFloat(distMontos[catId]) || 0)
+            : (disponible > 0 ? Math.round(disponible * (distPcts[catId] || 0) / 100) : 0);
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const gastado = (dbGastosVar[mes] || [])
+            .filter(g => g.catId === catId)
+            .reduce((s, g) => s + (g.monto || 0), 0);
+        const libreCat = Math.max(0, asignado - gastado);
+        const faltanteMeta = Math.max(0, (m.monto || 0) - (m.ahorrado || 0));
+        const aporte = Math.min(monto, libreCat, faltanteMeta);
+        if (aporte <= 0) return renderFinanzas();
+        _realizarAporte(m, aporte, cat);
     }
     function revertirAporte(id) {
         const id_num = typeof id === 'string' ? parseInt(id) : id;
@@ -752,7 +841,7 @@
             const m = dbMetas.find(x => x.id === ap.metaId);
             if (m) { m.ahorrado = Math.max(0, (m.ahorrado||0) - ap.monto); saveMetas(); }
             // Devolver el gasto a la categoría (eliminar de dbGastosVar)
-            const mes = ap.fecha ? ap.fecha.substring(0, 7) : new Date().toISOString().substring(0, 7);
+            const mes = ap.fecha ? monthKeyFromDate(parseFechaLocal(ap.fecha)) : (document.getElementById('select-mes')?.value || monthKeyFromDate(new Date()));
             if (dbGastosVar[mes]) {
                 // Eliminar el primer gasto de esa categoría con ese monto
                 const idx = dbGastosVar[mes].findIndex(g => g.catId === ap.catId && g.monto === ap.monto);
@@ -788,11 +877,6 @@
             fechaInicio: new Date().toISOString().split('T')[0] };
         dbCuotas.push(nueva);
         saveCuotas();
-        if (pagadas < total) {
-            const restantes = total - pagadas;
-            dbGastosFijos.push({ id: 'cuota_'+nueva.id, nombre: nombre+' ('+restantes+' cuotas)', monto, esCuota: true, cuotaRef: nueva.id });
-            saveGastosFijos();
-        }
         document.getElementById('cuota-nombre').value  = '';
         document.getElementById('cuota-monto').value   = '';
         document.getElementById('cuota-total').value   = '';
@@ -804,7 +888,7 @@
         if (!c || c.pagadas >= c.total) return;
         mostrarModalCat('Cuota ' + (c.pagadas+1) + '/' + c.total + ' · ' + c.nombre + ' · ' + fmt(c.monto), function(cat) {
         const hoy = new Date().toISOString().split('T')[0];
-        const mes = hoy.substring(0, 7);
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(parseFechaLocal(hoy));
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         dbGastosVar[mes].push({ id: Date.now(), catId: cat.id, desc: 'Cuota '+(c.pagadas+1)+'/'+c.total+' '+c.nombre, monto: c.monto });
         saveGastosVar();
@@ -812,14 +896,9 @@
         if (!c.historial) c.historial = [];
         c.historial.push({ num: c.pagadas, fecha: hoy, monto: c.monto, catDesc: cat.icon+' '+cat.nombre, catId: cat.id });
         saveCuotas();
-        const fijoIdx = dbGastosFijos.findIndex(g => g.cuotaRef === c.id);
-        if (fijoIdx !== -1) {
-            const rest = c.total - c.pagadas;
-            if (rest <= 0) dbGastosFijos.splice(fijoIdx, 1);
-            else dbGastosFijos[fijoIdx].nombre = c.nombre + ' (' + rest + ' cuota' + (rest===1?'':'s') + ')';
-            saveGastosFijos();
-        }
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        dbGastosFijos = dbGastosFijos.filter(g => g.cuotaRef !== c.id);
+        saveGastosFijos();
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
             renderFinanzas(); renderCuotas();
         });
@@ -827,15 +906,26 @@
     function deshacerCuota(id) {
         const c = dbCuotas.find(x => x.id === id);
         if (!c || c.pagadas <= 0) return;
+        const pago = c.historial && c.historial.length > 0 ? c.historial[c.historial.length - 1] : null;
         c.pagadas--;
         if (c.historial && c.historial.length > 0) c.historial.pop();
         saveCuotas();
-        const fijoIdx = dbGastosFijos.findIndex(g => g.cuotaRef === c.id);
-        if (fijoIdx !== -1) {
-            const rest = c.total - c.pagadas;
-            dbGastosFijos[fijoIdx].nombre = c.nombre + ' (' + rest + ' cuota' + (rest===1?'':'s') + ')';
-            saveGastosFijos();
+        if (pago) {
+            const mes = pago.fecha ? monthKeyFromDate(parseFechaLocal(pago.fecha)) : (document.getElementById('select-mes')?.value || monthKeyFromDate(new Date()));
+            if (dbGastosVar[mes]) {
+                const idx = dbGastosVar[mes].findIndex(g =>
+                    g.catId === pago.catId &&
+                    g.monto === pago.monto &&
+                    g.desc && g.desc.includes(c.nombre)
+                );
+                if (idx !== -1) {
+                    dbGastosVar[mes].splice(idx, 1);
+                    saveGastosVar();
+                }
+            }
         }
+        dbGastosFijos = dbGastosFijos.filter(g => g.cuotaRef !== c.id);
+        saveGastosFijos();
         renderFinanzas(); renderCuotas();
     }
     function eliminarCuotaItem(id) {
@@ -850,7 +940,7 @@
             // Revertir todos los pagos registrados en dbGastosVar
             if (c.historial && c.historial.length > 0) {
                 c.historial.forEach(h => {
-                    const mes = h.fecha ? h.fecha.substring(0, 7) : null;
+                    const mes = h.fecha ? monthKeyFromDate(parseFechaLocal(h.fecha)) : null;
                     if (!mes || !dbGastosVar[mes]) return;
                     // Eliminar el gasto correspondiente a esta cuota en ese mes
                     const idx = dbGastosVar[mes].findIndex(g =>
@@ -878,9 +968,9 @@
         if (res) {
             const totalMes = activas.reduce((s,c) => s+c.monto, 0);
             res.innerHTML = activas.length > 0
-                ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(248,113,113,0.07);border:0.5px solid rgba(248,113,113,0.2);border-radius:12px;padding:10px 14px;">'
-                  + '<div><div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Compromiso mensual</div>'
-                  + '<div style="font-size:0.95rem;font-weight:700;color:#f87171;">' + fmt(totalMes) + '</div></div>'
+                ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(56,139,253,0.07);border:0.5px solid rgba(56,139,253,0.2);border-radius:12px;padding:10px 14px;">'
+                  + '<div><div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Proximo pago mensual</div>'
+                  + '<div style="font-size:0.95rem;font-weight:700;color:#79c0ff;">' + fmt(totalMes) + '</div></div>'
                   + '<div style="text-align:right;"><div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;">Cuotas activas</div>'
                   + '<div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">' + activas.length + '</div></div>'
                   + '</div>' : '';
@@ -996,7 +1086,7 @@
         document.getElementById('nueva-cat-icon').value   = '';
         document.getElementById('nueva-cat-nombre').value = '';
         document.getElementById('nueva-cat-form').style.display = 'none';
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
     function renombrarCat(id) {
@@ -1009,7 +1099,7 @@
         const nuevoIcon = prompt('Nuevo ícono (emoji):', cat.icon);
         if (nuevoIcon !== null) cat.icon = nuevoIcon.trim() || cat.icon;
         saveCatsCustom();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
     function eliminarCat(id) {
@@ -1020,7 +1110,7 @@
         DIST_CATS_CUSTOM = cats.filter(c => c.id !== id);
         delete distPcts[id]; delete distMontos[id]; delete distModo[id]; delete distVinculos[id];
         saveCatsCustom(); saveDistPcts(); saveDistMontos(); saveDistModo(); saveDistVinc();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
 
@@ -1037,11 +1127,50 @@
         renderDistribucion(disponible);
     }
 
+    function calcDistTotales(disponible, exceptCatId = null) {
+        const ACTIVE = getCatsActivas();
+        const totalAsignado = ACTIVE.reduce((s, c) => {
+            if (c.id === exceptCatId) return s;
+            if (distModo[c.id] === 'monto') return s + (parseFloat(distMontos[c.id]) || 0);
+            return s + (disponible > 0 ? Math.round(disponible * (distPcts[c.id] || 0) / 100) : 0);
+        }, 0);
+        const totalAjustado = disponible > 0 && Math.abs(totalAsignado - disponible) <= 1 ? disponible : totalAsignado;
+        const excedido = disponible > 0 ? Math.max(0, Math.round(totalAjustado - disponible)) : 0;
+        const sobrante = disponible > 0 ? Math.max(0, Math.round(disponible - totalAjustado)) : 0;
+        return { totalAsignado: totalAjustado, sobrante, excedido };
+    }
+
+    function getMaxDistValue(catId, disponible) {
+        const usadosPorOtros = calcDistTotales(disponible, catId).totalAsignado;
+        return Math.max(0, Math.round(disponible - usadosPorOtros));
+    }
+
+    function aplicarAutoDistribucion() {
+        const sel = document.getElementById('dist-prioridad');
+        const preset = DIST_PRESETS[sel ? sel.value : 'equilibrado'] || DIST_PRESETS.equilibrado;
+        const active = getCatsActivas();
+        const totalPreset = active.reduce((s, c) => s + (preset[c.id] || 0), 0) || 1;
+        let acumulado = 0;
+
+        active.forEach((c, idx) => {
+            const esUltima = idx === active.length - 1;
+            const pct = esUltima ? Math.max(0, 100 - acumulado) : Math.round((preset[c.id] || 0) * 100 / totalPreset);
+            distPcts[c.id] = pct;
+            distModo[c.id] = 'pct';
+            delete distMontos[c.id];
+            acumulado += pct;
+        });
+
+        saveDistPcts(); saveDistModo(); saveDistMontos();
+        const { disponible } = calcDisponible();
+        renderDistribucion(disponible);
+    }
+
     function resetDistribucion() {
         DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
         DIST_CATS_CUSTOM.forEach(c => { distPcts[c.id] = c.pctSug || 0; });
         saveDistPcts();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
     function renderDistribucion(disponible) {
@@ -1053,7 +1182,7 @@
 
         const ACTIVE = getCatsActivas();
         const totalPct = ACTIVE.reduce((s, c) => s + (distPcts[c.id] || 0), 0);
-        const sobrante = disponible > 0 ? Math.round(disponible * Math.max(0, 100 - totalPct) / 100) : 0;
+        const { totalAsignado, sobrante, excedido } = calcDistTotales(disponible);
 
         // Build sliders HTML using data-catid to avoid quote escaping
         sliders.innerHTML = ACTIVE.map(c => {
@@ -1063,13 +1192,16 @@
                 ? (distMontos[c.id] || 0)
                 : (disponible > 0 ? Math.round(disponible * pct / 100) : 0);
             const gastado  = (() => {
-                const mes = new Date().toISOString().substring(0,7);
+                const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
                 const gv  = (dbGastosVar[mes] || []).filter(g => g.catId === c.id);
                 return gv.reduce((s, g) => s + (g.monto || 0), 0);
             })();
             const pctGast  = monto > 0 ? Math.min(100, Math.round((gastado / monto) * 100)) : 0;
             const superado = gastado > monto && monto > 0;
             const metaVinc = distVinculos[c.id] ? dbMetas.find(m => m.id === distVinculos[c.id]) : null;
+            const libreCat = Math.max(0, monto - gastado);
+            const faltanteMeta = metaVinc ? Math.max(0, (metaVinc.monto || 0) - (metaVinc.ahorrado || 0)) : 0;
+            const aportePosible = metaVinc ? Math.min(libreCat, faltanteMeta) : 0;
             const metasOpt = dbMetas.filter(m => (m.ahorrado||0) < m.monto)
                 .map(m => '<option value="' + m.id + '"' + (distVinculos[c.id]===m.id?' selected':'') + '>' + m.nombre + '</option>').join('');
 
@@ -1101,7 +1233,7 @@
                     ? '<div style="margin-bottom:8px;">'
                     +   '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
                     +     '<span style="font-size:0.65rem;color:var(--text-muted);">Gastado: ' + fmt(gastado) + '</span>'
-                    +     (superado ? '<span style="font-size:0.65rem;color:#f87171;font-weight:700;">⚠ Superado</span>' : '<span style="font-size:0.65rem;color:var(--text-muted);">' + fmt(monto - gastado) + ' libre</span>')
+                    +     (superado ? '<span style="font-size:0.65rem;color:#f87171;font-weight:700;">⚠ Superado</span>' : '<span style="font-size:0.65rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>')
                     +   '</div>'
                     +   '<div style="background:#21262d;border-radius:6px;height:5px;">'
                     +     '<div style="width:' + pctGast + '%;height:5px;border-radius:6px;background:' + (superado?'#f87171':c.color) + ';transition:width 0.4s;"></div>'
@@ -1113,12 +1245,12 @@
                 + (metasOpt ? '<select class="dist-meta-sel" data-id="' + c.id + '" style="width:100%;background:#0d1117;color:var(--text-muted);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.72rem;outline:none;margin-bottom:' + (metaVinc?'4':'0') + 'px;">'
                 +   '<option value="">↳ Destinar a meta...</option>' + metasOpt
                 + '</select>' : '')
-                + (metaVinc && monto > 0
-                    ? '<button class="dist-aportar" data-id="' + c.id + '" data-monto="' + monto + '" style="width:100%;padding:6px;background:#1a2a1a;border:0.5px solid #2d5a3a;border-radius:8px;color:#34d399;font-size:0.75rem;font-weight:600;cursor:pointer;">+ Aportar ' + fmt(monto) + ' a ' + metaVinc.nombre + '</button>'
+                + (metaVinc && aportePosible > 0
+                    ? '<button class="dist-aportar" data-id="' + c.id + '" data-monto="' + aportePosible + '" style="width:100%;padding:6px;background:#1a2a1a;border:0.5px solid #2d5a3a;border-radius:8px;color:#34d399;font-size:0.75rem;font-weight:600;cursor:pointer;">+ Aportar ' + fmt(aportePosible) + ' a ' + metaVinc.nombre + '</button>'
                     : '')
                 // Lista de gastos registrados en esta categoría este mes
                 + (() => {
-                    const mes2 = new Date().toISOString().substring(0,7);
+                    const mes2 = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
                     const gvCat = (dbGastosVar[mes2]||[]).filter(g => g.catId === c.id);
                     if (gvCat.length === 0) return '';
                     return '<div style="margin-top:8px;border-top:0.5px solid var(--border);padding-top:8px;">'
@@ -1152,27 +1284,36 @@
         sl.addEventListener('input', function(e) {
             const el = e.target;
             if (el.classList.contains('dist-range')) {
-                distPcts[el.dataset.id] = parseInt(el.value);
+                const disp2 = parseInt(el.dataset.disp) || 0;
+                const maxValue = getMaxDistValue(el.dataset.id, disp2);
+                const maxPct = disp2 > 0 ? Math.floor(maxValue / disp2 * 100) : 0;
+                const nextPct = Math.min(parseInt(el.value) || 0, maxPct);
+                el.value = nextPct;
+                distPcts[el.dataset.id] = nextPct;
                 saveDistPcts();
                 // Update just the % label and bar without full re-render (smooth)
                 const pctLabel = el.parentNode.querySelector('.pct-label');
-                if (pctLabel) pctLabel.innerText = el.value + '%';
-                const tf2 = dbGastosFijos.reduce((s,g)=>s+(g.monto||0),0);
-                const disp2 = totalIngresosMes - tf2;
-                const monto2 = Math.round(disp2 * parseInt(el.value) / 100);
+                if (pctLabel) pctLabel.innerText = nextPct + '%';
+                const monto2 = Math.round(disp2 * nextPct / 100);
                 const montoEl = el.closest('.dist-cat-card').querySelector('.cat-monto');
                 if (montoEl) montoEl.innerText = fmt(monto2);
+                updateDistResumen(disp2);
             }
             if (el.classList.contains('dist-monto-input')) {
-                distMontos[el.dataset.id] = parseFloat(el.value) || 0;
+                const dispInput = parseInt(el.dataset.disp) || 0;
+                const maxValue = getMaxDistValue(el.dataset.id, dispInput);
+                const nextMonto = Math.min(Math.max(parseFloat(el.value) || 0, 0), maxValue);
+                el.value = nextMonto;
+                distMontos[el.dataset.id] = nextMonto;
                 saveDistMontos();
+                updateDistResumen(dispInput);
             }
         });
 
         sl.addEventListener('change', function(e) {
             const el = e.target;
             if (el.classList.contains('dist-range') || el.classList.contains('dist-monto-input')) {
-                const tf2 = dbGastosFijos.reduce((s,g)=>s+(g.monto||0),0);
+                const tf2 = totalGastosFijosReales();
                 renderDistribucion(totalIngresosMes - tf2);
             }
             if (el.classList.contains('dist-meta-sel')) {
@@ -1204,13 +1345,56 @@
                 : '');
         }
 
+        const distDispEl = document.getElementById('dist-disponible');
+        const distAsignadoEl = document.getElementById('dist-asignado');
+        const distSinAsignarEl = document.getElementById('dist-sin-asignar-top');
+        const distEstadoLabel = document.getElementById('dist-estado-label');
+        const distEstadoCard = document.getElementById('dist-estado-card');
+        if (distDispEl) distDispEl.innerText = fmt(disponible);
+        if (distAsignadoEl) distAsignadoEl.innerText = fmt(totalAsignado);
+        if (distSinAsignarEl) {
+            distSinAsignarEl.innerText = excedido > 0 ? '-' + fmt(excedido) : fmt(sobrante);
+            distSinAsignarEl.style.color = excedido > 0 ? '#f87171' : (sobrante > 0 ? '#f87171' : '#34d399');
+        }
+        if (distEstadoLabel) distEstadoLabel.innerText = excedido > 0 ? 'Excedido' : 'Sin asignar';
+        if (distEstadoCard) {
+            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(248,113,113,0.55)' : 'var(--border)';
+            distEstadoCard.style.background = excedido > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.025)';
+        }
         if (restEl)  restEl.innerText  = fmt(sobrante);
+        if (restRow) restRow.style.display = sobrante > 0 ? 'flex' : 'none';
+    }
+
+    function updateDistResumen(disponible) {
+        const { totalAsignado, sobrante, excedido } = calcDistTotales(disponible);
+        const distDispEl = document.getElementById('dist-disponible');
+        const distAsignadoEl = document.getElementById('dist-asignado');
+        const distSinAsignarEl = document.getElementById('dist-sin-asignar-top');
+        const distEstadoLabel = document.getElementById('dist-estado-label');
+        const distEstadoCard = document.getElementById('dist-estado-card');
+        const restEl = document.getElementById('dist-restante');
+        const restRow = document.getElementById('dist-restante-row');
+        if (distDispEl) distDispEl.innerText = fmt(disponible);
+        if (distAsignadoEl) distAsignadoEl.innerText = fmt(totalAsignado);
+        if (distSinAsignarEl) {
+            distSinAsignarEl.innerText = excedido > 0 ? '-' + fmt(excedido) : fmt(sobrante);
+            distSinAsignarEl.style.color = excedido > 0 ? '#f87171' : (sobrante > 0 ? '#f87171' : '#34d399');
+        }
+        if (distEstadoLabel) distEstadoLabel.innerText = excedido > 0 ? 'Excedido' : 'Sin asignar';
+        if (distEstadoCard) {
+            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(248,113,113,0.55)' : 'var(--border)';
+            distEstadoCard.style.background = excedido > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.025)';
+        }
+        if (restEl) restEl.innerText = fmt(sobrante);
         if (restRow) restRow.style.display = sobrante > 0 ? 'flex' : 'none';
     }
 
 
     function ajustarPct(catId, delta) {
-        distPcts[catId] = Math.max(0, Math.min(100, (distPcts[catId]||0) + delta));
+        const { disponible } = calcDisponible();
+        const maxValue = getMaxDistValue(catId, disponible);
+        const maxPct = disponible > 0 ? Math.floor(maxValue / disponible * 100) : 0;
+        distPcts[catId] = Math.max(0, Math.min(maxPct, (distPcts[catId]||0) + delta));
         saveDistPcts();
         const { disponible: dAjust } = calcDisponible();
         renderDistribucion(dAjust);
@@ -1244,8 +1428,8 @@
 
     function calcDisponible() {
         const ingreso    = totalIngresosMes;
-        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        const mes        = new Date().toISOString().substring(0, 7);
+        const totalFijos = totalGastosFijosReales();
+        const mes        = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         const gastadoCats= (dbGastosVar[mes] || []).reduce((s,g) => s+(g.monto||0), 0);
         return { ingreso, totalFijos, gastadoCats, disponible: Math.max(0, ingreso - totalFijos - gastadoCats) };
     }
@@ -1263,11 +1447,12 @@
         // Gastos fijos lista
         const gfl = document.getElementById('gastos-fijos-lista');
         if (gfl) {
-            if (dbGastosFijos.length === 0) {
+            const gastosFijosVisibles = dbGastosFijos.filter(g => !g.esCuota);
+            if (gastosFijosVisibles.length === 0) {
                 gfl.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:10px 0;">Sin gastos fijos. Agregá uno arriba.</p>';
             } else {
                 const pctFijos = ingreso > 0 ? Math.round((totalFijos/ingreso)*100) : 0;
-                gfl.innerHTML = dbGastosFijos.map(g => {
+                gfl.innerHTML = gastosFijosVisibles.map(g => {
                     const esCuota = !!g.esCuota;
                     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);">'
                         + '<span style="font-size:0.8rem;color:' + (esCuota?'var(--text-muted)':'var(--text-main)') + ';flex:1;">' + (esCuota?'🔗 ':'') + g.nombre + '</span>'
@@ -1306,11 +1491,13 @@
     function renderTodo() {
         const mesSel    = document.getElementById('select-mes').value;
         const listHoras = document.getElementById('list-data');
+        const periodoLabel = document.getElementById('periodo-label');
+        if (periodoLabel) periodoLabel.innerText = 'Total a cobrar';
         listHoras.innerHTML = "";
         let tNeto = 0, tBruto = 0, tHoras = 0, t50 = 0, t100 = 0;
 
         dbHoras
-            .filter(i => i.fecha && i.fecha.startsWith(mesSel))
+            .filter(i => fechaEnPeriodo(i.fecha, mesSel))
             .sort((a, b) => b.fecha.localeCompare(a.fecha))
             .forEach(i => {
                 tNeto  += i.neto  || 0;
@@ -1352,7 +1539,7 @@
         document.getElementById('view-total-neto').innerText  = fmt(totalIngresosMes);
         document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
 
-        if (listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este mes.</p>`;
+        if (listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este período.</p>`;
 
         // Actualizar panel finanzas
         renderFinanzas();
@@ -1419,7 +1606,7 @@
     // ── Stats ─────────────────────────────────────────────────────────────
     function setupStatsAnio() {
         const sel = document.getElementById('stats-anio');
-        const anios = [...new Set(dbHoras.filter(i=>i.fecha).map(i=>i.fecha.substring(0,4)))];
+        const anios = [...new Set(dbHoras.filter(i=>i.fecha).map(i=>monthKeyFromDate(parseFechaLocal(i.fecha)).substring(0,4)))];
         const anioActual = new Date().getFullYear().toString();
         if (!anios.includes(anioActual)) anios.push(anioActual);
         anios.sort().reverse();
@@ -1433,7 +1620,7 @@
         const mesesNombre = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
         return mesesNombre.map((nombre, idx) => {
             const key = `${anio}-${String(idx+1).padStart(2,'0')}`;
-            const registros = dbHoras.filter(i => i.fecha && i.fecha.startsWith(key) && !i.coordinar);
+            const registros = dbHoras.filter(i => fechaEnPeriodo(i.fecha, key) && !i.coordinar);
             const h50   = registros.reduce((s,i) => s+(i.h50||0), 0);
             const h100  = registros.reduce((s,i) => s+(i.h100||0), 0);
             const neto  = registros.reduce((s,i) => s+(i.neto||0), 0);
@@ -1643,15 +1830,17 @@
     async function descargarExcel() {
         const sel = document.getElementById('select-mes');
         if (!sel.value) return;
-        const [, mesNumSel] = sel.value.split('-');
         const mesesAbr    = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
         const mesesNombre = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
-        const mesAbreviado      = mesesAbr[parseInt(mesNumSel,10)-1]    || "";
-        const mesNombreCompleto = mesesNombre[parseInt(mesNumSel,10)-1] || "";
+        const periodoCobro = getPeriodoBounds(sel.value).end;
+        const mesCobroIdx = periodoCobro.getMonth();
+        const anioCobro = periodoCobro.getFullYear();
+        const mesAbreviado      = mesesAbr[mesCobroIdx]    || "";
+        const mesNombreCompleto = mesesNombre[mesCobroIdx] || "";
         const datosMes = dbHoras
-            .filter(i => i.fecha && i.fecha.startsWith(sel.value))
+            .filter(i => fechaEnPeriodo(i.fecha, sel.value))
             .sort((a, b) => a.fecha.localeCompare(b.fecha));
-        if (datosMes.length === 0) return alert("No hay datos para exportar este mes.");
+        if (datosMes.length === 0) return alert("No hay datos para exportar este período.");
 
         const LEGAJO   = 13509;
         const NOMBRE   = "JOSE LAGO";
@@ -1812,7 +2001,7 @@
         const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const url    = URL.createObjectURL(blob);
         const a      = document.createElement('a');
-        a.href = url; a.download = `Planilla_HHEE_${mesAbreviado}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
+        a.href = url; a.download = `Planilla_HHEE_${mesAbreviado}_${anioCobro}_${NOMBRE.replace(/ /g,'_')}.xlsx`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
@@ -1866,13 +2055,14 @@
         if (cb) cb(ok);
     }
 
-    function _realizarAporte(m, monto) {
-        mostrarModalCat('Aportar ' + fmt(monto) + ' a "' + m.nombre + '"', function(cat) {
+    function _realizarAporte(m, monto, catDirecta) {
+        const hacerAporte = function(cat) {
             const ant = m.ahorrado || 0;
             m.ahorrado = Math.min(m.monto, ant + monto);
             const real = m.ahorrado - ant;
+            if (real <= 0) return;
             const hoy = new Date().toISOString().split('T')[0];
-            const mes = hoy.substring(0, 7);
+            const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(parseFechaLocal(hoy));
             dbHistorialAport.push({ id: Date.now(), metaId: m.id, metaNombre: m.nombre, monto: real, fecha: hoy, catId: cat.id, catDesc: cat.icon + ' ' + cat.nombre });
             saveHistAport();
             if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
@@ -1881,12 +2071,14 @@
             const { disponible: dAport } = calcDisponible();
             renderDistribucion(dAport);
             renderFinanzas();
-        });
+        };
+        if (catDirecta) hacerAporte(catDirecta);
+        else mostrarModalCat('Aportar ' + fmt(monto) + ' a "' + m.nombre + '"', hacerAporte);
     }
     function renderMetas() {
         const el = document.getElementById('metas-lista');
         if (!el) return;
-        const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
+        const totalFijos = totalGastosFijosReales();
         const disponible = totalIngresosMes - totalFijos;
         if (dbMetas.length === 0) {
             el.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted);padding:12px 0;text-align:center;">Sin metas. Agregá una arriba.</p>';
@@ -1932,7 +2124,7 @@
         const montoStr = prompt('Monto $:');
         const monto = parseFloat(montoStr);
         if (!monto || isNaN(monto) || monto <= 0) return;
-        const mes = new Date().toISOString().split('T')[0].substring(0,7);
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         dbGastosVar[mes].push({ id: Date.now(), catId, desc: desc.trim(), monto });
         saveGastosVar();
