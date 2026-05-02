@@ -231,21 +231,23 @@
     <main class="tab-content" id="tab-finanzas">
 
         <!-- ── Resumen top ── -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
-            <div style="display:grid;grid-template-columns:1fr 0.5px 1fr 0.5px 1fr;gap:0;align-items:center;">
-                <div style="text-align:center;padding:0 6px;">
-                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Neto del mes</div>
-                    <div id="fin-neto-top" style="font-size:1rem;font-weight:700;color:var(--text-main);">$0</div>
+        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
+            <!-- Disponible — protagonista -->
+            <div style="text-align:center;margin-bottom:16px;">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Disponible para distribuir</div>
+                <div id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</div>
+            </div>
+            <!-- Neto y Fijos debajo -->
+            <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
+                <div style="text-align:center;padding:0 10px;">
+                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
+                    <div id="fin-neto-top" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">$0</div>
                 </div>
-                <div style="background:var(--border);height:30px;"></div>
-                <div style="text-align:center;padding:0 6px;">
-                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Fijos</div>
-                    <div id="fin-fijos-top" style="font-size:1rem;font-weight:700;color:#f87171;">$0</div>
-                </div>
-                <div style="background:var(--border);height:30px;"></div>
-                <div style="text-align:center;padding:0 6px;">
-                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Disponible</div>
-                    <div id="fin-disponible" style="font-size:1rem;font-weight:700;color:var(--c-green);">$0</div>
+                <div style="background:var(--border);"></div>
+                <div style="text-align:center;padding:0 10px;">
+                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
+                    <div id="fin-fijos-top" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
                 </div>
             </div>
         </div>
@@ -361,7 +363,7 @@
                     <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
                         <span>🎯</span> Mis metas
                     </div>
-                    <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid #fbbf244d;border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
+                    <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid rgba(251,191,36,0.3);border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
                 </div>
                 <div id="metas-lista"></div>
                 <!-- Form meta inline -->
@@ -369,7 +371,7 @@
                     <div style="display:flex;gap:6px;">
                         <input type="text" id="meta-nombre" class="input" placeholder="Ej: Vacaciones" style="flex:1;padding:8px 10px;font-size:0.82rem;">
                         <input type="text" id="meta-monto" class="input" inputmode="numeric" placeholder="Meta $" style="width:100px;padding:8px 10px;font-size:0.82rem;text-align:right;">
-                        <button onclick="agregarMeta()" style="background:var(--c-amber);color:#ffffff;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;">✓</button>
+                        <button onclick="agregarMeta()" style="background:#22c55e;color:#0d1117;border:none;border-radius:9px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">+ Agregar</button>
                     </div>
                 </div>
             </div>
@@ -473,7 +475,7 @@
         <div id="modal-confirm-msg" style="font-size:0.88rem;color:#e6edf3;margin-bottom:16px;line-height:1.5;"></div>
         <div style="display:flex;gap:10px;">
             <button onclick="cerrarModalConfirm(false)" style="flex:1;padding:11px;background:transparent;border:0.5px solid #30363d;border-radius:10px;color:#7d8590;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
-            <button id="modal-confirm-ok" onclick="cerrarModalConfirm(true)" style="flex:1;padding:11px;background:#f87171;border:none;border-radius:10px;color:white;font-size:0.85rem;font-weight:700;cursor:pointer;">Confirmar</button>
+            <button id="modal-confirm-ok" onclick="cerrarModalConfirm(true)" style="flex:1;padding:11px;background:#22c55e;border:none;border-radius:10px;color:#0d1117;font-size:0.85rem;font-weight:700;cursor:pointer;">Confirmar</button>
         </div>
     </div>
 </div>
@@ -720,12 +722,12 @@
         saveDistMontos(); saveDistPcts();
         renderDistribucion(disponible);
     }
-    function eliminarGastoVar(mes, id) {
+    function eliminarGastoVar(mes, id_raw) {
+        const gid = typeof id_raw === 'string' ? parseInt(id_raw) : id_raw;
         if (!dbGastosVar[mes]) return;
-        dbGastosVar[mes] = dbGastosVar[mes].filter(g => g.id !== id);
+        dbGastosVar[mes] = dbGastosVar[mes].filter(g => g.id !== gid);
         saveGastosVar();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        renderDistribucion(totalIngresosMes - tf);
+        renderFinanzas();
     }
     function vincularDistMeta(catId, metaId) {
         if (metaId) distVinculos[catId] = parseInt(metaId);
@@ -741,15 +743,26 @@
         _realizarAporte(m, monto);
     }
     function revertirAporte(id) {
-        const ap = dbHistorialAport.find(x => x.id === id);
+        const id_num = typeof id === 'string' ? parseInt(id) : id;
+        const ap = dbHistorialAport.find(x => x.id === id_num);
         if (!ap) return;
-        if (!confirm('¿Revertir aporte de ' + fmt(ap.monto) + ' a "' + ap.metaNombre + '"?')) return;
-        const m = dbMetas.find(x => x.id === ap.metaId);
-        if (m) { m.ahorrado = Math.max(0, (m.ahorrado||0) - ap.monto); saveMetas(); }
-        dbHistorialAport = dbHistorialAport.filter(x => x.id !== id);
-        saveHistAport(); renderMetas(); renderHistorialAportes();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        renderDistribucion(totalIngresosMes - tf);
+        mostrarConfirm('¿Revertir aporte de ' + fmt(ap.monto) + ' a "' + ap.metaNombre + '"?\nEsto le devuelve el dinero a la categoría.', function(ok) {
+            if (!ok) return;
+            // Restar de la meta
+            const m = dbMetas.find(x => x.id === ap.metaId);
+            if (m) { m.ahorrado = Math.max(0, (m.ahorrado||0) - ap.monto); saveMetas(); }
+            // Devolver el gasto a la categoría (eliminar de dbGastosVar)
+            const mes = ap.fecha ? ap.fecha.substring(0, 7) : new Date().toISOString().substring(0, 7);
+            if (dbGastosVar[mes]) {
+                // Eliminar el primer gasto de esa categoría con ese monto
+                const idx = dbGastosVar[mes].findIndex(g => g.catId === ap.catId && g.monto === ap.monto);
+                if (idx !== -1) dbGastosVar[mes].splice(idx, 1);
+                saveGastosVar();
+            }
+            dbHistorialAport = dbHistorialAport.filter(x => x.id !== id_num);
+            saveHistAport();
+            renderFinanzas();
+        });
     }
 
     let historialOpen = false;
@@ -828,8 +841,27 @@
     function eliminarCuotaItem(id) {
         const c = dbCuotas.find(x => x.id === id);
         if (!c) return;
-        mostrarConfirm('¿Eliminar la cuota "' + c.nombre + '"?', function(ok) {
+        const pagosDesc = c.historial && c.historial.length > 0
+            ? ' (' + c.historial.length + ' pago' + (c.historial.length > 1 ? 's' : '') + ' registrado' + (c.historial.length > 1 ? 's' : '') + ' se van a revertir)'
+            : '';
+        mostrarConfirm('¿Eliminar la cuota "' + c.nombre + '"?' + pagosDesc, function(ok) {
             if (!ok) return;
+
+            // Revertir todos los pagos registrados en dbGastosVar
+            if (c.historial && c.historial.length > 0) {
+                c.historial.forEach(h => {
+                    const mes = h.fecha ? h.fecha.substring(0, 7) : null;
+                    if (!mes || !dbGastosVar[mes]) return;
+                    // Eliminar el gasto correspondiente a esta cuota en ese mes
+                    const idx = dbGastosVar[mes].findIndex(g =>
+                        g.catId === h.catId && g.monto === h.monto &&
+                        g.desc && g.desc.includes(c.nombre)
+                    );
+                    if (idx !== -1) dbGastosVar[mes].splice(idx, 1);
+                });
+                saveGastosVar();
+            }
+
             dbCuotas = dbCuotas.filter(x => x.id !== id);
             dbGastosFijos = dbGastosFijos.filter(g => g.cuotaRef !== id);
             saveCuotas(); saveGastosFijos();
@@ -1050,7 +1082,7 @@
                 +     '<button class="dist-delete" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#f87171;padding:0 2px;">✕</button>'
                 +   '</div>'
                 +   '<div style="display:flex;align-items:center;gap:6px;">'
-                +     '<span style="font-size:1rem;font-weight:700;color:' + c.color + ';">' + fmt(monto) + '</span>'
+                +     '<span class="cat-monto" style="font-size:1rem;font-weight:700;color:' + c.color + ';">' + fmt(monto) + '</span>'
                 +     '<button class="dist-modo" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" style="background:none;border:0.5px solid var(--border);border-radius:6px;padding:2px 7px;font-size:0.6rem;color:var(--text-muted);cursor:pointer;">' + (esMonto?'📌':'%') + '</button>'
                 +   '</div>'
                 + '</div>'
@@ -1061,7 +1093,7 @@
                     +   '<button class="dist-minus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>'
                     +   '<input class="dist-range" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" type="range" min="0" max="100" step="5" value="' + pct + '" style="flex:1;accent-color:' + c.color + ';height:5px;cursor:pointer;">'
                     +   '<button class="dist-plus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>'
-                    +   '<span style="font-size:0.82rem;font-weight:700;color:' + c.color + ';min-width:34px;text-align:right;">' + pct + '%</span>'
+                    +   '<span class="pct-label" style="font-size:0.82rem;font-weight:700;color:' + c.color + ';min-width:34px;text-align:right;">' + pct + '%</span>'
                     + '</div>'
                 )
                 // Barra gasto vs asignado
@@ -1084,6 +1116,24 @@
                 + (metaVinc && monto > 0
                     ? '<button class="dist-aportar" data-id="' + c.id + '" data-monto="' + monto + '" style="width:100%;padding:6px;background:#1a2a1a;border:0.5px solid #2d5a3a;border-radius:8px;color:#34d399;font-size:0.75rem;font-weight:600;cursor:pointer;">+ Aportar ' + fmt(monto) + ' a ' + metaVinc.nombre + '</button>'
                     : '')
+                // Lista de gastos registrados en esta categoría este mes
+                + (() => {
+                    const mes2 = new Date().toISOString().substring(0,7);
+                    const gvCat = (dbGastosVar[mes2]||[]).filter(g => g.catId === c.id);
+                    if (gvCat.length === 0) return '';
+                    return '<div style="margin-top:8px;border-top:0.5px solid var(--border);padding-top:8px;">'
+                        + '<div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">Gastos registrados</div>'
+                        + gvCat.map(g =>
+                            '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">'
+                            + '<span style="font-size:0.72rem;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (g.desc||'Gasto') + '</span>'
+                            + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+                            + '<span style="font-size:0.75rem;font-weight:600;color:#f87171;">-' + fmt(g.monto) + '</span>'
+                            + '<button class="elim-gvar" data-mes="' + mes2 + '" data-gid="' + g.id + '" style="background:none;border:none;color:#7d8590;cursor:pointer;font-size:0.72rem;padding:0 2px;">✕</button>'
+                            + '</div>'
+                            + '</div>'
+                        ).join('')
+                        + '</div>';
+                })()
                 + '</div>';
         }).join('');
 
@@ -1093,38 +1143,54 @@
         sliders.onchange = null;
         sliders.onblur = null;
 
-        sliders.addEventListener('input', function(e) {
+        // Remove old listeners by cloning the node
+        const newSliders = sliders.cloneNode(false);
+        newSliders.innerHTML = sliders.innerHTML;
+        sliders.parentNode.replaceChild(newSliders, sliders);
+        const sl = newSliders;
+
+        sl.addEventListener('input', function(e) {
             const el = e.target;
             if (el.classList.contains('dist-range')) {
                 distPcts[el.dataset.id] = parseInt(el.value);
                 saveDistPcts();
-                renderDistribucion(parseInt(el.dataset.disp));
+                // Update just the % label and bar without full re-render (smooth)
+                const pctLabel = el.parentNode.querySelector('.pct-label');
+                if (pctLabel) pctLabel.innerText = el.value + '%';
+                const tf2 = dbGastosFijos.reduce((s,g)=>s+(g.monto||0),0);
+                const disp2 = totalIngresosMes - tf2;
+                const monto2 = Math.round(disp2 * parseInt(el.value) / 100);
+                const montoEl = el.closest('.dist-cat-card').querySelector('.cat-monto');
+                if (montoEl) montoEl.innerText = fmt(monto2);
             }
             if (el.classList.contains('dist-monto-input')) {
                 distMontos[el.dataset.id] = parseFloat(el.value) || 0;
                 saveDistMontos();
-                renderDistribucion(parseInt(el.dataset.disp));
             }
-        }, { once: true });
+        });
 
-        sliders.addEventListener('change', function(e) {
+        sl.addEventListener('change', function(e) {
             const el = e.target;
+            if (el.classList.contains('dist-range') || el.classList.contains('dist-monto-input')) {
+                const tf2 = dbGastosFijos.reduce((s,g)=>s+(g.monto||0),0);
+                renderDistribucion(totalIngresosMes - tf2);
+            }
             if (el.classList.contains('dist-meta-sel')) {
                 vincularDistMeta(el.dataset.id, el.value);
             }
-        }, { once: true });
+        });
 
-        sliders.addEventListener('click', function(e) {
-            const el = e.target;
-            const tf = dbGastosFijos.reduce((s,g)=>s+(g.monto||0),0);
-            const disp = totalIngresosMes - tf;
+        sl.addEventListener('click', function(e) {
+            const el = e.target.closest('button') || e.target;
             if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
-            else if (el.classList.contains('dist-plus'))  { ajustarPct(el.dataset.id, +5); }
-            else if (el.classList.contains('dist-modo'))  { toggleDistModo(el.dataset.id, parseInt(el.dataset.disp)); }
-            else if (el.classList.contains('dist-rename')){ renombrarCat(el.dataset.id); }
-            else if (el.classList.contains('dist-delete')){ eliminarCat(el.dataset.id); }
+            else if (el.classList.contains('dist-plus'))   { ajustarPct(el.dataset.id, +5); }
+            else if (el.classList.contains('dist-modo'))   { toggleDistModo(el.dataset.id, parseInt(el.dataset.disp)); }
+            else if (el.classList.contains('dist-rename')) { renombrarCat(el.dataset.id); }
+            else if (el.classList.contains('dist-delete')) { eliminarCat(el.dataset.id); }
             else if (el.classList.contains('dist-aportar')){ aportarDistAMeta(el.dataset.id, parseInt(el.dataset.monto)); }
-        }, { once: true });
+            const elimGv = e.target.closest('.elim-gvar');
+            if (elimGv) eliminarGastoVar(elimGv.dataset.mes, elimGv.dataset.gid);
+        });
 
         // Barra apilada
         if (stack) {
@@ -1146,8 +1212,8 @@
     function ajustarPct(catId, delta) {
         distPcts[catId] = Math.max(0, Math.min(100, (distPcts[catId]||0) + delta));
         saveDistPcts();
-        const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        renderDistribucion(totalIngresosMes - tf);
+        const { disponible: dAjust } = calcDisponible();
+        renderDistribucion(dAjust);
     }
     let finTabActivo = 'presupuesto';
     function switchFinTab(tab) {
@@ -1176,13 +1242,23 @@
         f.style.display = f.style.display === 'none' ? 'block' : 'none';
     }
 
-    function renderFinanzas() {
+    function calcDisponible() {
         const ingreso    = totalIngresosMes;
         const totalFijos = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-        const disponible = ingreso - totalFijos;
+        const mes        = new Date().toISOString().substring(0, 7);
+        const gastadoCats= (dbGastosVar[mes] || []).reduce((s,g) => s+(g.monto||0), 0);
+        return { ingreso, totalFijos, gastadoCats, disponible: Math.max(0, ingreso - totalFijos - gastadoCats) };
+    }
 
-        const finIngreso = document.getElementById('fin-neto-top');
-        if (finIngreso) finIngreso.innerText = fmt(ingreso);
+    function renderFinanzas() {
+        const { ingreso, totalFijos, gastadoCats, disponible } = calcDisponible();
+
+        const el_neto = document.getElementById('fin-neto-top');
+        const el_fij  = document.getElementById('fin-fijos-top');
+        const el_disp = document.getElementById('fin-disponible');
+        if (el_neto) el_neto.innerText = fmt(ingreso);
+        if (el_fij)  el_fij.innerText  = fmt(totalFijos);
+        if (el_disp) el_disp.innerText = fmt(disponible);
 
         // Gastos fijos lista
         const gfl = document.getElementById('gastos-fijos-lista');
@@ -1802,9 +1878,9 @@
             if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
             dbGastosVar[mes].push({ id: Date.now()+1, catId: cat.id, desc: 'Meta: ' + m.nombre, monto: real });
             saveGastosVar(); saveMetas();
-            const tf = dbGastosFijos.reduce((s,g) => s+(g.monto||0), 0);
-            renderDistribucion(totalIngresosMes - tf);
-            renderMetas(); renderHistorialAportes();
+            const { disponible: dAport } = calcDisponible();
+            renderDistribucion(dAport);
+            renderFinanzas();
         });
     }
     function renderMetas() {
@@ -1864,4 +1940,4 @@
     }
 </script>
 </body>
-</html> 
+</html>
