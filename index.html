@@ -325,17 +325,43 @@
                         <div id="dist-sin-asignar-top" style="font-size:0.86rem;font-weight:800;color:#f87171;line-height:1.1;">$0</div>
                     </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:7px;">
-                    <select id="dist-prioridad" style="flex:1;min-width:0;background:#0d1117;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:7px 9px;font-size:0.76rem;outline:none;">
-                        <option value="equilibrado">Equilibrado</option>
-                        <option value="ahorro">Ahorrar más</option>
-                        <option value="ocio">Más ocio</option>
-                        <option value="inversion">Invertir más</option>
-                        <option value="ajustado">Mes ajustado</option>
-                    </select>
-                    <button onclick="aplicarAutoDistribucion()" style="background:rgba(56,139,253,0.1);border:0.5px solid rgba(56,139,253,0.25);border-radius:8px;padding:7px 10px;color:#79c0ff;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                <div id="fin-salud" style="display:none;margin-bottom:10px;"></div>
+                <div style="display:flex;gap:7px;margin-bottom:8px;">
+                    <button onclick="aplicarAutoDistribucion()" style="flex:1;background:rgba(56,139,253,0.08);border:0.5px solid rgba(56,139,253,0.22);border-radius:10px;padding:8px 10px;color:#79c0ff;font-size:0.74rem;font-weight:700;cursor:pointer;">
                         Auto
                     </button>
+                    <button id="dist-sim-btn" onclick="toggleSimulacionDist()" style="flex:1;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">
+                        Simular
+                    </button>
+                    <button onclick="toggleAutoDistConfig()" style="width:42px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">
+                        %
+                    </button>
+                </div>
+                <div id="dist-sim-actions" style="display:none;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;">
+                    <button onclick="aplicarSimulacionDist()" style="padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:9px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Aplicar simulacion</button>
+                    <button onclick="cancelarSimulacionDist()" style="padding:7px;background:rgba(248,113,113,0.08);border:0.5px solid rgba(248,113,113,0.22);border-radius:9px;color:#f87171;font-size:0.72rem;font-weight:700;cursor:pointer;">Cancelar</button>
+                </div>
+                <div id="auto-dist-form" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <div style="font-size:0.62rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribucion</div>
+                        <div id="auto-dist-total" style="font-size:0.7rem;color:var(--text-muted);font-weight:700;">100%</div>
+                    </div>
+                    <div id="auto-dist-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;"></div>
+                    <div style="border-top:0.5px solid var(--border);padding-top:8px;margin-bottom:8px;">
+                        <div style="font-size:0.6rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.45px;margin-bottom:7px;">Plantillas</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                            <button onclick="aplicarAutoDistPlantilla('base')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Base 50/20/20/10</button>
+                            <button onclick="aplicarAutoDistPlantilla('ajustado')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Mes ajustado</button>
+                            <button onclick="aplicarAutoDistPlantilla('ahorro')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Liquidez</button>
+                            <button onclick="aplicarAutoDistPlantilla('inversion')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Invertir mas</button>
+                            <button onclick="aplicarAutoDistPlantilla('ocio')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Ocio cuidado</button>
+                            <button onclick="aplicarAutoDistPlantilla('defensivo')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Defensivo</button>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:7px;">
+                        <button onclick="guardarAutoDistConfig()" style="flex:1;padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:8px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Guardar</button>
+                        <button onclick="resetAutoDistConfig()" style="padding:7px 10px;background:transparent;border:0.5px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.72rem;cursor:pointer;">Reset</button>
+                    </div>
                 </div>
                 <!-- Sliders -->
                 <div id="dist-sliders" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -793,13 +819,14 @@
         _realizarAporte(m, val);
     }
     const DIST_CATS = [
-        { id: 'necesidades', nombre: 'Necesidades', icon: '🛒', color: '#388bfd', pctSug: 40 },
-        { id: 'ahorro',      nombre: 'Ahorro',      icon: '🏦', color: '#34d399', pctSug: 20 },
-        { id: 'inversion',   nombre: 'Inversión',   icon: '📈', color: '#a5b4fc', pctSug: 25 },
-        { id: 'ocio',        nombre: 'Ocio',        icon: '🎯', color: '#fbbf24', pctSug: 15 },
+        { id: 'necesidades', nombre: 'Necesidades',  icon: '🛒', color: '#388bfd', pctSug: 50 },
+        { id: 'ocio',        nombre: 'Ocio/Gustitos', icon: '🎯', color: '#fbbf24', pctSug: 20 },
+        { id: 'inversion',   nombre: 'Inversión',    icon: '📈', color: '#a5b4fc', pctSug: 20 },
+        { id: 'ahorro',      nombre: 'Ahorro',       icon: '🏦', color: '#34d399', pctSug: 10 },
     ];
+    const AUTO_DIST_DEFAULT = { necesidades: 50, ocio: 20, inversion: 20, ahorro: 10 };
     const DIST_PRESETS = {
-        equilibrado: { necesidades: 40, ahorro: 20, inversion: 25, ocio: 15 },
+        equilibrado: AUTO_DIST_DEFAULT,
         ahorro:      { necesidades: 35, ahorro: 35, inversion: 20, ocio: 10 },
         ocio:        { necesidades: 35, ahorro: 15, inversion: 15, ocio: 35 },
         inversion:   { necesidades: 35, ahorro: 20, inversion: 35, ocio: 10 },
@@ -809,6 +836,8 @@
     let distMontos       = JSON.parse(localStorage.getItem('dist_montos'))      || {};
     let distModo         = JSON.parse(localStorage.getItem('dist_modo'))        || {};
     let distVinculos     = JSON.parse(localStorage.getItem('dist_vinculos'))    || {};
+    let autoDistConfig   = { ...AUTO_DIST_DEFAULT, ...(JSON.parse(localStorage.getItem('auto_dist_config')) || {}) };
+    let distSimSnapshot  = null;
 
     if (!distPcts) { distPcts = {}; DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; }); }
 
@@ -819,6 +848,7 @@
     const saveDistVinc     = () => localStorage.setItem('dist_vinculos',        JSON.stringify(distVinculos));
     const saveDistMontos   = () => localStorage.setItem('dist_montos',          JSON.stringify(distMontos));
     const saveDistModo     = () => localStorage.setItem('dist_modo',            JSON.stringify(distModo));
+    const saveAutoDist     = () => localStorage.setItem('auto_dist_config',      JSON.stringify(autoDistConfig));
     const saveGastosVar    = () => localStorage.setItem('db_gastos_var',        JSON.stringify(dbGastosVar));
     const saveHistAport    = () => localStorage.setItem('db_historial_aport',   JSON.stringify(dbHistorialAport));
     function toggleDistModo(catId, disponible) {
@@ -837,6 +867,26 @@
     function eliminarGastoVar(mes, id_raw) {
         const gid = typeof id_raw === 'string' ? parseInt(id_raw) : id_raw;
         if (!dbGastosVar[mes]) return;
+        const gasto = dbGastosVar[mes].find(g => g.id === gid);
+        if (!gasto) return;
+        if (gasto.aporteId || (gasto.desc || '').startsWith('Meta: ')) {
+            const aporte = gasto.aporteId
+                ? dbHistorialAport.find(ap => ap.id === gasto.aporteId)
+                : dbHistorialAport.find(ap =>
+                    ap.catId === gasto.catId &&
+                    ap.monto === gasto.monto &&
+                    ('Meta: ' + ap.metaNombre) === gasto.desc
+                );
+            if (aporte) {
+                const meta = dbMetas.find(m => m.id === aporte.metaId);
+                if (meta) {
+                    meta.ahorrado = Math.max(0, (meta.ahorrado || 0) - aporte.monto);
+                    saveMetas();
+                }
+                dbHistorialAport = dbHistorialAport.filter(ap => ap.id !== aporte.id);
+                saveHistAport();
+            }
+        }
         dbGastosVar[mes] = dbGastosVar[mes].filter(g => g.id !== gid);
         saveGastosVar();
         renderFinanzas();
@@ -866,6 +916,13 @@
         const aporte = Math.min(monto, libreCat, faltanteMeta);
         if (aporte <= 0) return renderFinanzas();
         _realizarAporte(m, aporte, cat);
+        if (aporte >= libreCat) {
+            distPcts[catId] = 0;
+            distMontos[catId] = 0;
+            distModo[catId] = 'pct';
+            saveDistPcts(); saveDistMontos(); saveDistModo();
+            renderFinanzas();
+        }
     }
     function revertirAporte(id) {
         const id_num = typeof id === 'string' ? parseInt(id) : id;
@@ -1101,6 +1158,19 @@
     // ── Cuotas ────────────────────────────────────────────────────────────
     let DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom')) || [];
     const saveCatsCustom   = () => localStorage.setItem('dist_cats_custom',     JSON.stringify(DIST_CATS_CUSTOM));
+    const DIST_BASE_VERSION = 'base_cats_50_20_20_10_v1';
+    if (localStorage.getItem('dist_base_version') !== DIST_BASE_VERSION) {
+        DIST_CATS_CUSTOM = [];
+        distPcts = {};
+        DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; });
+        distMontos = {};
+        distModo = {};
+        localStorage.setItem('dist_cats_custom', JSON.stringify(DIST_CATS_CUSTOM));
+        localStorage.setItem('dist_pcts', JSON.stringify(distPcts));
+        localStorage.setItem('dist_montos', JSON.stringify(distMontos));
+        localStorage.setItem('dist_modo', JSON.stringify(distModo));
+        localStorage.setItem('dist_base_version', DIST_BASE_VERSION);
+    }
 
     function getCatsActivas() { return DIST_CATS_CUSTOM.length ? DIST_CATS_CUSTOM : DIST_CATS; }
 
@@ -1118,10 +1188,12 @@
         const id = 'cat_' + Date.now();
         DIST_CATS_CUSTOM.push({ id, nombre, icon, color, pctSug: 0 });
         distPcts[id] = 0;
-        saveCatsCustom(); saveDistPcts();
+        autoDistConfig[id] = 0;
+        saveCatsCustom(); saveDistPcts(); saveAutoDist();
         document.getElementById('nueva-cat-icon').value   = '';
         document.getElementById('nueva-cat-nombre').value = '';
         document.getElementById('nueva-cat-form').style.display = 'none';
+        if (document.getElementById('auto-dist-form')?.style.display !== 'none') setAutoDistInputs();
         const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
@@ -1145,7 +1217,9 @@
         if (!confirm('¿Eliminar la categoría "' + cat.nombre + '"?')) return;
         DIST_CATS_CUSTOM = cats.filter(c => c.id !== id);
         delete distPcts[id]; delete distMontos[id]; delete distModo[id]; delete distVinculos[id];
-        saveCatsCustom(); saveDistPcts(); saveDistMontos(); saveDistModo(); saveDistVinc();
+        delete autoDistConfig[id];
+        saveCatsCustom(); saveDistPcts(); saveDistMontos(); saveDistModo(); saveDistVinc(); saveAutoDist();
+        if (document.getElementById('auto-dist-form')?.style.display !== 'none') setAutoDistInputs();
         const tf = totalGastosFijosReales();
         renderDistribucion(totalIngresosMes - tf);
     }
@@ -1181,16 +1255,205 @@
         return Math.max(0, Math.round(disponible - usadosPorOtros));
     }
 
+    function ensureCatsCustom() {
+        if (DIST_CATS_CUSTOM.length === 0) DIST_CATS_CUSTOM = JSON.parse(JSON.stringify(DIST_CATS));
+    }
+
+    function moverCat(catId, delta) {
+        ensureCatsCustom();
+        const idx = DIST_CATS_CUSTOM.findIndex(c => c.id === catId);
+        const next = idx + delta;
+        if (idx < 0 || next < 0 || next >= DIST_CATS_CUSTOM.length) return;
+        const tmp = DIST_CATS_CUSTOM[idx];
+        DIST_CATS_CUSTOM[idx] = DIST_CATS_CUSTOM[next];
+        DIST_CATS_CUSTOM[next] = tmp;
+        saveCatsCustom();
+        const tf = totalGastosFijosReales();
+        renderDistribucion(totalIngresosMes - tf);
+    }
+
+    function snapshotDistState() {
+        return {
+            pcts: JSON.parse(JSON.stringify(distPcts || {})),
+            montos: JSON.parse(JSON.stringify(distMontos || {})),
+            modo: JSON.parse(JSON.stringify(distModo || {})),
+            cats: JSON.parse(JSON.stringify(DIST_CATS_CUSTOM || []))
+        };
+    }
+
+    function updateSimUI() {
+        const btn = document.getElementById('dist-sim-btn');
+        const actions = document.getElementById('dist-sim-actions');
+        if (btn) {
+            btn.innerText = distSimSnapshot ? 'Simulando' : 'Simular';
+            btn.style.color = distSimSnapshot ? '#fbbf24' : 'var(--text-muted)';
+            btn.style.borderColor = distSimSnapshot ? 'rgba(251,191,36,0.32)' : 'var(--border)';
+            btn.style.background = distSimSnapshot ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.025)';
+        }
+        if (actions) actions.style.display = distSimSnapshot ? 'grid' : 'none';
+    }
+
+    function toggleSimulacionDist() {
+        if (!distSimSnapshot) {
+            distSimSnapshot = snapshotDistState();
+        } else {
+            cancelarSimulacionDist();
+            return;
+        }
+        updateSimUI();
+    }
+
+    function aplicarSimulacionDist() {
+        distSimSnapshot = null;
+        updateSimUI();
+    }
+
+    function cancelarSimulacionDist() {
+        if (!distSimSnapshot) return;
+        distPcts = distSimSnapshot.pcts;
+        distMontos = distSimSnapshot.montos;
+        distModo = distSimSnapshot.modo;
+        DIST_CATS_CUSTOM = distSimSnapshot.cats || [];
+        saveDistPcts(); saveDistMontos(); saveDistModo(); saveCatsCustom();
+        distSimSnapshot = null;
+        const tf = totalGastosFijosReales();
+        renderDistribucion(totalIngresosMes - tf);
+    }
+
+    function renderSaludFinanciera(ingreso, totalFijos, gastadoCats, disponible) {
+        const el = document.getElementById('fin-salud');
+        if (!el) return;
+        if (!ingreso || ingreso <= 0) {
+            el.style.display = 'none';
+            return;
+        }
+        const gastoTotal = totalFijos + gastadoCats;
+        const librePct = Math.round((disponible / ingreso) * 100);
+        const gastoPct = Math.round((gastoTotal / ingreso) * 100);
+        const catAhorro = getCatsActivas().find(c => c.id === 'ahorro');
+        const catInv = getCatsActivas().find(c => c.id === 'inversion');
+        const ahorroInvPct = (catAhorro ? (distPcts[catAhorro.id] || 0) : 0) + (catInv ? (distPcts[catInv.id] || 0) : 0);
+        let label = 'Ajustada';
+        let color = '#fbbf24';
+        let bg = 'rgba(251,191,36,0.07)';
+        let border = 'rgba(251,191,36,0.22)';
+        if (disponible <= 0 || gastoPct >= 95) {
+            label = 'En riesgo';
+            color = '#f87171';
+            bg = 'rgba(248,113,113,0.07)';
+            border = 'rgba(248,113,113,0.24)';
+        } else if (librePct >= 18 && ahorroInvPct >= 25) {
+            label = 'Sana';
+            color = '#34d399';
+            bg = 'rgba(52,211,153,0.07)';
+            border = 'rgba(52,211,153,0.22)';
+        }
+        el.style.display = 'block';
+        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:' + bg + ';border:0.5px solid ' + border + ';border-radius:10px;padding:8px 10px;">'
+            + '<div style="min-width:0;">'
+            +   '<div style="font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;">Salud financiera</div>'
+            +   '<div style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Libre ' + librePct + '% · Gasto ' + gastoPct + '% · Ahorro/Inversion ' + ahorroInvPct + '%</div>'
+            + '</div>'
+            + '<div style="font-size:0.8rem;font-weight:800;color:' + color + ';white-space:nowrap;">' + label + '</div>'
+            + '</div>';
+    }
+
+    function getAutoDistCats() {
+        return getCatsActivas();
+    }
+
+    function setAutoDistInputs() {
+        const wrap = document.getElementById('auto-dist-fields');
+        if (!wrap) return;
+        const cats = getAutoDistCats();
+        wrap.innerHTML = cats.map(c =>
+            '<label style="font-size:0.66rem;color:var(--text-muted);">' + c.icon + ' ' + c.nombre
+            + '<input id="auto-pct-' + c.id + '" data-id="' + c.id + '" oninput="updateAutoDistTotal()" type="number" min="0" max="100" class="input auto-pct-input" value="' + (autoDistConfig[c.id] || 0) + '" style="margin-top:4px;padding:7px 8px;font-size:0.78rem;text-align:right;">'
+            + '</label>'
+        ).join('');
+        updateAutoDistTotal();
+    }
+
+    function updateAutoDistTotal() {
+        const total = [...document.querySelectorAll('.auto-pct-input')]
+            .reduce((s, el) => s + (parseFloat(el.value) || 0), 0);
+        const elTotal = document.getElementById('auto-dist-total');
+        if (elTotal) {
+            elTotal.innerText = total + '%';
+            elTotal.style.color = total === 100 ? '#34d399' : '#fbbf24';
+        }
+    }
+
+    function toggleAutoDistConfig() {
+        const f = document.getElementById('auto-dist-form');
+        if (!f) return;
+        const abrir = f.style.display === 'none';
+        f.style.display = abrir ? 'block' : 'none';
+        if (abrir) setAutoDistInputs();
+    }
+
+    function guardarAutoDistConfig() {
+        const next = {};
+        document.querySelectorAll('.auto-pct-input').forEach(el => {
+            next[el.dataset.id] = Math.max(0, parseFloat(el.value) || 0);
+        });
+        const total = Object.values(next).reduce((s, v) => s + v, 0);
+        if (total <= 0) return;
+        autoDistConfig = next;
+        saveAutoDist();
+        document.getElementById('auto-dist-form').style.display = 'none';
+        aplicarAutoDistribucion();
+    }
+
+    function aplicarAutoDistPlantilla(tipo) {
+        const plantillas = {
+            base:      { necesidades: 50, ocio: 20, inversion: 20, ahorro: 10 },
+            ajustado:  { necesidades: 60, ocio: 10, inversion: 15, ahorro: 15 },
+            ahorro:    { necesidades: 45, ocio: 10, inversion: 15, ahorro: 30 },
+            inversion: { necesidades: 45, ocio: 10, inversion: 35, ahorro: 10 },
+            ocio:      { necesidades: 45, ocio: 25, inversion: 20, ahorro: 10 },
+            defensivo: { necesidades: 55, ocio: 10, inversion: 10, ahorro: 25 },
+        };
+        const p = plantillas[tipo] || plantillas.base;
+        const cats = getAutoDistCats();
+        const customCats = cats.filter(c => p[c.id] === undefined);
+        const customTotal = customCats.length > 0 ? Math.min(20, customCats.length * 10) : 0;
+        const baseTotal = 100 - customTotal;
+        const presetTotal = cats.reduce((s, c) => s + (p[c.id] || 0), 0) || 1;
+        const customPctBase = customCats.length > 0 ? Math.floor(customTotal / customCats.length) : 0;
+        let customExtra = customCats.length > 0 ? customTotal - (customPctBase * customCats.length) : 0;
+        let acumulado = 0;
+        cats.forEach((c, idx) => {
+            const el = document.getElementById('auto-pct-' + c.id);
+            if (!el) return;
+            const isLast = idx === cats.length - 1;
+            let pct = p[c.id] === undefined
+                ? customPctBase + (customExtra-- > 0 ? 1 : 0)
+                : Math.round((p[c.id] || 0) * baseTotal / presetTotal);
+            if (isLast) pct = Math.max(0, 100 - acumulado);
+            el.value = pct;
+            acumulado += pct;
+        });
+        updateAutoDistTotal();
+    }
+
+    function resetAutoDistConfig() {
+        autoDistConfig = { ...AUTO_DIST_DEFAULT };
+        saveAutoDist();
+        setAutoDistInputs();
+        aplicarAutoDistribucion();
+    }
+
     function aplicarAutoDistribucion() {
-        const sel = document.getElementById('dist-prioridad');
-        const preset = DIST_PRESETS[sel ? sel.value : 'equilibrado'] || DIST_PRESETS.equilibrado;
+        const preset = autoDistConfig;
         const active = getCatsActivas();
         const totalPreset = active.reduce((s, c) => s + (preset[c.id] || 0), 0) || 1;
         let acumulado = 0;
 
         active.forEach((c, idx) => {
             const esUltima = idx === active.length - 1;
-            const pct = esUltima ? Math.max(0, 100 - acumulado) : Math.round((preset[c.id] || 0) * 100 / totalPreset);
+            let pct = Math.round((preset[c.id] || 0) * 100 / totalPreset);
+            if (esUltima) pct = Math.max(0, 100 - acumulado);
             distPcts[c.id] = pct;
             distModo[c.id] = 'pct';
             delete distMontos[c.id];
@@ -1221,7 +1484,7 @@
         const { totalAsignado, sobrante, excedido } = calcDistTotales(disponible);
 
         // Build sliders HTML using data-catid to avoid quote escaping
-        sliders.innerHTML = ACTIVE.map(c => {
+        sliders.innerHTML = ACTIVE.map((c, idx) => {
             const pct      = distPcts[c.id] || 0;
             const esMonto  = distModo[c.id] === 'monto';
             const monto    = esMonto
@@ -1232,8 +1495,12 @@
                 const gv  = (dbGastosVar[mes] || []).filter(g => g.catId === c.id);
                 return gv.reduce((s, g) => s + (g.monto || 0), 0);
             })();
-            const pctGast  = monto > 0 ? Math.min(100, Math.round((gastado / monto) * 100)) : 0;
-            const superado = gastado > monto && monto > 0;
+            const pctGast  = monto > 0 ? Math.min(100, Math.round((gastado / monto) * 100)) : (gastado > 0 ? 100 : 0);
+            const superado = gastado > monto;
+            const usoAlto  = !superado && pctGast >= 80;
+            const cardBg   = superado ? 'rgba(248,113,113,0.055)' : (usoAlto ? 'rgba(251,191,36,0.045)' : 'var(--bg-input)');
+            const cardBor  = superado ? 'rgba(248,113,113,0.44)' : (usoAlto ? 'rgba(251,191,36,0.32)' : 'var(--border)');
+            const barColor = superado ? '#f87171' : (usoAlto ? '#fbbf24' : c.color);
             const metaVinc = distVinculos[c.id] ? dbMetas.find(m => m.id === distVinculos[c.id]) : null;
             const libreCat = Math.max(0, monto - gastado);
             const faltanteMeta = metaVinc ? Math.max(0, (metaVinc.monto || 0) - (metaVinc.ahorrado || 0)) : 0;
@@ -1241,16 +1508,19 @@
             const metasOpt = dbMetas.filter(m => (m.ahorrado||0) < m.monto)
                 .map(m => '<option value="' + m.id + '"' + (distVinculos[c.id]===m.id?' selected':'') + '>' + m.nombre + '</option>').join('');
 
-            return '<div class="dist-cat-card" style="background:var(--bg-input);border-radius:12px;border:0.5px solid var(--border);padding:12px;margin-bottom:8px;">'
+            return '<div class="dist-cat-card" style="background:' + cardBg + ';border-radius:12px;border:0.5px solid ' + cardBor + ';padding:12px;margin-bottom:8px;transition:0.2s;">'
                 // Header
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
                 +   '<div style="display:flex;align-items:center;gap:5px;">'
                 +     '<span style="font-size:0.83rem;font-weight:600;color:var(--text-main);">' + c.icon + ' ' + c.nombre + '</span>'
+                +     '<button class="dist-up" data-id="' + c.id + '" title="Subir" ' + (idx===0?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===0?'0.25':'1') + ';">^</button>'
+                +     '<button class="dist-down" data-id="' + c.id + '" title="Bajar" ' + (idx===ACTIVE.length-1?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===ACTIVE.length-1?'0.25':'1') + ';">v</button>'
                 +     '<button class="dist-rename" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 2px;">✏️</button>'
                 +     '<button class="dist-delete" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#f87171;padding:0 2px;">✕</button>'
                 +   '</div>'
                 +   '<div style="display:flex;align-items:center;gap:6px;">'
-+     '<span class="cat-monto" style="font-size:1rem;font-weight:700;color:' + c.color + ';">' + fmt(libreCat) + '</span>'                +     '<button class="dist-modo" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" style="background:none;border:0.5px solid var(--border);border-radius:6px;padding:2px 7px;font-size:0.6rem;color:var(--text-muted);cursor:pointer;">' + (esMonto?'📌':'%') + '</button>'
+                +     '<span class="cat-monto" style="font-size:1rem;font-weight:700;color:' + c.color + ';">' + fmt(libreCat) + '</span>'
+                +     '<button class="dist-modo" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" style="background:none;border:0.5px solid var(--border);border-radius:6px;padding:2px 7px;font-size:0.6rem;color:var(--text-muted);cursor:pointer;">' + (esMonto?'$':'%') + '</button>'
                 +   '</div>'
                 + '</div>'
                 // Input: monto fijo o slider
@@ -1258,18 +1528,20 @@
                     ? '<input class="dist-monto-input" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="text" inputmode="numeric" value="' + (distMontos[c.id]||0) + '" style="width:100%;background:#0d1117;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;margin-bottom:8px;outline:none;-moz-appearance:textfield;">'
                     : '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">'
                     +   '<button class="dist-minus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>'
-+   '<input class="dist-range" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="range" min="0" max="100" step="5" value="' + pct + '" style="flex:1;accent-color:' + c.color + ';height:5px;cursor:pointer;">'                    +   '<span class="pct-label" style="font-size:0.82rem;font-weight:700;color:' + c.color + ';min-width:34px;text-align:right;">' + pct + '%</span>'
+                    +   '<input class="dist-range" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="range" min="0" max="100" step="5" value="' + pct + '" style="flex:1;accent-color:' + c.color + ';height:5px;cursor:pointer;">'
+                    +   '<button class="dist-plus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>'
+                    +   '<span class="pct-label" style="font-size:0.82rem;font-weight:700;color:' + c.color + ';min-width:34px;text-align:right;">' + pct + '%</span>'
                     + '</div>'
                 )
                 // Barra gasto vs asignado
-                + (monto > 0
+                + (monto > 0 || gastado > 0
                     ? '<div style="margin-bottom:8px;">'
                     +   '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
                     +     '<span style="font-size:0.65rem;color:var(--text-muted);">Gastado: ' + fmt(gastado) + '</span>'
-                    +     (superado ? '<span style="font-size:0.65rem;color:#f87171;font-weight:700;">⚠ Superado</span>' : '<span style="font-size:0.65rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>')
+                    +     (superado ? '<span style="font-size:0.65rem;color:#f87171;font-weight:700;">Superado</span>' : (usoAlto ? '<span style="font-size:0.65rem;color:#fbbf24;font-weight:700;">' + pctGast + '% usado</span>' : '<span style="font-size:0.65rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>'))
                     +   '</div>'
                     +   '<div style="background:#21262d;border-radius:6px;height:5px;">'
-                    +     '<div style="width:' + pctGast + '%;height:5px;border-radius:6px;background:' + (superado?'#f87171':c.color) + ';transition:width 0.4s;"></div>'
+                    +     '<div style="width:' + pctGast + '%;height:5px;border-radius:6px;background:' + barColor + ';transition:width 0.4s;"></div>'
                     +   '</div>'
                     + '</div>'
                     : ''
@@ -1358,8 +1630,12 @@
 
         sl.addEventListener('click', function(e) {
             const el = e.target.closest('button') || e.target;
-if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
-            else if (el.classList.contains('dist-plus'))   { ajustarPct(el.dataset.id, +5); }            else if (el.classList.contains('dist-rename')) { renombrarCat(el.dataset.id); }
+            if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
+            else if (el.classList.contains('dist-plus')) { ajustarPct(el.dataset.id, +5); }
+            else if (el.classList.contains('dist-modo')) { toggleDistModo(el.dataset.id, parseInt(el.dataset.disp) || 0); }
+            else if (el.classList.contains('dist-up')) { moverCat(el.dataset.id, -1); }
+            else if (el.classList.contains('dist-down')) { moverCat(el.dataset.id, 1); }
+            else if (el.classList.contains('dist-rename')) { renombrarCat(el.dataset.id); }
             else if (el.classList.contains('dist-delete')) { eliminarCat(el.dataset.id); }
             else if (el.classList.contains('dist-aportar')){ aportarDistAMeta(el.dataset.id, parseInt(el.dataset.monto)); }
             const elimGv = e.target.closest('.elim-gvar');
@@ -1396,6 +1672,7 @@ if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
         }
         if (restEl)  restEl.innerText  = fmt(sobrante);
         if (restRow) restRow.style.display = sobrante > 0 ? 'flex' : 'none';
+        updateSimUI();
     }
 
     function updateDistResumen(disponible) {
@@ -1473,6 +1750,7 @@ if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
         if (el_neto) el_neto.innerText = fmt(ingreso);
         if (el_fij)  el_fij.innerText  = fmt(totalFijos);
         if (el_disp) el_disp.innerText = fmt(disponible);
+        renderSaludFinanciera(ingreso, totalFijos, gastadoCats, disponible);
 
         // Gastos fijos lista
         const gfl = document.getElementById('gastos-fijos-lista');
@@ -2096,12 +2374,13 @@ if (el.classList.contains('dist-minus')) { ajustarPct(el.dataset.id, -5); }
             const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(parseFechaLocal(hoy));
 
             // Registramos el aporte en el historial
-            dbHistorialAport.push({ id: Date.now(), metaId: m.id, metaNombre: m.nombre, monto: real, fecha: hoy, catId: cat.id, catDesc: cat.icon + ' ' + cat.nombre });
+            const aporteId = Date.now();
+            dbHistorialAport.push({ id: aporteId, metaId: m.id, metaNombre: m.nombre, monto: real, fecha: hoy, catId: cat.id, catDesc: cat.icon + ' ' + cat.nombre });
             saveHistAport();
             
             // Registramos el gasto en la categoría normalmente (sin desconectarlo)
             if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
-            dbGastosVar[mes].push({ id: Date.now()+1, catId: cat.id, desc: 'Meta: ' + m.nombre, monto: real });
+            dbGastosVar[mes].push({ id: aporteId + 1, catId: cat.id, desc: 'Meta: ' + m.nombre, monto: real, aporteId });
             saveGastosVar(); saveMetas();
 
             // Actualizamos la vista (el slider se queda donde estaba, pero el "Libre" baja a $0)
