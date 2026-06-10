@@ -2045,6 +2045,20 @@
         const badge = document.getElementById('badge-historico');
         if (badge) badge.style.display = esHistorico ? 'inline-flex' : 'none';
 
+        // Ajustar fecha del formulario al período seleccionado
+        const campoFecha = document.getElementById('in-fecha');
+        if (campoFecha) {
+            if (esHistorico) {
+                // Usar el día 20 del mes de inicio del período como fecha por defecto
+                const { start } = getPeriodoBounds(mesSel);
+                const y = start.getFullYear();
+                const m = String(start.getMonth() + 1).padStart(2, '0');
+                campoFecha.value = y + '-' + m + '-20';
+            } else {
+                campoFecha.value = new Date().toISOString().split('T')[0];
+            }
+        }
+
         const listHoras = document.getElementById('list-data');
         const periodoLabel = document.getElementById('periodo-label');
         if (periodoLabel) periodoLabel.innerText = 'Total a cobrar';
