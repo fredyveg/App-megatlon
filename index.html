@@ -120,6 +120,11 @@
 
     <header style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px;">
         <span style="font-size:0.82rem;font-weight:600;color:var(--text-muted);letter-spacing:0.3px;">Control Financiero</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span id="sync-status" style="font-size:0.65rem;"></span>
+            <button onclick="sincronizarAhora()" title="Sincronizar ahora" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px;line-height:1;">🔄</button>
+            <button onclick="abrirConfigSync()" title="Configurar sync" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px;line-height:1;">⚙️</button>
+        </div>
     </header>
 
     <main class="tab-content active" id="tab-horas">
@@ -129,7 +134,10 @@
             <div style="position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:#1f6feb12;border-radius:50%;pointer-events:none;"></div>
             <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;background:#34d39910;border-radius:50%;pointer-events:none;"></div>
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;position:relative;">
-                <span id="periodo-label" style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span id="periodo-label" style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar</span>
+                    <span id="badge-historico" style="display:none;font-size:0.55rem;font-weight:700;padding:1px 6px;border-radius:10px;background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.3);">📁 HISTÓRICO</span>
+                </div>
                 <select id="select-mes" class="select-modern" onchange="renderTodo()" style="font-size:0.72rem;padding:4px 10px;"></select>
             </div>
             <div id="view-total-neto" style="font-size:2.1rem;font-weight:700;color:var(--text-main);letter-spacing:-1.5px;line-height:1.1;margin-bottom:3px;">$0</div>
@@ -548,10 +556,155 @@
 <script>
     const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
 
+    // ── Sincronización Google Sheets ──────────────────────────────────────
+    // Pegá acá la URL de tu Web App después de publicar el Apps Script
+    let SYNC_URL = localStorage.getItem('sync_url') || '';
+
+    // Claves que se sincronizan con la nube
+    const SYNC_KEYS = [
+        'db_horas_v1', 'db_gastos_fijos', 'db_metas', 'db_gastos_var',
+        'db_historial_aport', 'db_cuotas_v1', 'dist_pcts', 'dist_montos',
+        'dist_modo', 'dist_vinculos', 'auto_dist_config', 'dist_cats_custom',
+        'meses_vistos'
+    ];
+
+    let _syncStatus = 'idle'; // idle | syncing | ok | error
+
+    function setSyncStatus(status, msg) {
+        _syncStatus = status;
+        const el = document.getElementById('sync-status');
+        if (!el) return;
+        const cfg = {
+            idle:    { icon: '☁️',  color: '#7d8590', text: 'Sin configurar' },
+            syncing: { icon: '🔄',  color: '#fbbf24', text: 'Sincronizando...' },
+            ok:      { icon: '✅',  color: '#34d399', text: msg || 'Sincronizado' },
+            error:   { icon: '⚠️',  color: '#f87171', text: msg || 'Error de sync' },
+            offline: { icon: '📴',  color: '#7d8590', text: 'Sin conexión' },
+        };
+        const c = cfg[status] || cfg.idle;
+        el.innerHTML = c.icon + ' <span style="color:' + c.color + ';font-size:0.65rem;font-weight:600;">' + c.text + '</span>';
+    }
+
+    // Trae todos los datos desde la nube y los aplica localmente
+    async function syncPull() {
+        if (!SYNC_URL) return;
+        setSyncStatus('syncing');
+        try {
+            const res  = await fetch(SYNC_URL, { method: 'GET' });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error del servidor');
+            const data = json.data || {};
+            // Aplicar cada clave al localStorage
+            Object.keys(data).forEach(k => {
+                if (data[k] !== undefined && data[k] !== null) {
+                    localStorage.setItem(k, JSON.stringify(data[k]));
+                }
+            });
+            // También aplicar claves estado_mes_*
+            Object.keys(data).forEach(k => {
+                if (k.startsWith('estado_mes_')) {
+                    localStorage.setItem(k, JSON.stringify(data[k]));
+                }
+            });
+            setSyncStatus('ok', 'Datos actualizados · ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'}));
+            return true;
+        } catch(err) {
+            setSyncStatus(navigator.onLine ? 'error' : 'offline', navigator.onLine ? 'Error al conectar' : 'Sin conexión');
+            return false;
+        }
+    }
+
+    // Envía todos los datos locales a la nube
+    async function syncPush() {
+        if (!SYNC_URL) return;
+        setSyncStatus('syncing');
+        try {
+            // Recolectar todas las claves a sincronizar
+            const updates = {};
+            SYNC_KEYS.forEach(k => {
+                const val = localStorage.getItem(k);
+                if (val !== null) {
+                    try { updates[k] = JSON.parse(val); } catch(e) { updates[k] = val; }
+                }
+            });
+            // También incluir todos los estado_mes_*
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('estado_mes_')) {
+                    try { updates[k] = JSON.parse(localStorage.getItem(k)); } catch(e) {}
+                }
+            }
+            const res  = await fetch(SYNC_URL, {
+                method: 'POST',
+                body: JSON.stringify({ updates }),
+                headers: { 'Content-Type': 'text/plain' } // Apps Script requiere text/plain para evitar CORS preflight
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error del servidor');
+            setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'}));
+        } catch(err) {
+            setSyncStatus(navigator.onLine ? 'error' : 'offline', navigator.onLine ? 'Error al guardar' : 'Sin conexión');
+        }
+    }
+
+    // Recarga las variables JS desde localStorage (después de un pull)
+    function recargarDesdeStorage() {
+        dbHoras          = JSON.parse(localStorage.getItem('db_horas_v1'))          || [];
+        dbGastosFijos    = JSON.parse(localStorage.getItem('db_gastos_fijos'))      || [{ id:1, nombre:'Alquiler', monto:0 },{ id:2, nombre:'Gas', monto:0 }];
+        dbMetas          = JSON.parse(localStorage.getItem('db_metas'))             || [];
+        dbGastosVar      = JSON.parse(localStorage.getItem('db_gastos_var'))        || {};
+        dbHistorialAport = JSON.parse(localStorage.getItem('db_historial_aport'))   || [];
+        dbCuotas         = JSON.parse(localStorage.getItem('db_cuotas_v1'))         || [];
+        distPcts         = JSON.parse(localStorage.getItem('dist_pcts'))            || null;
+        distMontos       = JSON.parse(localStorage.getItem('dist_montos'))          || {};
+        distModo         = JSON.parse(localStorage.getItem('dist_modo'))            || {};
+        distVinculos     = JSON.parse(localStorage.getItem('dist_vinculos'))        || {};
+        autoDistConfig   = { ...AUTO_DIST_DEFAULT, ...(JSON.parse(localStorage.getItem('auto_dist_config')) || {}) };
+        DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom'))     || [];
+        if (!distPcts) { distPcts = {}; DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; }); }
+    }
+
+    // Push automático cada vez que se guarda algo (con debounce de 3s)
+    let _syncTimer = null;
+    function schedulePush() {
+        if (!SYNC_URL) return;
+        clearTimeout(_syncTimer);
+        _syncTimer = setTimeout(() => syncPush(), 3000);
+    }
+
+    function abrirConfigSync() {
+        const modal = document.getElementById('modal-sync');
+        if (modal) {
+            document.getElementById('sync-url-input').value = SYNC_URL || '';
+            modal.style.display = 'flex';
+        }
+    }
+    function cerrarConfigSync() {
+        document.getElementById('modal-sync').style.display = 'none';
+    }
+    function guardarConfigSync() {
+        const url = document.getElementById('sync-url-input').value.trim();
+        SYNC_URL = url;
+        localStorage.setItem('sync_url', url);
+        cerrarConfigSync();
+        if (url) {
+            syncPull().then(ok => {
+                if (ok) { recargarDesdeStorage(); setupMonthSelector(); _mesActivoCargado = document.getElementById('select-mes').value; renderTodo(); }
+            });
+        } else {
+            setSyncStatus('idle');
+        }
+    }
+    async function sincronizarAhora() {
+        const ok = await syncPull();
+        if (ok) { recargarDesdeStorage(); setupMonthSelector(); _mesActivoCargado = document.getElementById('select-mes').value; renderTodo(); }
+    }
+    // ── Fin módulo sync ───────────────────────────────────────────────────
+
     let dbHoras  = JSON.parse(localStorage.getItem('db_horas_v1'))  || [];
     let totalIngresosMes = 0;
 
-    window.onload = () => {
+    window.onload = async () => {
         const hoy = new Date().toISOString().split('T')[0];
         document.getElementById('in-fecha').value    = hoy;
         document.getElementById('view-neto-base').innerText = fmt(VALORES.NETO_BASE);
@@ -566,7 +719,18 @@
         selInicio.value = 18; selFin.value = 21;
 
         setupMonthSelector();
+        // Inicializar el mes activo antes del primer render
+        _mesActivoCargado = document.getElementById('select-mes').value;
         renderTodo();
+
+        // Sincronizar al abrir si hay URL configurada
+        if (SYNC_URL) {
+            setSyncStatus('syncing');
+            const ok = await syncPull();
+            if (ok) { recargarDesdeStorage(); setupMonthSelector(); _mesActivoCargado = document.getElementById('select-mes').value; renderTodo(); }
+        } else {
+            setSyncStatus('idle');
+        }
     };
 
     function switchTab(tab) {
@@ -648,8 +812,10 @@
         const valorPrevio = sel.value;
         sel.innerHTML = '';
         todosMeses.forEach(m => {
-            const [anio, mesNum] = m.split('-');
-            sel.add(new Option(mesesNombres[parseInt(mesNum)-1] + ' ' + anio.slice(2) + ' · ' + formatPeriodoCorto(m), m));
+            const { end } = getPeriodoBounds(m);
+            const labelMes  = mesesNombres[end.getMonth()];
+            const labelAnio = String(end.getFullYear()).slice(2);
+            sel.add(new Option(labelMes + ' ' + labelAnio + ' · ' + formatPeriodoCorto(m), m));
         });
         // Mantener selección previa si existe, si no usar mes actual
         sel.value = (valorPrevio && todosMeses.includes(valorPrevio)) ? valorPrevio : mesActualStr;
@@ -702,7 +868,7 @@
             });
         }
 
-        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush();
         document.getElementById('in-tareas').value = "";
         // Resetear switch
         document.getElementById('switch-coordinar').checked = false;
@@ -714,7 +880,7 @@
         mostrarConfirm('¿Eliminar este turno?', function(ok) {
             if (!ok) return;
             dbHoras = dbHoras.filter(x => x.id !== id);
-            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush();
             setupMonthSelector(); renderTodo();
         });
     }
@@ -728,8 +894,62 @@
         { id: 2, nombre: 'Gas',      monto: 0 }
     ];
     let dbMetas          = JSON.parse(localStorage.getItem('db_metas'))             || [];
-    const saveGastosFijos  = () => localStorage.setItem('db_gastos_fijos',     JSON.stringify(dbGastosFijos));
-    const saveMetas        = () => localStorage.setItem('db_metas',            JSON.stringify(dbMetas));
+
+    // ── Persistencia por mes ──────────────────────────────────────────────
+    // Guarda el estado financiero (fijos + distribución) del mes indicado
+    function saveEstadoMes(mesKey) {
+        const estado = {
+            gastosFijos: JSON.parse(JSON.stringify(dbGastosFijos)),
+            distPcts:    JSON.parse(JSON.stringify(distPcts   || {})),
+            distMontos:  JSON.parse(JSON.stringify(distMontos || {})),
+            distModo:    JSON.parse(JSON.stringify(distModo   || {})),
+        };
+        localStorage.setItem('estado_mes_' + mesKey, JSON.stringify(estado));
+    }
+
+    // Carga el estado financiero de un mes (o usa el global si no existe snapshot)
+    function cargarEstadoMes(mesKey) {
+        const raw = localStorage.getItem('estado_mes_' + mesKey);
+        if (!raw) return false;
+        try {
+            const e = JSON.parse(raw);
+            // Restaurar gastos fijos, preservando cuotas activas (que son globales)
+            const cuotasActuales = dbGastosFijos.filter(g => g.esCuota);
+            dbGastosFijos = [
+                ...e.gastosFijos.filter(g => !g.esCuota),
+                ...cuotasActuales
+            ];
+            distPcts   = e.distPcts   || {};
+            distMontos = e.distMontos || {};
+            distModo   = e.distModo   || {};
+            return true;
+        } catch(err) { return false; }
+    }
+
+    // Mes actualmente cargado en UI
+    let _mesActivoCargado = null;
+
+    // Llama esto al cambiar de mes para cargar/guardar estados
+    function sincronizarEstadoMes(nuevoMes) {
+        if (_mesActivoCargado && _mesActivoCargado !== nuevoMes) {
+            // Guardar estado del mes que estábamos viendo
+            saveEstadoMes(_mesActivoCargado);
+        }
+        _mesActivoCargado = nuevoMes;
+        const cargado = cargarEstadoMes(nuevoMes);
+        if (!cargado) {
+            // Primer vez en este mes: guardar snapshot inicial con el estado actual
+            saveEstadoMes(nuevoMes);
+        }
+    }
+
+    const saveGastosFijos  = () => {
+        localStorage.setItem('db_gastos_fijos', JSON.stringify(dbGastosFijos));
+        // También actualizar snapshot del mes activo
+        if (_mesActivoCargado) saveEstadoMes(_mesActivoCargado);
+        schedulePush();
+    };
+    const saveMetas        = () => { localStorage.setItem('db_metas', JSON.stringify(dbMetas)); schedulePush(); };
     const totalGastosFijosReales = () => dbGastosFijos.filter(g => !g.esCuota).reduce((s,g) => s+(g.monto||0), 0);
     function agregarGastoFijo() {
         const n = document.getElementById('gf-nombre').value.trim();
@@ -844,13 +1064,25 @@
     let dbGastosVar      = JSON.parse(localStorage.getItem('db_gastos_var'))        || {};
     let dbHistorialAport = JSON.parse(localStorage.getItem('db_historial_aport'))   || [];
 
-    const saveDistPcts     = () => localStorage.setItem('dist_pcts',            JSON.stringify(distPcts));
-    const saveDistVinc     = () => localStorage.setItem('dist_vinculos',        JSON.stringify(distVinculos));
-    const saveDistMontos   = () => localStorage.setItem('dist_montos',          JSON.stringify(distMontos));
-    const saveDistModo     = () => localStorage.setItem('dist_modo',            JSON.stringify(distModo));
-    const saveAutoDist     = () => localStorage.setItem('auto_dist_config',      JSON.stringify(autoDistConfig));
-    const saveGastosVar    = () => localStorage.setItem('db_gastos_var',        JSON.stringify(dbGastosVar));
-    const saveHistAport    = () => localStorage.setItem('db_historial_aport',   JSON.stringify(dbHistorialAport));
+    const saveDistPcts     = () => {
+        localStorage.setItem('dist_pcts', JSON.stringify(distPcts));
+        if (_mesActivoCargado) saveEstadoMes(_mesActivoCargado);
+        schedulePush();
+    };
+    const saveDistVinc     = () => { localStorage.setItem('dist_vinculos', JSON.stringify(distVinculos)); schedulePush(); };
+    const saveDistMontos   = () => {
+        localStorage.setItem('dist_montos', JSON.stringify(distMontos));
+        if (_mesActivoCargado) saveEstadoMes(_mesActivoCargado);
+        schedulePush();
+    };
+    const saveDistModo     = () => {
+        localStorage.setItem('dist_modo', JSON.stringify(distModo));
+        if (_mesActivoCargado) saveEstadoMes(_mesActivoCargado);
+        schedulePush();
+    };
+    const saveAutoDist     = () => { localStorage.setItem('auto_dist_config', JSON.stringify(autoDistConfig)); schedulePush(); };
+    const saveGastosVar    = () => { localStorage.setItem('db_gastos_var', JSON.stringify(dbGastosVar)); schedulePush(); };
+    const saveHistAport    = () => { localStorage.setItem('db_historial_aport', JSON.stringify(dbHistorialAport)); schedulePush(); };
     function toggleDistModo(catId, disponible) {
         distModo[catId] = distModo[catId] === 'monto' ? 'pct' : 'monto';
         saveDistModo();
@@ -958,7 +1190,7 @@
 
     // ── Gastos fijos ──────────────────────────────────────────────────────
     let dbCuotas         = JSON.parse(localStorage.getItem('db_cuotas_v1'))         || [];
-    const saveCuotas       = () => localStorage.setItem('db_cuotas_v1',        JSON.stringify(dbCuotas));
+    const saveCuotas       = () => { localStorage.setItem('db_cuotas_v1', JSON.stringify(dbCuotas)); schedulePush(); };
     function agregarCuota() {
         const nombre  = document.getElementById('cuota-nombre').value.trim();
         const monto   = parseFloat(document.getElementById('cuota-monto').value);
@@ -1157,7 +1389,7 @@
 
     // ── Cuotas ────────────────────────────────────────────────────────────
     let DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom')) || [];
-    const saveCatsCustom   = () => localStorage.setItem('dist_cats_custom',     JSON.stringify(DIST_CATS_CUSTOM));
+    const saveCatsCustom   = () => { localStorage.setItem('dist_cats_custom', JSON.stringify(DIST_CATS_CUSTOM)); schedulePush(); };
     const DIST_BASE_VERSION = 'base_cats_50_20_20_10_v1';
     if (localStorage.getItem('dist_base_version') !== DIST_BASE_VERSION) {
         DIST_CATS_CUSTOM = [];
@@ -1789,7 +2021,7 @@
     function resetHoras() {
         if (confirm("⚠️ ¿Estás seguro de borrar TODOS los turnos guardados? Esta acción no se puede deshacer.")) {
             dbHoras = [];
-            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+            localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush();
             setupMonthSelector(); renderTodo();
         }
     }
@@ -1798,6 +2030,16 @@
 
     function renderTodo() {
         const mesSel    = document.getElementById('select-mes').value;
+
+        // Cargar/guardar estado financiero del mes seleccionado
+        sincronizarEstadoMes(mesSel);
+
+        // Badge histórico
+        const mesActual = monthKeyFromDate(new Date());
+        const esHistorico = mesSel !== mesActual;
+        const badge = document.getElementById('badge-historico');
+        if (badge) badge.style.display = esHistorico ? 'inline-flex' : 'none';
+
         const listHoras = document.getElementById('list-data');
         const periodoLabel = document.getElementById('periodo-label');
         if (periodoLabel) periodoLabel.innerText = 'Total a cobrar';
@@ -1902,7 +2144,7 @@
             neto:  (h50 * VALORES.HORA_NETA  * 1.5) + (h100 * VALORES.HORA_NETA  * 2),
             bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
         });
-        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras));
+        localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush();
         cerrarModal();
         setupMonthSelector(); renderTodo();
     }
@@ -2448,5 +2690,24 @@
         renderDistribucion(disponible);
     }
 </script>
+<!-- ── Modal configuración sync ── -->
+<div id="modal-sync" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:#161b22;border:0.5px solid #30363d;border-radius:16px;padding:22px;width:90%;max-width:400px;">
+        <div style="font-size:1rem;font-weight:700;color:#e6edf3;margin-bottom:6px;">☁️ Sincronización</div>
+        <div style="font-size:0.72rem;color:#7d8590;margin-bottom:16px;line-height:1.5;">
+            Pegá acá la URL de tu Web App de Google Apps Script para sincronizar entre dispositivos.
+        </div>
+        <label style="font-size:0.7rem;color:#7d8590;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">URL del Web App</label>
+        <input id="sync-url-input" type="url" placeholder="https://script.google.com/macros/s/..." class="input" style="font-size:0.78rem;margin-bottom:6px;">
+        <div style="font-size:0.65rem;color:#7d8590;margin-bottom:16px;">
+            📋 Para obtener la URL: Apps Script → Implementar → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button onclick="cerrarConfigSync()" style="flex:1;padding:11px;background:transparent;border:0.5px solid #30363d;border-radius:10px;color:#7d8590;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
+            <button onclick="guardarConfigSync()" style="flex:1;padding:11px;background:#1f6feb;border:none;border-radius:10px;color:#e6edf3;font-size:0.85rem;font-weight:700;cursor:pointer;">Guardar y sincronizar</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
