@@ -112,18 +112,19 @@
         .tab-content.active { display: block; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
 
-    <header style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px;">
+    <header style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 14px;border-bottom:0.5px solid var(--border);margin-bottom:16px;">
         <span style="font-size:0.82rem;font-weight:600;color:var(--text-muted);letter-spacing:0.3px;">Control Financiero</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-            <span id="sync-status" style="font-size:0.65rem;"></span>
-            <button onclick="sincronizarAhora()" title="Sincronizar ahora" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px;line-height:1;">🔄</button>
-            <button onclick="abrirConfigSync()" title="Configurar sync" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px;line-height:1;">⚙️</button>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <div id="sync-status" onclick="sincronizarAhora()" style="cursor:pointer;"></div>
+            <button onclick="sincronizarAhora()" title="Sincronizar ahora" style="background:rgba(255,255,255,0.04);border:0.5px solid var(--border);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:0.8rem;transition:all 0.2s;flex-shrink:0;" id="sync-refresh-btn">↻</button>
+            <button onclick="abrirConfigSync()" title="Configurar sync" style="background:rgba(255,255,255,0.04);border:0.5px solid var(--border);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:0.8rem;transition:all 0.2s;flex-shrink:0;">⚙</button>
         </div>
     </header>
 
@@ -574,15 +575,19 @@
         _syncStatus = status;
         const el = document.getElementById('sync-status');
         if (!el) return;
+        const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
         const cfg = {
-            idle:    { icon: '☁️',  color: '#7d8590', text: 'Sin configurar' },
-            syncing: { icon: '🔄',  color: '#fbbf24', text: 'Sincronizando...' },
-            ok:      { icon: '✅',  color: '#34d399', text: msg || 'Sincronizado' },
-            error:   { icon: '⚠️',  color: '#f87171', text: msg || 'Error de sync' },
-            offline: { icon: '📴',  color: '#7d8590', text: 'Sin conexión' },
+            idle:    { color: '#8892b0', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#8892b0',  anim: '',                          text: 'Sin configurar' },
+            syncing: { color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)',  dot: '#fbbf24',  anim: 'animation:pulse 1s infinite;', text: 'Sincronizando...' },
+            ok:      { color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)',  dot: '#34d399',  anim: '',                          text: msg || ('Sincronizado · ' + now) },
+            error:   { color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.25)', dot: '#f87171',  anim: '',                          text: msg || 'Error de sync' },
+            offline: { color: '#8892b0', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#8892b0',  anim: '',                          text: 'Sin conexión' },
         };
         const c = cfg[status] || cfg.idle;
-        el.innerHTML = c.icon + ' <span style="color:' + c.color + ';font-size:0.65rem;font-weight:600;">' + c.text + '</span>';
+        el.innerHTML = '<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:' + c.bg + ';border:0.5px solid ' + c.border + ';">'
+            + '<div style="width:6px;height:6px;border-radius:50%;background:' + c.dot + ';flex-shrink:0;' + c.anim + '"></div>'
+            + '<span style="font-size:0.62rem;font-weight:700;color:' + c.color + ';letter-spacing:0.3px;white-space:nowrap;">' + c.text + '</span>'
+            + '</div>';
     }
 
     // Trae todos los datos desde la nube y los aplica localmente
@@ -2691,20 +2696,25 @@
     }
 </script>
 <!-- ── Modal configuración sync ── -->
-<div id="modal-sync" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#161b22;border:0.5px solid #30363d;border-radius:16px;padding:22px;width:90%;max-width:400px;">
-        <div style="font-size:1rem;font-weight:700;color:#e6edf3;margin-bottom:6px;">☁️ Sincronización</div>
-        <div style="font-size:0.72rem;color:#7d8590;margin-bottom:16px;line-height:1.5;">
-            Pegá acá la URL de tu Web App de Google Apps Script para sincronizar entre dispositivos.
+<div id="modal-sync" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">☁</div>
+            <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#f0f4f8;">Sincronización</div>
+                <div style="font-size:0.68rem;color:#8892b0;margin-top:1px;">Google Sheets como base de datos</div>
+            </div>
         </div>
-        <label style="font-size:0.7rem;color:#7d8590;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">URL del Web App</label>
-        <input id="sync-url-input" type="url" placeholder="https://script.google.com/macros/s/..." class="input" style="font-size:0.78rem;margin-bottom:6px;">
-        <div style="font-size:0.65rem;color:#7d8590;margin-bottom:16px;">
-            📋 Para obtener la URL: Apps Script → Implementar → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario
+        <div style="height:0.5px;background:#1e2a47;margin-bottom:16px;"></div>
+        <div style="font-size:0.62rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">URL del Web App</div>
+        <input id="sync-url-input" type="url" placeholder="https://script.google.com/macros/s/..." class="input" style="font-size:0.78rem;margin-bottom:8px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(0,212,255,0.04);border:0.5px solid rgba(0,212,255,0.12);border-radius:8px;padding:9px 11px;margin-bottom:18px;">
+            <span style="font-size:0.75rem;color:#00d4ff;flex-shrink:0;margin-top:1px;">ℹ</span>
+            <span style="font-size:0.62rem;color:#8892b0;line-height:1.6;">Apps Script → <strong style="color:#00d4ff;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
         </div>
-        <div style="display:flex;gap:10px;">
-            <button onclick="cerrarConfigSync()" style="flex:1;padding:11px;background:transparent;border:0.5px solid #30363d;border-radius:10px;color:#7d8590;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
-            <button onclick="guardarConfigSync()" style="flex:1;padding:11px;background:#1f6feb;border:none;border-radius:10px;color:#e6edf3;font-size:0.85rem;font-weight:700;cursor:pointer;">Guardar y sincronizar</button>
+        <div style="display:flex;gap:8px;">
+            <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+            <button onclick="guardarConfigSync()" style="flex:1.6;padding:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.3);border-radius:10px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">☁ Guardar y sincronizar</button>
         </div>
     </div>
 </div>
