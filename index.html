@@ -33,7 +33,7 @@
         .select-modern { background: var(--bg-card); color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; outline: none; cursor: pointer; appearance: none; }
 
         .card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; justify-content: space-between; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-group { margin-bottom: 15px; }
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="card-registrar-turno">
             <div class="card-title"><i class="fa-solid fa-clock"></i> Registrar Turno</div>
             <div class="grid-2">
                 <div class="form-group"><label>Fecha</label><input type="date" id="in-fecha" class="input"></div>
@@ -225,13 +225,19 @@
             </button>
         </div>
 
-        <div class="card">
-            <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes</div>
+        <div class="card" id="card-historial-mes">
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes<span id="badge-readonly"></span></div>
             <ul id="list-data" style="list-style:none;margin-bottom:20px;"></ul>
             <button onclick="descargarExcel()" class="btn btn-success" style="margin-bottom:10px;">
                 <i class="fa-solid fa-file-excel"></i> Descargar Planilla Excel
             </button>
-            <button onclick="resetHoras()" class="btn btn-outline-danger">
+            <button id="btn-desbloquear-historico" onclick="desbloquearHistorico()" style="display:none;width:100%;padding:12px;border-radius:12px;font-size:0.88rem;font-weight:600;border:0.5px solid rgba(136,146,176,0.25);background:rgba(136,146,176,0.06);color:#8892b0;cursor:pointer;display:none;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;">
+                <i class="fa-solid fa-lock-open"></i> Desbloquear edición
+            </button>
+            <button id="btn-rebloquear-historico" onclick="rebloquearHistorico()" style="display:none;width:100%;padding:12px;border-radius:12px;font-size:0.88rem;font-weight:600;border:0.5px solid rgba(251,191,36,0.3);background:rgba(251,191,36,0.06);color:#fbbf24;cursor:pointer;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;">
+                <i class="fa-solid fa-lock"></i> Volver a bloquear
+            </button>
+            <button id="btn-borrar-historial" onclick="resetHoras()" class="btn btn-outline-danger">
                 <i class="fa-solid fa-trash-can"></i> Borrar Todo el Historial
             </button>
         </div>
@@ -809,7 +815,9 @@
 
         // También guardar meses vistos antes para no perderlos
         const mesesGuardados = JSON.parse(localStorage.getItem('meses_vistos') || '[]');
-        const todosMeses = [...new Set([...mesesConDatos, ...mesesGuardados, mesActualStr, mesAnteriorStr])].sort().reverse();
+        // Meses de inicio de actividad laboral — siempre visibles
+        const mesesFijos = ['2026-02', '2026-03'];
+        const todosMeses = [...new Set([...mesesConDatos, ...mesesGuardados, ...mesesFijos, mesActualStr, mesAnteriorStr])].sort().reverse();
         
         // Persistir meses conocidos
         localStorage.setItem('meses_vistos', JSON.stringify(todosMeses));
@@ -2033,6 +2041,62 @@
 
 
 
+    // ── Modo histórico: bloquea toda edición ─────────────────────────────
+    let _historicoDesbloqueado = false;
+
+    function setModoHistorico(esHistorico) {
+        _historicoDesbloqueado = false;
+        _aplicarEstadoBloqueo(esHistorico, false);
+    }
+
+    function desbloquearHistorico() {
+        mostrarConfirm('¿Desbloquear edición de este mes histórico?\nPodés agregar o editar turnos temporalmente.', function(ok) {
+            if (!ok) return;
+            _historicoDesbloqueado = true;
+            _aplicarEstadoBloqueo(true, true);
+        });
+    }
+
+    function rebloquearHistorico() {
+        _historicoDesbloqueado = false;
+        _aplicarEstadoBloqueo(true, false);
+    }
+
+    function _aplicarEstadoBloqueo(esHistorico, desbloqueado) {
+        const bloqueado = esHistorico && !desbloqueado;
+
+        // Formulario registrar turno
+        const cardRegistrar = document.getElementById('card-registrar-turno');
+        if (cardRegistrar) cardRegistrar.style.display = bloqueado ? 'none' : 'block';
+
+        // Badge solo lectura en el título
+        const badge = document.getElementById('badge-readonly');
+        if (badge) {
+            badge.innerHTML = bloqueado
+                ? '<span style="font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(136,146,176,0.1);color:#8892b0;border:0.5px solid rgba(136,146,176,0.2);">solo lectura</span>'
+                : (esHistorico
+                    ? '<span style="font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.08);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.2);">editando histórico</span>'
+                    : '');
+        }
+
+        // Botones desbloquear / rebloquear
+        const btnDesbloquear = document.getElementById('btn-desbloquear-historico');
+        const btnRebloquear  = document.getElementById('btn-rebloquear-historico');
+        const btnBorrar      = document.getElementById('btn-borrar-historial');
+        if (btnDesbloquear) btnDesbloquear.style.display = bloqueado ? 'flex' : 'none';
+        if (btnRebloquear)  btnRebloquear.style.display  = (esHistorico && desbloqueado) ? 'flex' : 'none';
+        if (btnBorrar)      btnBorrar.style.display      = bloqueado ? 'none' : 'flex';
+
+        // Botones editar/eliminar de la lista
+        setTimeout(() => {
+            document.querySelectorAll('#list-data .item-action').forEach(btn => {
+                btn.disabled = bloqueado;
+                btn.style.opacity = bloqueado ? '0.25' : '1';
+                btn.style.pointerEvents = bloqueado ? 'none' : 'auto';
+            });
+        }, 50);
+    }
+
     function renderTodo() {
         const mesSel    = document.getElementById('select-mes').value;
 
@@ -2045,11 +2109,13 @@
         const badge = document.getElementById('badge-historico');
         if (badge) badge.style.display = esHistorico ? 'inline-flex' : 'none';
 
+        // Bloquear/desbloquear UI según si es histórico
+        setModoHistorico(esHistorico);
+
         // Ajustar fecha del formulario al período seleccionado
         const campoFecha = document.getElementById('in-fecha');
         if (campoFecha) {
             if (esHistorico) {
-                // Usar el día 20 del mes de inicio del período como fecha por defecto
                 const { start } = getPeriodoBounds(mesSel);
                 const y = start.getFullYear();
                 const m = String(start.getMonth() + 1).padStart(2, '0');
