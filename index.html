@@ -301,22 +301,65 @@
 
         <!-- ── Sub-tabs ── -->
         <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
-            <button onclick="switchFinTab('presupuesto')" id="ftab-presupuesto"
+            <button onclick="switchFinTab('gastos')" id="ftab-gastos"
                 style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
-                <i class="fa-solid fa-wallet" style="margin-right:5px;font-size:0.72rem;"></i>Presupuesto
+                <i class="fa-solid fa-receipt" style="margin-right:5px;font-size:0.72rem;"></i>Gastos
+            </button>
+            <button onclick="switchFinTab('presupuesto')" id="ftab-presupuesto"
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                <i class="fa-solid fa-chart-pie" style="margin-right:5px;font-size:0.72rem;"></i>Mensual
             </button>
             <button onclick="switchFinTab('metas')" id="ftab-metas"
                 style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-bullseye" style="margin-right:5px;font-size:0.72rem;"></i>Metas
-            </button>
-            <button onclick="switchFinTab('cuotas')" id="ftab-cuotas"
-                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-credit-card" style="margin-right:5px;font-size:0.72rem;"></i>Cuotas
+                <i class="fa-solid fa-flag-checkered" style="margin-right:5px;font-size:0.72rem;"></i>Compromisos
             </button>
         </div>
 
+        <!-- ══ SUB-TAB: GASTOS ══ -->
+        <div id="fin-gastos" style="display:block;">
+
+            <!-- Escanear recibo -->
+            <button onclick="abrirEscanerRecibo()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+                <i class="fa-solid fa-camera"></i> Escanear recibo con IA
+            </button>
+
+            <!-- Registrar gasto manual -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div class="card-title">
+                    <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);"><i class="fa-solid fa-plus"></i></div>
+                    <span class="card-title-text">Registrar gasto</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
+                        <input id="gv-desc" class="input" placeholder="Ej: Supermercado" style="padding:8px 10px;font-size:0.83rem;">
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto $</div>
+                        <input id="gv-monto" class="input" inputmode="numeric" placeholder="$0" style="padding:8px 10px;font-size:0.83rem;text-align:right;">
+                    </div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Categoría</div>
+                    <select id="gv-cat" class="select-modern" style="width:100%;font-size:0.83rem;padding:8px 10px;"></select>
+                </div>
+                <button onclick="agregarGastoManual()" style="width:100%;padding:10px;background:var(--primary);color:#0a0e27;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    + Registrar
+                </button>
+            </div>
+
+            <!-- Gastos del mes -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div class="card-title">
+                    <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-list"></i></div>
+                    <span class="card-title-text">Gastos del mes</span>
+                </div>
+                <div id="gastos-mes-lista"></div>
+            </div>
+        </div>
+
         <!-- ══ SUB-TAB: PRESUPUESTO ══ -->
-        <div id="fin-presupuesto" style="display:block;">
+        <div id="fin-presupuesto" style="display:none;">
 
             <!-- Gastos fijos -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
@@ -331,13 +374,11 @@
                     </button>
                 </div>
                 <div id="gastos-fijos-lista" style="margin-bottom:4px;"></div>
-                <!-- Form inline -->
                 <div id="form-fijo" style="display:none;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);">
                     <div style="display:flex;gap:6px;">
                         <input type="text" id="gf-nombre" class="input" placeholder="Ej: Alquiler" style="flex:1;padding:8px 10px;font-size:0.82rem;">
                         <input type="text" id="gf-monto" class="input" inputmode="numeric" placeholder="$" style="width:90px;padding:8px 10px;font-size:0.82rem;text-align:right;">
-                        <button onclick="agregarGastoFijo()"
-                            style="background:#1f6feb;color:#e6edf3;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;">✓</button>
+                        <button onclick="agregarGastoFijo()" style="background:#1f6feb;color:#e6edf3;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;">✓</button>
                     </div>
                 </div>
             </div>
@@ -350,14 +391,8 @@
                         <span class="card-title-text">Distribuir disponible</span>
                     </div>
                     <div style="display:flex;gap:6px;">
-                        <button onclick="toggleNuevaCat()"
-                            style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">
-                            + Cat
-                        </button>
-                        <button onclick="resetDistribucion()"
-                            style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.7rem;cursor:pointer;">
-                            ↺
-                        </button>
+                        <button onclick="toggleNuevaCat()" style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">+ Cat</button>
+                        <button onclick="resetDistribucion()" style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.7rem;cursor:pointer;">↺</button>
                     </div>
                 </div>
                 <div id="dist-resumen" style="display:grid;grid-template-columns:1fr 0.5px 1fr 0.5px 1fr;background:var(--bg-input);border-radius:10px;padding:10px 0;margin-bottom:12px;">
@@ -376,16 +411,10 @@
                         <div id="dist-sin-asignar-top" style="font-size:1rem;font-weight:700;color:#f87171;line-height:1;">$0</div>
                     </div>
                 </div>
-<div style="display:flex;gap:7px;margin-bottom:8px;">
-                    <button onclick="aplicarAutoDistribucion()" style="flex:1;background:rgba(56,139,253,0.08);border:0.5px solid rgba(56,139,253,0.22);border-radius:10px;padding:8px 10px;color:#79c0ff;font-size:0.74rem;font-weight:700;cursor:pointer;">
-                        Auto
-                    </button>
-                    <button id="dist-sim-btn" onclick="toggleSimulacionDist()" style="flex:1;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">
-                        Simular
-                    </button>
-                    <button onclick="toggleAutoDistConfig()" style="width:42px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">
-                        %
-                    </button>
+                <div style="display:flex;gap:7px;margin-bottom:8px;">
+                    <button onclick="aplicarAutoDistribucion()" style="flex:1;background:rgba(56,139,253,0.08);border:0.5px solid rgba(56,139,253,0.22);border-radius:10px;padding:8px 10px;color:#79c0ff;font-size:0.74rem;font-weight:700;cursor:pointer;">Auto</button>
+                    <button id="dist-sim-btn" onclick="toggleSimulacionDist()" style="flex:1;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">Simular</button>
+                    <button onclick="toggleAutoDistConfig()" style="width:42px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">%</button>
                 </div>
                 <div id="dist-sim-actions" style="display:none;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;">
                     <button onclick="aplicarSimulacionDist()" style="padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:9px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Aplicar simulación</button>
@@ -458,6 +487,8 @@
             </div>
         </div>
 
+        </div>
+
         <!-- ══ SUB-TAB: METAS ══ -->
         <div id="fin-metas" style="display:none;">
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(245,158,11,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
@@ -469,7 +500,6 @@
                     <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid rgba(251,191,36,0.3);border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
                 </div>
                 <div id="metas-lista"></div>
-                <!-- Form meta inline -->
                 <div id="form-meta" style="display:none;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);">
                     <div style="display:flex;gap:6px;">
                         <input type="text" id="meta-nombre" class="input" placeholder="Ej: Vacaciones" style="flex:1;padding:8px 10px;font-size:0.82rem;">
@@ -478,17 +508,10 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ══ SUB-TAB: CUOTAS ══ -->
-        <div id="fin-cuotas" style="display:none;">
-            <!-- Resumen cuotas -->
+            <!-- Cuotas -->
             <div id="cuotas-resumen" style="margin-bottom:12px;"></div>
-
-            <!-- Lista cuotas -->
             <div id="cuotas-lista" style="margin-bottom:12px;"></div>
-
-            <!-- Form nueva cuota -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div class="card-title" style="margin-bottom:12px;">
                     <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-credit-card"></i></div>
@@ -586,6 +609,74 @@
     </div>
 </div>
 
+
+<!-- ── Modal Escanear Recibo ── -->
+<div id="modal-recibo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-camera" style="color:#00d4ff;font-size:1rem;"></i>
+            </div>
+            <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#f0f4f8;">Escanear recibo</div>
+                <div style="font-size:0.68rem;color:#8892b0;margin-top:1px;">Claude AI extrae comercio, monto y categoría</div>
+            </div>
+        </div>
+        <div style="height:0.5px;background:#1e2a47;margin-bottom:16px;"></div>
+
+        <!-- Área de imagen -->
+        <div id="recibo-upload-area" onclick="document.getElementById('recibo-file-input').click()"
+            style="border:1.5px dashed #1e2a47;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:14px;transition:border-color 0.2s;">
+            <input type="file" id="recibo-file-input" accept="image/*" capture="environment" style="display:none;" onchange="previsualizarRecibo(event)">
+            <div id="recibo-placeholder">
+                <i class="fa-solid fa-camera" style="font-size:2rem;color:#8892b0;display:block;margin-bottom:10px;"></i>
+                <div style="font-size:0.85rem;font-weight:600;color:#f0f4f8;margin-bottom:4px;">Tomá una foto o elegí una imagen</div>
+                <div style="font-size:0.7rem;color:#8892b0;">Toca para abrir la cámara o la galería</div>
+            </div>
+            <div id="recibo-preview-wrap" style="display:none;">
+                <img id="recibo-preview-img" style="max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;">
+                <div style="font-size:0.7rem;color:#8892b0;margin-top:8px;">Tocá para cambiar la imagen</div>
+            </div>
+        </div>
+
+        <!-- Botón analizar -->
+        <button id="recibo-analizar-btn" onclick="analizarRecibo()"
+            style="width:100%;padding:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.3);border-radius:10px;color:#00d4ff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.4;pointer-events:none;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Analizar con IA
+        </button>
+
+        <!-- Resultados (oculto hasta analizar) -->
+        <div id="recibo-resultados" style="display:none;">
+            <div style="height:0.5px;background:#1e2a47;margin-bottom:14px;"></div>
+            <div style="font-size:0.7rem;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:10px;">Datos detectados — editá si hace falta</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <div>
+                    <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Comercio / Descripción</div>
+                    <input id="recibo-desc" class="input" style="font-size:0.83rem;padding:8px 10px;">
+                </div>
+                <div>
+                    <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Monto $</div>
+                    <input id="recibo-monto" class="input" inputmode="numeric" style="font-size:0.83rem;padding:8px 10px;text-align:right;">
+                </div>
+            </div>
+            <div id="recibo-subcateg-wrap" style="display:none;margin-bottom:10px;">
+                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">Subcategoría detectada</div>
+                <span id="recibo-subcateg-chip" style="display:inline-block;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:600;color:#00d4ff;letter-spacing:0.3px;"></span>
+            </div>
+            <div style="margin-bottom:18px;">
+                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Categoría de presupuesto</div>
+                <select id="recibo-cat" class="select-modern" style="width:100%;font-size:0.83rem;padding:8px 10px;"></select>
+            </div>
+            <button onclick="confirmarRecibo()" style="width:100%;padding:12px;background:var(--success);border:none;border-radius:10px;color:#0a0e27;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+                <i class="fa-solid fa-check"></i> Registrar gasto
+            </button>
+        </div>
+
+        <button onclick="cerrarEscanerRecibo()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">
+            Cancelar
+        </button>
+    </div>
+</div>
 
 <nav class="bottom-nav">
     <button class="nav-btn active" id="btn-tab-horas" onclick="switchTab('horas')">
@@ -2005,7 +2096,7 @@
     let finTabActivo = 'presupuesto';
     function switchFinTab(tab) {
         currentFinTab = tab;
-        ['presupuesto','metas','cuotas'].forEach(t => {
+        ['gastos','presupuesto','metas'].forEach(t => {
             const panel = document.getElementById('fin-' + t);
             const btn   = document.getElementById('ftab-' + t);
             if (!panel || !btn) return;
@@ -2014,9 +2105,62 @@
             btn.style.background = on ? 'var(--bg-input)' : 'transparent';
             btn.style.color      = on ? 'var(--text-main)' : 'var(--text-muted)';
         });
-        if (tab === 'cuotas')      renderCuotas();
-        if (tab === 'metas')       renderFinanzas();
+        if (tab === 'gastos')      renderGastosTab();
         if (tab === 'presupuesto') renderFinanzas();
+        if (tab === 'metas')       { renderMetas(); renderCuotas(); }
+    }
+
+    function renderGastosTab() {
+        const sel = document.getElementById('gv-cat');
+        if (sel) {
+            sel.innerHTML = getCatsActivas()
+                .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
+                .join('');
+        }
+        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const gastos = (dbGastosVar[mes] || []).slice().reverse();
+        const lista  = document.getElementById('gastos-mes-lista');
+        if (!lista) return;
+        if (gastos.length === 0) {
+            lista.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:10px 0;text-align:center;">Sin gastos registrados este mes.</p>';
+            return;
+        }
+        const cats = getCatsActivas();
+        lista.innerHTML = gastos.map(g => {
+            const cat = cats.find(c => String(c.id) === String(g.catId));
+            const catLabel = cat ? (cat.icon || '') + ' ' + cat.nombre : '';
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);">
+                <div>
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);">${g.desc}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">${catLabel}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:0.95rem;font-weight:700;color:#f87171;">-$${g.monto.toLocaleString('es-AR')}</span>
+                    <button onclick="eliminarGastoManual('${g.id}','${mes}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:2px 6px;">✕</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function agregarGastoManual() {
+        const desc  = document.getElementById('gv-desc').value.trim();
+        const monto = parseFloat(document.getElementById('gv-monto').value);
+        const catId = document.getElementById('gv-cat').value;
+        if (!desc || !monto || monto <= 0) { alert('Completá descripción y monto.'); return; }
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push({ id: Date.now(), catId, desc, monto });
+        saveGastosVar();
+        document.getElementById('gv-desc').value  = '';
+        document.getElementById('gv-monto').value = '';
+        renderGastosTab();
+    }
+
+    function eliminarGastoManual(id, mes) {
+        if (!dbGastosVar[mes]) return;
+        dbGastosVar[mes] = dbGastosVar[mes].filter(g => String(g.id) !== String(id));
+        saveGastosVar();
+        renderGastosTab();
     }
 
     // ── Form toggles ──────────────────────────────────────────────────────
@@ -2076,8 +2220,8 @@
         }
 
         renderDistribucion(disponible);
-        if (currentFinTab === 'metas')  renderMetas();
-        if (currentFinTab === 'cuotas') renderCuotas();
+        if (currentFinTab === 'gastos')      renderGastosTab();
+        if (currentFinTab === 'metas')       { renderMetas(); renderCuotas(); }
         renderHistorialAportes();
     }
 
@@ -2696,7 +2840,7 @@
         URL.revokeObjectURL(url);
     }
 
-    let currentFinTab = 'presupuesto';
+    let currentFinTab = 'gastos';
     function toggleFormFijo() {
         const f = document.getElementById('form-fijo');
         f.style.display = f.style.display === 'none' ? 'block' : 'none';
@@ -2828,6 +2972,134 @@
         dbGastosVar[mes].push({ id: Date.now(), catId, desc: desc.trim(), monto });
         saveGastosVar();
         renderDistribucion(disponible);
+    }
+
+    // ── Escáner de recibos con IA ─────────────────────────────────────────
+    let _reciboBase64      = null;
+    let _reciboMime        = null;
+    let _reciboSubcategoria = null;
+
+    function abrirEscanerRecibo() {
+        if (!SYNC_URL) {
+            alert('Primero configurá la URL de sincronización con Google Sheets (botón ☁ arriba).');
+            return;
+        }
+        const sel = document.getElementById('recibo-cat');
+        sel.innerHTML = getCatsActivas()
+            .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
+            .join('');
+
+        document.getElementById('recibo-placeholder').style.display     = 'block';
+        document.getElementById('recibo-preview-wrap').style.display    = 'none';
+        document.getElementById('recibo-resultados').style.display      = 'none';
+        document.getElementById('recibo-file-input').value              = '';
+        const btn = document.getElementById('recibo-analizar-btn');
+        btn.style.opacity       = '0.4';
+        btn.style.pointerEvents = 'none';
+        _reciboBase64       = null;
+        _reciboMime         = null;
+        _reciboSubcategoria = null;
+        document.getElementById('recibo-subcateg-wrap').style.display = 'none';
+
+        document.getElementById('modal-recibo').style.display = 'flex';
+    }
+
+    function cerrarEscanerRecibo() {
+        document.getElementById('modal-recibo').style.display = 'none';
+    }
+
+    function previsualizarRecibo(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const [header, data] = dataUrl.split(',');
+            _reciboBase64 = data;
+            _reciboMime   = header.match(/:(.*?);/)[1];
+
+            document.getElementById('recibo-preview-img').src          = dataUrl;
+            document.getElementById('recibo-preview-wrap').style.display = 'block';
+            document.getElementById('recibo-placeholder').style.display  = 'none';
+
+            const btn = document.getElementById('recibo-analizar-btn');
+            btn.style.opacity       = '1';
+            btn.style.pointerEvents = 'auto';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function analizarRecibo() {
+        if (!_reciboBase64) return;
+        const btn = document.getElementById('recibo-analizar-btn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando...';
+        btn.style.pointerEvents = 'none';
+
+        try {
+            const res  = await fetch(SYNC_URL, {
+                method:  'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body:    JSON.stringify({ action: 'scan_receipt', image: _reciboBase64, mimeType: _reciboMime })
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error || 'Error del servidor');
+
+            const d = json.data;
+            document.getElementById('recibo-desc').value  = d.comercio || '';
+            document.getElementById('recibo-monto').value = d.monto    || '';
+
+            // Manejar nuevo formato seccion/subcategoria
+            const seccion = d.seccion || d.categoria_sugerida || '';
+            const subcat  = d.subcategoria || '';
+            _reciboSubcategoria = subcat ? `${seccion} › ${subcat}` : seccion;
+
+            const chipWrap = document.getElementById('recibo-subcateg-wrap');
+            const chipEl   = document.getElementById('recibo-subcateg-chip');
+            if (_reciboSubcategoria) {
+                chipEl.textContent      = _reciboSubcategoria;
+                chipWrap.style.display  = 'block';
+            } else {
+                chipWrap.style.display  = 'none';
+            }
+
+            if (seccion) {
+                const cats  = getCatsActivas();
+                const match = cats.find(c =>
+                    c.nombre.toLowerCase().includes(seccion.toLowerCase()) ||
+                    seccion.toLowerCase().includes(c.nombre.toLowerCase())
+                );
+                if (match) document.getElementById('recibo-cat').value = match.id;
+            }
+
+            document.getElementById('recibo-resultados').style.display = 'block';
+        } catch(err) {
+            alert('No se pudo analizar el recibo: ' + err.message);
+        } finally {
+            btn.innerHTML       = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analizar con IA';
+            btn.style.pointerEvents = 'auto';
+        }
+    }
+
+    function confirmarRecibo() {
+        const desc  = document.getElementById('recibo-desc').value.trim();
+        const monto = parseFloat(document.getElementById('recibo-monto').value);
+        const catId = document.getElementById('recibo-cat').value;
+
+        if (!desc || !monto || monto <= 0) { alert('Completá descripción y monto.'); return; }
+
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        const entrada = { id: Date.now(), catId, desc, monto };
+        if (_reciboSubcategoria) entrada.subcategoria = _reciboSubcategoria;
+        dbGastosVar[mes].push(entrada);
+        saveGastosVar();
+
+        cerrarEscanerRecibo();
+
+        const dispEl = document.getElementById('dist-disponible');
+        const disponible = dispEl ? parseFloat(dispEl.textContent.replace(/[^0-9.-]/g, '')) || 0 : 0;
+        renderDistribucion(disponible);
+        renderGastosTab();
     }
 </script>
 <!-- ── Modal configuración sync ── -->
