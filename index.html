@@ -278,11 +278,11 @@
     <main class="tab-content" id="tab-finanzas">
 
         <!-- ── Resumen top ── -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
+        <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
             <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
             <!-- Disponible — protagonista -->
             <div style="text-align:center;margin-bottom:16px;">
-                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Disponible para distribuir</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Disponible para distribuir</div>
                 <div id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</div>
             </div>
             <!-- Neto y Fijos debajo -->
@@ -302,16 +302,16 @@
         <!-- ── Sub-tabs ── -->
         <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
             <button onclick="switchFinTab('presupuesto')" id="ftab-presupuesto"
-                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
-                💰 Presupuesto
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
+                <i class="fa-solid fa-wallet" style="margin-right:5px;font-size:0.72rem;"></i>Presupuesto
             </button>
             <button onclick="switchFinTab('metas')" id="ftab-metas"
-                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                🎯 Metas
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                <i class="fa-solid fa-bullseye" style="margin-right:5px;font-size:0.72rem;"></i>Metas
             </button>
             <button onclick="switchFinTab('cuotas')" id="ftab-cuotas"
-                style="flex:1;padding:8px 4px;border-radius:9px;border:none;font-size:0.68rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                💳 Cuotas
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                <i class="fa-solid fa-credit-card" style="margin-right:5px;font-size:0.72rem;"></i>Cuotas
             </button>
         </div>
 
@@ -319,10 +319,11 @@
         <div id="fin-presupuesto" style="display:block;">
 
             <!-- Gastos fijos -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:0.9rem;">📌</span> Gastos fijos
+                    <div class="card-title" style="margin-bottom:0;">
+                        <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-receipt"></i></div>
+                        <span class="card-title-text">Gastos fijos</span>
                     </div>
                     <button onclick="toggleFormFijo()" id="btn-toggle-fijo"
                         style="background:rgba(31,111,235,0.12);border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 10px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">
@@ -342,38 +343,40 @@
             </div>
 
             <!-- Distribución -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
-                        <span>📊</span> Distribuir disponible
+                    <div class="card-title" style="margin-bottom:0;">
+                        <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);"><i class="fa-solid fa-chart-pie"></i></div>
+                        <span class="card-title-text">Distribuir disponible</span>
                     </div>
                     <div style="display:flex;gap:6px;">
                         <button onclick="toggleNuevaCat()"
-                            style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.68rem;font-weight:600;cursor:pointer;">
+                            style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">
                             + Cat
                         </button>
                         <button onclick="resetDistribucion()"
-                            style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.68rem;cursor:pointer;">
+                            style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.7rem;cursor:pointer;">
                             ↺
                         </button>
                     </div>
                 </div>
-                <div id="dist-resumen" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-bottom:12px;">
-                    <div style="background:rgba(52,211,153,0.07);border:0.5px solid rgba(52,211,153,0.18);border-radius:10px;padding:8px 10px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;margin-bottom:3px;">Disponible</div>
-                        <div id="dist-disponible" style="font-size:1.04rem;font-weight:800;color:#34d399;letter-spacing:-0.3px;line-height:1;">$0</div>
+                <div id="dist-resumen" style="display:grid;grid-template-columns:1fr 0.5px 1fr 0.5px 1fr;background:var(--bg-input);border-radius:10px;padding:10px 0;margin-bottom:12px;">
+                    <div style="text-align:center;padding:0 8px;">
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Disponible</div>
+                        <div id="dist-disponible" style="font-size:1rem;font-weight:700;color:#34d399;letter-spacing:-0.3px;line-height:1;">$0</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 9px;">
-                        <div style="font-size:0.54rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;margin-bottom:3px;">Asignado</div>
-                        <div id="dist-asignado" style="font-size:0.86rem;font-weight:800;color:var(--text-main);line-height:1.1;">$0</div>
+                    <div style="background:var(--border);"></div>
+                    <div style="text-align:center;padding:0 8px;">
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Asignado</div>
+                        <div id="dist-asignado" style="font-size:1rem;font-weight:700;color:var(--text-main);line-height:1;">$0</div>
                     </div>
-                    <div id="dist-estado-card" style="background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 9px;transition:0.2s;">
-                        <div id="dist-estado-label" style="font-size:0.54rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;margin-bottom:3px;">Sin asignar</div>
-                        <div id="dist-sin-asignar-top" style="font-size:0.86rem;font-weight:800;color:#f87171;line-height:1.1;">$0</div>
+                    <div style="background:var(--border);"></div>
+                    <div id="dist-estado-card" style="text-align:center;padding:0 8px;transition:0.2s;">
+                        <div id="dist-estado-label" style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Sin asignar</div>
+                        <div id="dist-sin-asignar-top" style="font-size:1rem;font-weight:700;color:#f87171;line-height:1;">$0</div>
                     </div>
                 </div>
-                <div id="fin-salud" style="display:none;margin-bottom:10px;"></div>
-                <div style="display:flex;gap:7px;margin-bottom:8px;">
+<div style="display:flex;gap:7px;margin-bottom:8px;">
                     <button onclick="aplicarAutoDistribucion()" style="flex:1;background:rgba(56,139,253,0.08);border:0.5px solid rgba(56,139,253,0.22);border-radius:10px;padding:8px 10px;color:#79c0ff;font-size:0.74rem;font-weight:700;cursor:pointer;">
                         Auto
                     </button>
@@ -385,12 +388,12 @@
                     </button>
                 </div>
                 <div id="dist-sim-actions" style="display:none;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;">
-                    <button onclick="aplicarSimulacionDist()" style="padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:9px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Aplicar simulacion</button>
+                    <button onclick="aplicarSimulacionDist()" style="padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:9px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Aplicar simulación</button>
                     <button onclick="cancelarSimulacionDist()" style="padding:7px;background:rgba(248,113,113,0.08);border:0.5px solid rgba(248,113,113,0.22);border-radius:9px;color:#f87171;font-size:0.72rem;font-weight:700;cursor:pointer;">Cancelar</button>
                 </div>
                 <div id="auto-dist-form" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribucion</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribución</div>
                         <div id="auto-dist-total" style="font-size:0.7rem;color:var(--text-muted);font-weight:700;">100%</div>
                     </div>
                     <div id="auto-dist-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;"></div>
@@ -400,7 +403,7 @@
                             <button onclick="aplicarAutoDistPlantilla('base')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Base 50/20/20/10</button>
                             <button onclick="aplicarAutoDistPlantilla('ajustado')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Mes ajustado</button>
                             <button onclick="aplicarAutoDistPlantilla('ahorro')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Liquidez</button>
-                            <button onclick="aplicarAutoDistPlantilla('inversion')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Invertir mas</button>
+                            <button onclick="aplicarAutoDistPlantilla('inversion')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Invertir más</button>
                             <button onclick="aplicarAutoDistPlantilla('ocio')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Ocio cuidado</button>
                             <button onclick="aplicarAutoDistPlantilla('defensivo')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Defensivo</button>
                         </div>
@@ -438,12 +441,12 @@
             </div>
 
             <!-- Historial de aportes colapsable -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
                 <button onclick="toggleHistorial()"
                     style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <i class="fa-solid fa-clock-rotate-left" style="color:#388bfd;font-size:0.75rem;"></i>
-                        <span style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Historial de aportes</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Historial de aportes</span>
                         <span id="hist-badge" style="font-size:0.7rem;background:rgba(56,139,253,0.12);color:#388bfd;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
                     </div>
                     <span id="hist-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
@@ -457,10 +460,11 @@
 
         <!-- ══ SUB-TAB: METAS ══ -->
         <div id="fin-metas" style="display:none;">
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(245,158,11,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px;">
-                        <span>🎯</span> Mis metas
+                    <div class="card-title" style="margin-bottom:0;">
+                        <div class="card-title-icon" style="background:rgba(245,158,11,0.12);color:var(--c-amber);"><i class="fa-solid fa-bullseye"></i></div>
+                        <span class="card-title-text">Mis metas</span>
                     </div>
                     <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid rgba(251,191,36,0.3);border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
                 </div>
@@ -485,8 +489,11 @@
             <div id="cuotas-lista" style="margin-bottom:12px;"></div>
 
             <!-- Form nueva cuota -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:12px;">Nueva compra en cuotas</div>
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div class="card-title" style="margin-bottom:12px;">
+                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-credit-card"></i></div>
+                    <span class="card-title-text">Nueva cuota</span>
+                </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                     <div>
                         <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
@@ -515,38 +522,38 @@
     <!-- ── Stats Tab ── -->
     <main class="tab-content" id="tab-stats">
 
-        <!-- Selector de año -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Comparativa anual</span>
-            <select id="stats-anio" class="select-modern" onchange="renderStats()" style="font-size:0.72rem;padding:4px 10px;"></select>
-        </div>
-
-        <!-- Gráfico de barras -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+        <!-- Gráfico de barras + selector de año integrado -->
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;">
-                    <i class="fa-solid fa-chart-bar" style="color:#a5b4fc;font-size:0.85rem;"></i> Horas por mes
+                <div class="card-title" style="margin-bottom:0;">
+                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-chart-bar"></i></div>
+                    <span class="card-title-text">Horas por mes</span>
                 </div>
-                <div style="display:flex;gap:10px;">
-                    <span style="font-size:0.7rem;color:var(--c-amber);display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:var(--c-amber);border-radius:2px;display:inline-block;"></span>50%</span>
-                    <span style="font-size:0.7rem;color:#b366ff;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#b366ff;border-radius:2px;display:inline-block;"></span>100%</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="display:flex;gap:8px;">
+                        <span style="font-size:0.7rem;color:var(--c-amber);display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:var(--c-amber);border-radius:50%;display:inline-block;"></span>50%</span>
+                        <span style="font-size:0.7rem;color:#b366ff;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#b366ff;border-radius:50%;display:inline-block;"></span>100%</span>
+                    </div>
+                    <select id="stats-anio" class="select-modern" onchange="renderStats()" style="font-size:0.72rem;padding:4px 10px;"></select>
                 </div>
             </div>
             <canvas id="chart-horas" style="width:100%;height:160px;display:block;"></canvas>
         </div>
 
         <!-- Gráfico ganancias -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
-            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;margin-bottom:16px;">
-                <i class="fa-solid fa-dollar-sign" style="color:var(--c-green);font-size:0.85rem;"></i> Extra cobrado por mes
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(52,211,153,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div class="card-title">
+                <div class="card-title-icon" style="background:rgba(52,211,153,0.1);color:var(--c-green);"><i class="fa-solid fa-dollar-sign"></i></div>
+                <span class="card-title-text">Extra cobrado por mes</span>
             </div>
             <canvas id="chart-neto" style="width:100%;height:140px;display:block;"></canvas>
         </div>
 
         <!-- Historial de meses -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
-            <div style="font-size:0.9rem;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:7px;margin-bottom:14px;">
-                <i class="fa-solid fa-clock-rotate-left" style="color:#388bfd;font-size:0.85rem;"></i> Historial mensual
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div class="card-title">
+                <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <span class="card-title-text">Historial mensual</span>
             </div>
             <div id="stats-historial"></div>
         </div>
