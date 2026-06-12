@@ -14,6 +14,7 @@
         :root {
             --bg-base: #0a0e27;
             --bg-card: #141d3a;
+            --bg-hero: #1a2244;
             --bg-input: #0a0e27;
             --primary: #00d4ff;
             --primary-hover: #00a8cc;
@@ -22,23 +23,33 @@
             --text-main: #f0f4f8;
             --text-muted: #8892b0;
             --border: #1e2a47;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
         .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
 
-        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
         .header-top h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
         .select-modern { background: var(--bg-card); color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; outline: none; cursor: pointer; appearance: none; }
 
-        .card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+        .card { background: var(--bg-card); border-radius: 16px; padding: var(--space-5); margin-bottom: var(--space-5); border: 1px solid var(--border); }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-4); color: var(--text-main); display: flex; align-items: center; gap: var(--space-3); }
+        .card-title-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+        .card-title-text { flex: 1; }
+        .card-registrar { border-top: 2px solid rgba(0,212,255,0.4); }
+        .card-historial { border-top: 2px solid rgba(165,180,252,0.4); }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .input { width: 100%; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+        .form-group { margin-bottom: var(--space-4); }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input { width: 100%; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: var(--space-3) var(--space-4); border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; }
         .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(31,111,235,0.15); }
 
         /* Botones */
@@ -52,8 +63,8 @@
 
 
         /* Cards resumen */
-        .horas-stats { display: flex; gap: 10px; margin-bottom: 20px; }
-        .stat-box { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
+        .horas-stats { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); }
+        .stat-box { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: var(--space-4); text-align: center; }
         .stat-box p { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
         .stat-box h3 { font-size: 1.2rem; color: var(--text-main); }
         .stat-box h3.highlight { color: var(--success); }
@@ -61,8 +72,12 @@
 
 
         /* Listas */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); gap: 10px; }
-        .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 12px 12px; border-bottom: 1px solid var(--border); gap: 10px; border-left: 3px solid transparent; margin-left: -1px; transition: border-left-color 0.2s; }
+        .list-item:last-child { border-bottom: none; }
+        .accent-mixed  { border-left-color: #a5b4fc; }
+        .accent-50     { border-left-color: #f59e0b; }
+        .accent-100    { border-left-color: #34d399; }
+        .accent-coord  { border-left-color: #f59e0b; border-left-style: dashed; }
         .item-info { flex: 1; min-width: 0; }
         .item-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .item-info p  { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -81,8 +96,6 @@
         .badge-100      { background: rgba(179,102,255,0.15); color: #b366ff; }
         .badge-coordinar{ background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px dashed rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 4px; }
 
-        /* Item "a coordinar" */
-        .coordinar-item { border-left: 3px solid #f59e0b; padding-left: 10px; margin-left: -10px; background: rgba(245,158,11,0.025); }
 
         /* Breakdown horas */
         .horas-breakdown { display: flex; gap: 12px; margin-bottom: 20px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -131,47 +144,48 @@
     <main class="tab-content active" id="tab-horas">
 
         <!-- ── Hero card ── -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border-mid);border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:#1f6feb12;border-radius:50%;pointer-events:none;"></div>
-            <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;background:#34d39910;border-radius:50%;pointer-events:none;"></div>
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;position:relative;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span id="periodo-label" style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar</span>
-                    <span id="badge-historico" style="display:none;font-size:0.55rem;font-weight:700;padding:1px 6px;border-radius:10px;background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.3);">📁 HISTÓRICO</span>
+        <div style="background:var(--bg-hero);border-top:2px solid var(--primary);border-radius:20px;padding:20px;margin-bottom:var(--space-5);position:relative;overflow:hidden;">
+            <!-- Header row -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span id="periodo-label" style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Total a cobrar</span>
+                    <span id="badge-historico" style="display:none;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.3);">HISTÓRICO</span>
                 </div>
                 <select id="select-mes" class="select-modern" onchange="renderTodo()" style="font-size:0.82rem;padding:6px 14px;min-height:34px;"></select>
             </div>
-            <div id="view-total-neto" style="font-size:2.1rem;font-weight:700;color:var(--text-main);letter-spacing:-1.5px;line-height:1.1;margin-bottom:3px;">$0</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:16px;">Bruto estimado: <span id="view-total-bruto" style="color:#388bfd;">$0</span></div>
+
+            <!-- Hero number -->
+            <div id="view-total-neto" style="font-size:2.8rem;font-weight:700;color:var(--text-main);letter-spacing:-2px;line-height:1;margin-bottom:4px;">$0</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:16px;">Bruto estimado: <span id="view-total-bruto" style="color:#388bfd;font-weight:600;">$0</span></div>
+
+            <!-- Sub-stats: neto base + extra -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+                <div style="background:rgba(255,255,255,0.03);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Neto base</div>
+                    <div id="view-neto-base" style="font-size:0.95rem;font-weight:600;color:var(--text-main);">$0</div>
+                </div>
+                <div style="background:rgba(52,211,153,0.05);border:0.5px solid rgba(52,211,153,0.2);border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Extra neto</div>
+                    <div id="view-extra-neto" style="font-size:0.95rem;font-weight:600;color:var(--c-green);">+$0</div>
+                </div>
+            </div>
+
+            <!-- Divider -->
             <div style="height:0.5px;background:var(--border);margin-bottom:16px;"></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;position:relative;">
+
+            <!-- Breakdown horas -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;">
                 <div style="text-align:center;padding:0 4px;">
                     <div id="bd-total" style="font-size:1.4rem;font-weight:700;color:var(--c-violet);letter-spacing:-0.5px;line-height:1.1;">0h</div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Total extras</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Total extras</div>
                 </div>
                 <div style="text-align:center;padding:0 4px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
                     <div id="bd-50" style="font-size:1.4rem;font-weight:700;color:var(--c-amber);letter-spacing:-0.5px;line-height:1.1;">0h</div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 50%</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 50%</div>
                 </div>
                 <div style="text-align:center;padding:0 4px;">
                     <div id="bd-100" style="font-size:1.4rem;font-weight:700;color:var(--c-green);letter-spacing:-0.5px;line-height:1.1;">0h</div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 100%</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── Neto base + extra row ── -->
-        <div style="margin-bottom:16px;">
-            <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;padding-left:2px;opacity:0.75;">Composición del neto</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;">
-                <div>
-                    <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Neto base</div>
-                    <div id="view-neto-base" style="font-size:0.95rem;font-weight:600;color:var(--text-main);">$0</div>
-                </div>
-                <div style="width:0.5px;background:var(--border);height:32px;"></div>
-                <div style="text-align:right;">
-                    <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Extra neto</div>
-                    <div id="view-extra-neto" style="font-size:0.95rem;font-weight:600;color:var(--c-green);">+$0</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 100%</div>
                 </div>
             </div>
         </div>
@@ -197,8 +211,11 @@
             </div>
         </div>
 
-        <div class="card" id="card-registrar-turno">
-            <div class="card-title"><i class="fa-solid fa-clock"></i> Registrar Turno</div>
+        <div class="card card-registrar" id="card-registrar-turno">
+            <div class="card-title">
+                <div class="card-title-icon" style="background:rgba(0,212,255,0.12);color:var(--primary);"><i class="fa-solid fa-clock"></i></div>
+                <span class="card-title-text">Registrar Turno</span>
+            </div>
             <div class="grid-2">
                 <div class="form-group"><label>Fecha</label><input type="date" id="in-fecha" class="input"></div>
                 <div class="form-group"><label>Tarea</label><input type="text" id="in-tareas" class="input"></div>
@@ -225,8 +242,12 @@
             </button>
         </div>
 
-        <div class="card" id="card-historial-mes">
-            <div class="card-title"><i class="fa-solid fa-list-check"></i> Historial del Mes<span id="badge-readonly"></span></div>
+        <div class="card card-historial" id="card-historial-mes">
+            <div class="card-title">
+                <div class="card-title-icon" style="background:rgba(165,180,252,0.12);color:#a5b4fc;"><i class="fa-solid fa-list-check"></i></div>
+                <span class="card-title-text">Historial del Mes</span>
+                <span id="badge-readonly"></span>
+            </div>
             <ul id="list-data" style="list-style:none;margin-bottom:20px;"></ul>
 
             <!-- Acciones principales -->
@@ -264,12 +285,12 @@
             <!-- Neto y Fijos debajo -->
             <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
                 <div style="text-align:center;padding:0 10px;">
-                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
                     <div id="fin-neto-top" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">$0</div>
                 </div>
                 <div style="background:var(--border);"></div>
                 <div style="text-align:center;padding:0 10px;">
-                    <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
                     <div id="fin-fijos-top" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
                 </div>
             </div>
@@ -336,7 +357,7 @@
                 </div>
                 <div id="dist-resumen" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;margin-bottom:12px;">
                     <div style="background:rgba(52,211,153,0.07);border:0.5px solid rgba(52,211,153,0.18);border-radius:10px;padding:8px 10px;">
-                        <div style="font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;margin-bottom:3px;">Disponible</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;margin-bottom:3px;">Disponible</div>
                         <div id="dist-disponible" style="font-size:1.04rem;font-weight:800;color:#34d399;letter-spacing:-0.3px;line-height:1;">$0</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 9px;">
@@ -366,7 +387,7 @@
                 </div>
                 <div id="auto-dist-form" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-size:0.62rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribucion</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribucion</div>
                         <div id="auto-dist-total" style="font-size:0.7rem;color:var(--text-muted);font-weight:700;">100%</div>
                     </div>
                     <div id="auto-dist-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;"></div>
@@ -420,7 +441,7 @@
                     <div style="display:flex;align-items:center;gap:6px;">
                         <i class="fa-solid fa-clock-rotate-left" style="color:#388bfd;font-size:0.75rem;"></i>
                         <span style="font-size:0.82rem;font-weight:600;color:var(--text-main);">Historial de aportes</span>
-                        <span id="hist-badge" style="font-size:0.62rem;background:rgba(56,139,253,0.12);color:#388bfd;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
+                        <span id="hist-badge" style="font-size:0.7rem;background:rgba(56,139,253,0.12);color:#388bfd;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
                     </div>
                     <span id="hist-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
                 </button>
@@ -465,21 +486,21 @@
                 <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:12px;">Nueva compra en cuotas</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                     <div>
-                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
                         <input type="text" id="cuota-nombre" class="input" placeholder="Ej: Heladera" style="padding:8px 10px;font-size:0.83rem;">
                     </div>
                     <div>
-                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto por cuota</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto por cuota</div>
                         <input type="text" id="cuota-monto" class="input" inputmode="numeric" placeholder="$0" style="padding:8px 10px;font-size:0.83rem;text-align:right;">
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
                     <div>
-                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Total cuotas</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Total cuotas</div>
                         <input type="text" id="cuota-total" class="input" inputmode="numeric" placeholder="Ej: 6" style="padding:8px 10px;font-size:0.83rem;text-align:center;">
                     </div>
                     <div>
-                        <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Ya pagadas</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Ya pagadas</div>
                         <input type="text" id="cuota-pagadas" class="input" inputmode="numeric" placeholder="0" style="padding:8px 10px;font-size:0.83rem;text-align:center;" value="0">
                     </div>
                 </div>
@@ -493,7 +514,7 @@
 
         <!-- Selector de año -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <span style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Comparativa anual</span>
+            <span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Comparativa anual</span>
             <select id="stats-anio" class="select-modern" onchange="renderStats()" style="font-size:0.72rem;padding:4px 10px;"></select>
         </div>
 
@@ -504,8 +525,8 @@
                     <i class="fa-solid fa-chart-bar" style="color:#a5b4fc;font-size:0.85rem;"></i> Horas por mes
                 </div>
                 <div style="display:flex;gap:10px;">
-                    <span style="font-size:0.65rem;color:var(--c-amber);display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:var(--c-amber);border-radius:2px;display:inline-block;"></span>50%</span>
-                    <span style="font-size:0.65rem;color:#b366ff;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#b366ff;border-radius:2px;display:inline-block;"></span>100%</span>
+                    <span style="font-size:0.7rem;color:var(--c-amber);display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:var(--c-amber);border-radius:2px;display:inline-block;"></span>50%</span>
+                    <span style="font-size:0.7rem;color:#b366ff;display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#b366ff;border-radius:2px;display:inline-block;"></span>100%</span>
                 </div>
             </div>
             <canvas id="chart-horas" style="width:100%;height:160px;display:block;"></canvas>
@@ -600,7 +621,7 @@
         const c = cfg[status] || cfg.idle;
         el.innerHTML = '<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:' + c.bg + ';border:0.5px solid ' + c.border + ';">'
             + '<div style="width:6px;height:6px;border-radius:50%;background:' + c.dot + ';flex-shrink:0;' + c.anim + '"></div>'
-            + '<span style="font-size:0.62rem;font-weight:700;color:' + c.color + ';letter-spacing:0.3px;white-space:nowrap;">' + c.text + '</span>'
+            + '<span style="font-size:0.7rem;font-weight:700;color:' + c.color + ';letter-spacing:0.3px;white-space:nowrap;">' + c.text + '</span>'
             + '</div>';
     }
 
@@ -1349,7 +1370,7 @@
             let histHtml = '';
             if (c.historial && c.historial.length > 0) {
                 histHtml = '<div style="margin-bottom:10px;border-top:0.5px solid #21262d;padding-top:8px;">'
-                    + c.historial.map(h => '<div style="display:flex;justify-content:space-between;font-size:0.65rem;padding:2px 0;">'
+                    + c.historial.map(h => '<div style="display:flex;justify-content:space-between;font-size:0.7rem;padding:2px 0;">'
                         + '<span style="color:var(--text-muted);">Cuota ' + h.num + ' · ' + h.catDesc + '</span>'
                         + '<span style="color:#34d399;">' + fmt(h.monto) + ' · ' + h.fecha.split('-').reverse().join('/') + '</span>'
                         + '</div>').join('')
@@ -1377,13 +1398,13 @@
                 + '</div>';
         });
         if (completadas.length > 0) {
-            html += '<div style="margin-top:6px;"><div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Completadas (' + completadas.length + ')</div>';
+            html += '<div style="margin-top:6px;"><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Completadas (' + completadas.length + ')</div>';
             completadas.forEach(c => {
                 html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(52,211,153,0.05);border:0.5px solid rgba(52,211,153,0.15);border-radius:10px;margin-bottom:6px;">'
                     + '<div style="display:flex;align-items:center;gap:8px;">'
                     +   '<span>✅</span>'
                     +   '<div><div style="font-size:0.8rem;color:var(--text-muted);text-decoration:line-through;">' + c.nombre + '</div>'
-                    +   '<div style="font-size:0.65rem;color:var(--text-muted);">' + c.total + ' cuotas · ' + fmt(c.total*c.monto) + '</div></div>'
+                    +   '<div style="font-size:0.7rem;color:var(--text-muted);">' + c.total + ' cuotas · ' + fmt(c.total*c.monto) + '</div></div>'
                     + '</div>'
                     + '<button onclick="eliminarCuotaItem(' + c.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;">✕</button>'
                     + '</div>';
@@ -1409,7 +1430,7 @@
             return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);">'
                 + '<div style="flex:1;min-width:0;">'
                 +   '<div style="font-size:0.78rem;font-weight:600;color:var(--text-main);">' + ap.metaNombre + '</div>'
-                +   '<div style="font-size:0.65rem;color:var(--text-muted);">' + d+'/'+m+'/'+y + ' · ' + (ap.catDesc||ap.catId) + '</div>'
+                +   '<div style="font-size:0.7rem;color:var(--text-muted);">' + d+'/'+m+'/'+y + ' · ' + (ap.catDesc||ap.catId) + '</div>'
                 + '</div>'
                 + '<div style="text-align:right;flex-shrink:0;">'
                 +   '<div style="font-size:0.82rem;font-weight:700;color:#34d399;">+' + fmt(ap.monto) + '</div>'
@@ -1616,7 +1637,7 @@
         el.style.display = 'block';
         el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:' + bg + ';border:0.5px solid ' + border + ';border-radius:10px;padding:8px 10px;">'
             + '<div style="min-width:0;">'
-            +   '<div style="font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;">Salud financiera</div>'
+            +   '<div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.45px;font-weight:700;">Salud financiera</div>'
             +   '<div style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Libre ' + librePct + '% · Gasto ' + gastoPct + '% · Ahorro/Inversion ' + ahorroInvPct + '%</div>'
             + '</div>'
             + '<div style="font-size:0.8rem;font-weight:800;color:' + color + ';white-space:nowrap;">' + label + '</div>'
@@ -1778,8 +1799,8 @@
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
                 +   '<div style="display:flex;align-items:center;gap:5px;">'
                 +     '<span style="font-size:0.83rem;font-weight:600;color:var(--text-main);">' + c.icon + ' ' + c.nombre + '</span>'
-                +     '<button class="dist-up" data-id="' + c.id + '" title="Subir" ' + (idx===0?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===0?'0.25':'1') + ';">^</button>'
-                +     '<button class="dist-down" data-id="' + c.id + '" title="Bajar" ' + (idx===ACTIVE.length-1?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.65rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===ACTIVE.length-1?'0.25':'1') + ';">v</button>'
+                +     '<button class="dist-up" data-id="' + c.id + '" title="Subir" ' + (idx===0?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===0?'0.25':'1') + ';">^</button>'
+                +     '<button class="dist-down" data-id="' + c.id + '" title="Bajar" ' + (idx===ACTIVE.length-1?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===ACTIVE.length-1?'0.25':'1') + ';">v</button>'
                 +     '<button class="dist-rename" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 2px;">✏️</button>'
                 +     '<button class="dist-delete" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#f87171;padding:0 2px;">✕</button>'
                 +   '</div>'
@@ -1802,8 +1823,8 @@
                 + (monto > 0 || gastado > 0
                     ? '<div style="margin-bottom:8px;">'
                     +   '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
-                    +     '<span style="font-size:0.65rem;color:var(--text-muted);">Gastado: ' + fmt(gastado) + '</span>'
-                    +     (superado ? '<span style="font-size:0.65rem;color:#f87171;font-weight:700;">Superado</span>' : (usoAlto ? '<span style="font-size:0.65rem;color:#fbbf24;font-weight:700;">' + pctGast + '% usado</span>' : '<span style="font-size:0.65rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>'))
+                    +     '<span style="font-size:0.7rem;color:var(--text-muted);">Gastado: ' + fmt(gastado) + '</span>'
+                    +     (superado ? '<span style="font-size:0.7rem;color:#f87171;font-weight:700;">Superado</span>' : (usoAlto ? '<span style="font-size:0.7rem;color:#fbbf24;font-weight:700;">' + pctGast + '% usado</span>' : '<span style="font-size:0.7rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>'))
                     +   '</div>'
                     +   '<div style="background:#21262d;border-radius:6px;height:5px;">'
                     +     '<div style="width:' + pctGast + '%;height:5px;border-radius:6px;background:' + barColor + ';transition:width 0.4s;"></div>'
@@ -1824,7 +1845,7 @@
                     const gvCat = (dbGastosVar[mes2]||[]).filter(g => g.catId === c.id);
                     if (gvCat.length === 0) return '';
                     return '<div style="margin-top:8px;border-top:0.5px solid var(--border);padding-top:8px;">'
-                        + '<div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">Gastos registrados</div>'
+                        + '<div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;">Gastos registrados</div>'
                         + gvCat.map(g =>
                             '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">'
                             + '<span style="font-size:0.72rem;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (g.desc||'Gasto') + '</span>'
@@ -2093,9 +2114,9 @@
         const badge = document.getElementById('badge-readonly');
         if (badge) {
             badge.innerHTML = bloqueado
-                ? '<span style="font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(136,146,176,0.1);color:#8892b0;border:0.5px solid rgba(136,146,176,0.2);">solo lectura</span>'
+                ? '<span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(136,146,176,0.1);color:#8892b0;border:0.5px solid rgba(136,146,176,0.2);">solo lectura</span>'
                 : (esHistorico
-                    ? '<span style="font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.08);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.2);">editando histórico</span>'
+                    ? '<span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.08);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.2);">editando histórico</span>'
                     : '');
         }
 
@@ -2164,8 +2185,12 @@
                 t100   += h100i;
 
                 const esCoord = !!i.coordinar;
+                const accentClass = esCoord ? 'accent-coord'
+                    : (h50i > 0 && h100i > 0) ? 'accent-mixed'
+                    : h100i > 0 ? 'accent-100'
+                    : 'accent-50';
                 listHoras.innerHTML += `
-                    <li class="list-item${esCoord ? ' coordinar-item' : ''}">
+                    <li class="list-item ${accentClass}">
                         <div class="item-info">
                             <h4>${formatFechaUS(i.fecha)} <span style="font-weight:400;color:var(--text-muted)">| ${i.txt}</span></h4>
                             <p>${i.tareas || 'Soporte IT'}</p>
@@ -2767,8 +2792,8 @@
                 +   '<div style="width:' + pct + '%;height:100%;background:' + (completa ? '#34d399' : '#fbbf24') + ';border-radius:6px;transition:width 0.5s;"></div>'
                 + '</div>'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:' + (completa ? '0' : '10px') + ';">'
-                +   '<span style="font-size:0.62rem;color:var(--text-muted);">' + pct + '% · ' + (completa ? 'Completada 🎉' : '~' + mesesRest + ' meses') + '</span>'
-                +   '<span style="font-size:0.62rem;color:var(--text-muted);">Faltan ' + fmt(faltan) + '</span>'
+                +   '<span style="font-size:0.7rem;color:var(--text-muted);">' + pct + '% · ' + (completa ? 'Completada 🎉' : '~' + mesesRest + ' meses') + '</span>'
+                +   '<span style="font-size:0.7rem;color:var(--text-muted);">Faltan ' + fmt(faltan) + '</span>'
                 + '</div>'
                 + (!completa ? (
                     '<div style="display:flex;gap:6px;">'
@@ -2806,11 +2831,11 @@
             </div>
         </div>
         <div style="height:0.5px;background:#1e2a47;margin-bottom:16px;"></div>
-        <div style="font-size:0.62rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">URL del Web App</div>
+        <div style="font-size:0.7rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">URL del Web App</div>
         <input id="sync-url-input" type="url" placeholder="https://script.google.com/macros/s/..." class="input" style="font-size:0.78rem;margin-bottom:8px;">
         <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(0,212,255,0.04);border:0.5px solid rgba(0,212,255,0.12);border-radius:8px;padding:9px 11px;margin-bottom:18px;">
             <span style="font-size:0.75rem;color:#00d4ff;flex-shrink:0;margin-top:1px;">ℹ</span>
-            <span style="font-size:0.62rem;color:#8892b0;line-height:1.6;">Apps Script → <strong style="color:#00d4ff;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
+            <span style="font-size:0.7rem;color:#8892b0;line-height:1.6;">Apps Script → <strong style="color:#00d4ff;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
         </div>
         <div style="display:flex;gap:8px;">
             <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
