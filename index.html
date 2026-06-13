@@ -129,6 +129,7 @@
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -282,8 +283,29 @@
             <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
             <!-- Disponible — protagonista -->
             <div style="text-align:center;margin-bottom:16px;">
-                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:4px;">Disponible para distribuir</div>
-                <div id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:6px;">Disponible para distribuir</div>
+
+                <!-- Vista normal (click activa edición) -->
+                <div id="fin-disp-display" onclick="activarEditDisponible()" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;">
+                    <span id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</span>
+                    <span style="font-size:0.75rem;color:var(--text-muted);opacity:0.6;margin-top:4px;">✎</span>
+                </div>
+
+                <!-- Vista edición -->
+                <div id="fin-disp-edit" style="display:none;align-items:center;justify-content:center;gap:6px;">
+                    <span style="font-size:1.8rem;font-weight:700;color:var(--text-muted);">$</span>
+                    <input id="fin-disp-input" inputmode="numeric"
+                        onkeydown="if(event.key==='Enter')confirmarEditDisponible();if(event.key==='Escape')cancelarEditDisponible();"
+                        style="font-size:1.8rem;font-weight:700;color:var(--c-green);background:var(--bg-input);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:4px 14px;width:160px;text-align:center;outline:none;font-family:inherit;">
+                    <button onclick="confirmarEditDisponible()" style="font-size:1rem;color:#34d399;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:4px 10px;cursor:pointer;">✓</button>
+                    <button onclick="cancelarEditDisponible()" style="font-size:1rem;color:var(--text-muted);background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
+                </div>
+
+                <!-- Badge override activo -->
+                <div id="fin-disp-override-info" style="display:none;margin-top:6px;">
+                    <span style="font-size:0.68rem;color:var(--text-muted);">Calculado: <span id="fin-disp-calculado" style="color:var(--text-main);font-weight:600;">$0</span></span>
+                    <button onclick="resetDisponibleOverride()" style="margin-left:8px;font-size:0.68rem;color:#00d4ff;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">↩ restablecer</button>
+                </div>
             </div>
             <!-- Neto y Fijos debajo -->
             <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
@@ -299,6 +321,7 @@
             </div>
         </div>
 
+
         <!-- ── Sub-tabs ── -->
         <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
             <button onclick="switchFinTab('gastos')" id="ftab-gastos"
@@ -311,55 +334,77 @@
             </button>
             <button onclick="switchFinTab('metas')" id="ftab-metas"
                 style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-flag-checkered" style="margin-right:5px;font-size:0.72rem;"></i>Compromisos
+                <i class="fa-solid fa-flag-checkered" style="margin-right:5px;font-size:0.72rem;"></i>Compr.
+            </button>
+            <button onclick="switchFinTab('historial')" id="ftab-historial"
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                <i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;font-size:0.72rem;"></i>Historial
             </button>
         </div>
 
         <!-- ══ SUB-TAB: GASTOS ══ -->
         <div id="fin-gastos" style="display:block;">
 
+            <!-- Hero balance del mes -->
+            <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Balance del mes</div>
+                    <div id="bal-mes-label" style="font-size:0.7rem;color:var(--text-muted);font-weight:600;"></div>
+                </div>
+                <div style="text-align:center;margin-bottom:14px;">
+                    <div id="bal-neto" style="font-size:2.2rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;line-height:1;">$0</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;background:rgba(10,14,39,0.5);border-radius:10px;padding:10px 0;">
+                    <div style="text-align:center;padding:0 8px;">
+                        <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">↑ Ingresos</div>
+                        <div id="bal-ingresos" style="font-size:0.95rem;font-weight:700;color:var(--c-green);">$0</div>
+                    </div>
+                    <div style="background:var(--border);"></div>
+                    <div style="text-align:center;padding:0 8px;">
+                        <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">↓ Gastos</div>
+                        <div id="bal-gastos" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Escanear recibo -->
-            <button onclick="abrirEscanerRecibo()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+            <button onclick="abrirEscanerRecibo()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;min-height:44px;">
                 <i class="fa-solid fa-camera"></i> Escanear recibo con IA
             </button>
 
-            <!-- Registrar gasto manual -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div class="card-title">
-                    <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);"><i class="fa-solid fa-plus"></i></div>
-                    <span class="card-title-text">Registrar gasto</span>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
-                        <input id="gv-desc" class="input" placeholder="Ej: Supermercado" style="padding:8px 10px;font-size:0.83rem;">
-                    </div>
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto $</div>
-                        <input id="gv-monto" class="input" inputmode="numeric" placeholder="$0" style="padding:8px 10px;font-size:0.83rem;text-align:right;">
-                    </div>
-                </div>
-                <div style="margin-bottom:10px;">
-                    <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Categoría</div>
-                    <select id="gv-cat" class="select-modern" style="width:100%;font-size:0.83rem;padding:8px 10px;"></select>
-                </div>
-                <button onclick="agregarGastoManual()" style="width:100%;padding:10px;background:var(--primary);color:#0a0e27;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                    + Registrar
-                </button>
-            </div>
+            <!-- Nueva transacción -->
+            <button onclick="abrirModalTrans()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--primary);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;min-height:48px;">
+                <i class="fa-solid fa-plus"></i> Nueva transacción
+            </button>
 
-            <!-- Gastos del mes -->
+            <!-- Movimientos del mes -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div class="card-title">
                     <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-list"></i></div>
-                    <span class="card-title-text">Gastos del mes</span>
+                    <span class="card-title-text">Movimientos del mes</span>
                 </div>
                 <div id="gastos-mes-lista"></div>
+            </div>
+
+            <!-- Gastos por categoría -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+                <button onclick="toggleTransPorCat()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-chart-simple"></i></div>
+                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Por categoría</span>
+                    </div>
+                    <span id="tpc-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
+                </button>
+                <div id="trans-porcat-body" style="display:none;padding:0 16px 14px;"></div>
             </div>
         </div>
 
         <!-- ══ SUB-TAB: PRESUPUESTO ══ -->
         <div id="fin-presupuesto" style="display:none;">
+
+            <!-- Comparativa vs mes anterior -->
+            <div id="comp-mes" style="display:none;background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:14px 18px;margin-bottom:12px;"></div>
 
             <!-- Gastos fijos -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
@@ -469,6 +514,22 @@
                 <div id="dist-leyenda" style="display:none;"></div>
             </div>
 
+            <!-- Límites por categoría -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(251,191,36,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+                <button onclick="toggleLimites()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="card-title-icon" style="background:rgba(251,191,36,0.1);color:#fbbf24;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-gauge-high"></i></div>
+                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Límites por categoría</span>
+                        <span id="limites-badge" style="display:none;font-size:0.7rem;background:rgba(248,113,113,0.12);color:#f87171;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
+                    </div>
+                    <span id="limites-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
+                </button>
+                <div id="limites-body" style="display:none;padding:0 16px 14px;">
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:10px;">Definí un tope mensual por categoría. Te aviso al llegar al 80%.</div>
+                    <div id="limites-lista"></div>
+                </div>
+            </div>
+
             <!-- Historial de aportes colapsable -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
                 <button onclick="toggleHistorial()"
@@ -538,6 +599,36 @@
                     </div>
                 </div>
                 <button onclick="agregarCuota()" style="width:100%;padding:11px;background:#1f6feb;color:#e6edf3;border:none;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">+ Agregar cuota</button>
+            </div>
+        </div>
+
+        <!-- ══ SUB-TAB: HISTORIAL ══ -->
+        <div id="fin-historial" style="display:none;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div class="card-title" style="margin-bottom:0;">
+                        <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <span class="card-title-text">Historial</span>
+                    </div>
+                    <button onclick="exportarHistorialExcel()" style="background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:6px 12px;color:#34d399;font-size:0.7rem;font-weight:600;cursor:pointer;min-height:32px;">
+                        <i class="fa-solid fa-file-excel" style="margin-right:4px;"></i>Excel
+                    </button>
+                </div>
+                <input id="hist-q" class="input" placeholder="🔍 Buscar por descripción..." oninput="renderHistorial()" style="width:100%;padding:9px 12px;font-size:0.83rem;margin-bottom:8px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+                    <select id="hist-tipo" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
+                        <option value="">Todos</option>
+                        <option value="gasto">Gastos</option>
+                        <option value="ingreso">Ingresos</option>
+                    </select>
+                    <select id="hist-cat" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
+                        <option value="">Categoría</option>
+                    </select>
+                    <select id="hist-mes" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
+                        <option value="">Mes</option>
+                    </select>
+                </div>
+                <div id="hist-lista"></div>
             </div>
         </div>
 
@@ -702,7 +793,7 @@
         'db_horas_v1', 'db_gastos_fijos', 'db_metas', 'db_gastos_var',
         'db_historial_aport', 'db_cuotas_v1', 'dist_pcts', 'dist_montos',
         'dist_modo', 'dist_vinculos', 'auto_dist_config', 'dist_cats_custom',
-        'meses_vistos'
+        'meses_vistos', 'app_v2_limites_cat', 'app_v2_subcats_custom', 'app_v2_cats_custom'
     ];
 
     let _syncStatus = 'idle'; // idle | syncing | ok | error
@@ -796,6 +887,9 @@
         dbGastosVar      = JSON.parse(localStorage.getItem('db_gastos_var'))        || {};
         dbHistorialAport = JSON.parse(localStorage.getItem('db_historial_aport'))   || [];
         dbCuotas         = JSON.parse(localStorage.getItem('db_cuotas_v1'))         || [];
+        dbLimitesCat     = JSON.parse(localStorage.getItem('app_v2_limites_cat'))   || {};
+        dbSubcatsCustom  = JSON.parse(localStorage.getItem('app_v2_subcats_custom')) || {};
+        dbCatsCustom     = JSON.parse(localStorage.getItem('app_v2_cats_custom'))    || {};
         distPcts         = JSON.parse(localStorage.getItem('dist_pcts'))            || null;
         distMontos       = JSON.parse(localStorage.getItem('dist_montos'))          || {};
         distModo         = JSON.parse(localStorage.getItem('dist_modo'))            || {};
@@ -1199,6 +1293,38 @@
         { id: 'inversion',   nombre: 'Inversión',    icon: '📈', color: '#a5b4fc', pctSug: 20 },
         { id: 'ahorro',      nombre: 'Ahorro',       icon: '🏦', color: '#34d399', pctSug: 10 },
     ];
+    const SECCIONES_SUBCATS = {
+        'Comida':              ['Supermercado','Delivery','Verdulería','Carnicería','Panadería','Fiambrería','Kiosco','Restaurante'],
+        'Transporte':          ['SUBE','Taxi','Uber'],
+        'Ropa':                ['Ropa','Zapatillas','Accesorios'],
+        'Cuidado personal':    ['Peluquería','Perfumes','Productos estéticos'],
+        'Entretenimiento':     ['Cine','Juegos','Libros','Evento'],
+        'Telefonía':           ['Carga de saldo','Plan mensual'],
+        'Salud':               ['Gimnasio','Deporte','Odontólogo','Farmacia','Óptica'],
+        'Educación':           ['Libros','Material escolar','Curso'],
+        'Servicios':           ['Luz','Agua','Gas','Internet'],
+        'Mantenimiento hogar': ['Ferretería','Limpieza','Lavandería'],
+        'Gustitos':            [],
+        'Regalos':             [],
+        'Alquiler':            [],
+    };
+    // Íconos por sección para el grid de transacciones y las listas
+    const SECCION_ICONS = {
+        'Comida': '🍔', 'Transporte': '🚗', 'Ropa': '👕', 'Cuidado personal': '💅',
+        'Entretenimiento': '🎮', 'Telefonía': '📱', 'Salud': '💊', 'Educación': '📚',
+        'Servicios': '📡', 'Mantenimiento hogar': '🏠', 'Gustitos': '🍰',
+        'Regalos': '🎁', 'Alquiler': '🏢', 'Otro': '➕',
+        'Sueldo': '💼', 'Extras': '🕐', 'Freelance': '💸', 'Regalo': '🎁'
+    };
+    const CATS_INGRESO = ['Sueldo', 'Extras', 'Freelance', 'Regalo', 'Otro'];
+    // Mapeo sección → categoría de presupuesto para preseleccionar en el modal
+    const SECCION_TO_CAT = {
+        'Comida': 'necesidades', 'Transporte': 'necesidades', 'Servicios': 'necesidades',
+        'Mantenimiento hogar': 'necesidades', 'Alquiler': 'necesidades', 'Salud': 'necesidades',
+        'Telefonía': 'necesidades', 'Educación': 'inversion', 'Ropa': 'ocio',
+        'Cuidado personal': 'ocio', 'Entretenimiento': 'ocio', 'Gustitos': 'ocio', 'Regalos': 'ocio'
+    };
+    const getSeccionesGasto = () => [...Object.keys(SECCIONES_SUBCATS), 'Otro'];
     const AUTO_DIST_DEFAULT = { necesidades: 50, ocio: 20, inversion: 20, ahorro: 10 };
     const DIST_PRESETS = {
         equilibrado: AUTO_DIST_DEFAULT,
@@ -1238,6 +1364,32 @@
     const saveAutoDist     = () => { localStorage.setItem('auto_dist_config', JSON.stringify(autoDistConfig)); schedulePush(); };
     const saveGastosVar    = () => { localStorage.setItem('db_gastos_var', JSON.stringify(dbGastosVar)); schedulePush(); };
     const saveHistAport    = () => { localStorage.setItem('db_historial_aport', JSON.stringify(dbHistorialAport)); schedulePush(); };
+    let dbLimitesCat       = JSON.parse(localStorage.getItem('app_v2_limites_cat'))   || {};
+    const saveLimitesCat   = () => { localStorage.setItem('app_v2_limites_cat',    JSON.stringify(dbLimitesCat));   schedulePush(); };
+    let dbSubcatsCustom    = JSON.parse(localStorage.getItem('app_v2_subcats_custom')) || {};
+    const saveSubcatsCustom = () => { localStorage.setItem('app_v2_subcats_custom', JSON.stringify(dbSubcatsCustom)); schedulePush(); };
+    const getSubcats = (seccion) => dbSubcatsCustom[seccion] !== undefined ? dbSubcatsCustom[seccion] : (SECCIONES_SUBCATS[seccion] || []);
+
+    let dbCatsCustom         = JSON.parse(localStorage.getItem('app_v2_cats_custom')) || {};
+    const saveTransCatsCustom = () => { localStorage.setItem('app_v2_cats_custom', JSON.stringify(dbCatsCustom)); schedulePush(); };
+    function getCatsGasto() {
+        const c = dbCatsCustom.gasto || { added: [], removed: [] };
+        const defaults = [...Object.keys(SECCIONES_SUBCATS), 'Otro'];
+        return [...defaults.filter(s => !c.removed.includes(s)), ...c.added];
+    }
+    function getCatsIngreso() {
+        const c = dbCatsCustom.ingreso || { added: [], removed: [] };
+        return [...CATS_INGRESO.filter(s => !c.removed.includes(s)), ...c.added];
+    }
+    // Suma solo gastos (entradas sin tipo = gasto, retrocompatible)
+    const sumGastosMes          = (mes) => (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso').reduce((s,g) => s+(g.monto||0), 0);
+    const sumIngresosManualesMes = (mes) => (dbGastosVar[mes] || []).filter(g => g.tipo === 'ingreso').reduce((s,g) => s+(g.monto||0), 0);
+    // Sección de una entrada (las viejas la llevan dentro de subcategoria "Sección › Subcat")
+    const seccionDeTrans = (g) => g.seccion || (g.subcategoria ? g.subcategoria.split(' › ')[0] : 'Otro');
+    function hoyISO() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
     function toggleDistModo(catId, disponible) {
         distModo[catId] = distModo[catId] === 'monto' ? 'pct' : 'monto';
         saveDistModo();
@@ -1296,7 +1448,7 @@
             : (disponible > 0 ? Math.round(disponible * (distPcts[catId] || 0) / 100) : 0);
         const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         const gastado = (dbGastosVar[mes] || [])
-            .filter(g => g.catId === catId)
+            .filter(g => g.catId === catId && g.tipo !== 'ingreso')
             .reduce((s, g) => s + (g.monto || 0), 0);
         const libreCat = Math.max(0, asignado - gastado);
         const faltanteMeta = Math.max(0, (m.monto || 0) - (m.ahorrado || 0));
@@ -1879,7 +2031,7 @@
                 : (disponible > 0 ? Math.round(disponible * pct / 100) : 0);
             const gastado  = (() => {
                 const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-                const gv  = (dbGastosVar[mes] || []).filter(g => g.catId === c.id);
+                const gv  = (dbGastosVar[mes] || []).filter(g => g.catId === c.id && g.tipo !== 'ingreso');
                 return gv.reduce((s, g) => s + (g.monto || 0), 0);
             })();
             const pctGast  = monto > 0 ? Math.min(100, Math.round((gastado / monto) * 100)) : (gastado > 0 ? 100 : 0);
@@ -2096,7 +2248,7 @@
     let finTabActivo = 'presupuesto';
     function switchFinTab(tab) {
         currentFinTab = tab;
-        ['gastos','presupuesto','metas'].forEach(t => {
+        ['gastos','presupuesto','metas','historial'].forEach(t => {
             const panel = document.getElementById('fin-' + t);
             const btn   = document.getElementById('ftab-' + t);
             if (!panel || !btn) return;
@@ -2108,52 +2260,370 @@
         if (tab === 'gastos')      renderGastosTab();
         if (tab === 'presupuesto') renderFinanzas();
         if (tab === 'metas')       { renderMetas(); renderCuotas(); }
+        if (tab === 'historial')   renderHistorial();
+    }
+
+    // ── Modal nueva transacción ───────────────────────────────────────────
+    let _transTipo          = 'gasto';
+    let _transSeccion       = null;
+    let _transSubcat        = null;
+    let _transSubcatEditing = false;
+    let _transCatEditing    = false;
+
+    function abrirModalTrans() {
+        _transTipo          = 'gasto';
+        _transSeccion       = null;
+        _transSubcat        = null;
+        _transSubcatEditing = false;
+        _transCatEditing    = false;
+        document.getElementById('trans-monto').value = '';
+        document.getElementById('trans-desc').value  = '';
+        document.getElementById('trans-fecha').value = hoyISO();
+        const sel = document.getElementById('trans-cat-presup');
+        sel.innerHTML = getCatsActivas()
+            .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
+            .join('');
+        setTransTipo('gasto');
+        document.getElementById('modal-trans').style.display = 'flex';
+        setTimeout(() => document.getElementById('trans-monto').focus(), 350);
+    }
+
+    function cerrarModalTrans() {
+        document.getElementById('modal-trans').style.display = 'none';
+    }
+
+    function setTransTipo(tipo) {
+        _transTipo          = tipo;
+        _transSeccion       = null;
+        _transSubcat        = null;
+        _transSubcatEditing = false;
+        _transCatEditing    = false;
+        const pg = document.getElementById('trans-pill-gasto');
+        const pi = document.getElementById('trans-pill-ingreso');
+        const esGasto = tipo === 'gasto';
+        pg.style.background = esGasto ? 'rgba(248,113,113,0.15)' : 'transparent';
+        pg.style.color      = esGasto ? '#f87171' : 'var(--text-muted)';
+        pi.style.background = esGasto ? 'transparent' : 'rgba(52,211,153,0.15)';
+        pi.style.color      = esGasto ? 'var(--text-muted)' : '#34d399';
+        document.getElementById('trans-cat-presup-wrap').style.display = esGasto ? 'block' : 'none';
+        document.getElementById('trans-desc').placeholder = esGasto ? '¿En qué gastaste?' : '¿De dónde vino?';
+        renderTransCatGrid();
+        renderTransSubcatWrap();
+    }
+
+    function renderTransCatGrid() {
+        const grid = document.getElementById('trans-cat-grid');
+        const cats = _transTipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
+        const ed   = _transCatEditing;
+
+        let html = cats.map(s => {
+            const esc  = s.replace(/'/g, "\\'");
+            const icon = SECCION_ICONS[s] || '➕';
+            if (ed) {
+                return `<div style="position:relative;">
+                    <button style="width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;min-height:56px;border-radius:11px;
+                        background:var(--bg-input);border:0.5px solid var(--border);opacity:0.65;cursor:default;font-family:inherit;">
+                        <span style="font-size:1.15rem;">${icon}</span>
+                        <span style="font-size:0.6rem;font-weight:600;color:var(--text-muted);line-height:1.1;text-align:center;">${s}</span>
+                    </button>
+                    <button onclick="eliminarCatTrans('${esc}')"
+                        style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#f87171;border:none;cursor:pointer;color:#0a0e27;font-size:0.8rem;font-weight:900;display:flex;align-items:center;justify-content:center;">×</button>
+                </div>`;
+            }
+            const on = s === _transSeccion;
+            return `<button onclick="selTransCat('${esc}')"
+                style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;min-height:56px;border-radius:11px;cursor:pointer;font-family:inherit;transition:0.15s;
+                background:${on ? 'rgba(0,212,255,0.12)' : 'var(--bg-input)'};
+                border:${on ? '1px solid rgba(0,212,255,0.5)' : '0.5px solid var(--border)'};">
+                <span style="font-size:1.15rem;">${icon}</span>
+                <span style="font-size:0.6rem;font-weight:600;color:${on ? '#00d4ff' : 'var(--text-muted)'};line-height:1.1;text-align:center;">${s}</span>
+            </button>`;
+        }).join('');
+
+        if (ed) {
+            html += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;border-radius:11px;background:rgba(0,212,255,0.05);border:1px dashed rgba(0,212,255,0.3);padding:6px 4px;">
+                <input id="cat-new-inp" placeholder="Nueva…" maxlength="20" onkeydown="if(event.key==='Enter')agregarCatTrans()"
+                    style="width:90%;padding:3px 6px;border-radius:8px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.62rem;outline:none;font-family:inherit;text-align:center;">
+                <button onclick="agregarCatTrans()" style="padding:2px 10px;border-radius:8px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.7rem;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
+            </div>`;
+        }
+
+        grid.innerHTML = html;
+
+        const editBtn = document.getElementById('trans-cat-edit-btn');
+        if (editBtn) { editBtn.textContent = ed ? 'Listo' : '✏ Editar'; editBtn.style.color = ed ? '#00d4ff' : '#8892b0'; }
+        if (ed) setTimeout(() => { const i = document.getElementById('cat-new-inp'); if(i) i.focus(); }, 50);
+    }
+
+    function toggleCatEdit() {
+        _transCatEditing = !_transCatEditing;
+        if (!_transCatEditing && _transSeccion && !getCatsGasto().concat(getCatsIngreso()).includes(_transSeccion)) {
+            _transSeccion = null; _transSubcat = null;
+        }
+        renderTransCatGrid();
+    }
+
+    function agregarCatTrans() {
+        const inp = document.getElementById('cat-new-inp');
+        if (!inp) return;
+        const val = inp.value.trim();
+        if (!val) return;
+        const tipo = _transTipo;
+        const key  = tipo === 'ingreso' ? 'ingreso' : 'gasto';
+        if (!dbCatsCustom[key]) dbCatsCustom[key] = { added: [], removed: [] };
+        const current = tipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
+        if (current.includes(val)) { inp.value = ''; return; }
+        dbCatsCustom[key].added.push(val);
+        saveTransCatsCustom();
+        inp.value = '';
+        renderTransCatGrid();
+    }
+
+    function eliminarCatTrans(seccion) {
+        const tipo = _transTipo;
+        const key  = tipo === 'ingreso' ? 'ingreso' : 'gasto';
+        if (!dbCatsCustom[key]) dbCatsCustom[key] = { added: [], removed: [] };
+        if (dbCatsCustom[key].added.includes(seccion)) {
+            dbCatsCustom[key].added = dbCatsCustom[key].added.filter(s => s !== seccion);
+        } else {
+            if (!dbCatsCustom[key].removed.includes(seccion)) dbCatsCustom[key].removed.push(seccion);
+        }
+        if (_transSeccion === seccion) { _transSeccion = null; _transSubcat = null; }
+        saveTransCatsCustom();
+        renderTransCatGrid();
+        renderTransSubcatWrap();
+    }
+
+    function selTransCat(seccion) {
+        _transSeccion       = seccion;
+        _transSubcat        = null;
+        _transSubcatEditing = false;
+        renderTransCatGrid();
+        renderTransSubcatWrap();
+        if (_transTipo === 'gasto') {
+            const sel = document.getElementById('trans-cat-presup');
+            const sugerida = SECCION_TO_CAT[seccion];
+            if (sugerida && sel.querySelector(`option[value="${sugerida}"]`)) sel.value = sugerida;
+        }
+    }
+
+    function renderTransSubcatWrap() {
+        const wrap = document.getElementById('trans-subcat-wrap');
+        if (!wrap) return;
+        // No mostrar para ingresos
+        if (!_transSeccion || _transTipo === 'ingreso') { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'block';
+        const subcats = getSubcats(_transSeccion);
+        const ed = _transSubcatEditing;
+
+        const chipsHTML = subcats.map(s => {
+            const esc = s.replace(/'/g, "\\'");
+            if (ed) {
+                return `<span style="display:inline-flex;align-items:center;gap:2px;padding:4px 8px 4px 11px;border-radius:20px;background:var(--bg-input);border:0.5px solid var(--border);font-size:0.75rem;color:var(--text-muted);">
+                    ${s}
+                    <button onclick="eliminarSubcatTrans('${esc}')" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:1rem;padding:0 0 0 2px;line-height:1;font-weight:700;">×</button>
+                </span>`;
+            }
+            const on = s === _transSubcat;
+            return `<button onclick="selTransSubcat('${esc}')"
+                style="padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:600;transition:0.15s;
+                background:${on ? 'rgba(0,212,255,0.15)' : 'var(--bg-input)'};
+                border:${on ? '1px solid rgba(0,212,255,0.5)' : '0.5px solid var(--border)'};
+                color:${on ? '#00d4ff' : 'var(--text-muted)'};">${s}</button>`;
+        }).join('');
+
+        const addHTML = ed ? `<span style="display:inline-flex;align-items:center;gap:4px;">
+            <input id="subcat-new-inp" placeholder="Nueva…" onkeydown="if(event.key==='Enter')agregarSubcatTrans()"
+                style="width:90px;padding:4px 8px;border-radius:20px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.75rem;outline:none;font-family:inherit;">
+            <button onclick="agregarSubcatTrans()" style="padding:4px 10px;border-radius:20px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
+        </span>` : '';
+
+        wrap.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                <div style="font-size:0.65rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;">
+                    Subcategoría <span style="font-weight:400;opacity:0.6;">(opcional)</span>
+                </div>
+                <button onclick="toggleSubcatEdit()" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:${ed ? '#00d4ff' : '#8892b0'};padding:2px 6px;border-radius:6px;font-family:inherit;font-weight:600;">
+                    ${ed ? 'Listo' : '✏ Editar'}
+                </button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${chipsHTML}${addHTML}</div>`;
+
+        if (ed) setTimeout(() => { const i = document.getElementById('subcat-new-inp'); if(i) i.focus(); }, 50);
+    }
+
+    function selTransSubcat(subcat) {
+        _transSubcat = (_transSubcat === subcat) ? null : subcat;
+        renderTransSubcatWrap();
+    }
+
+    function toggleSubcatEdit() {
+        _transSubcatEditing = !_transSubcatEditing;
+        if (!_transSubcatEditing && _transSubcat && !getSubcats(_transSeccion).includes(_transSubcat)) _transSubcat = null;
+        renderTransSubcatWrap();
+    }
+
+    function agregarSubcatTrans() {
+        const inp = document.getElementById('subcat-new-inp');
+        if (!inp) return;
+        const val = inp.value.trim();
+        if (!val) return;
+        const current = getSubcats(_transSeccion);
+        if (current.includes(val)) { inp.value = ''; return; }
+        dbSubcatsCustom[_transSeccion] = [...current, val];
+        saveSubcatsCustom();
+        renderTransSubcatWrap();
+    }
+
+    function eliminarSubcatTrans(subcat) {
+        const current = getSubcats(_transSeccion);
+        dbSubcatsCustom[_transSeccion] = current.filter(s => s !== subcat);
+        if (_transSubcat === subcat) _transSubcat = null;
+        saveSubcatsCustom();
+        renderTransSubcatWrap();
+    }
+
+    function guardarTrans() {
+        const monto = parseFloat(String(document.getElementById('trans-monto').value).replace(',', '.'));
+        if (!monto || monto <= 0)  { alert('Ingresá un monto válido.'); return; }
+        if (!_transSeccion)        { alert('Elegí una categoría.'); return; }
+        const fecha = document.getElementById('trans-fecha').value || hoyISO();
+        const mes   = monthKeyFromDate(parseFechaLocal(fecha));
+        const desc  = document.getElementById('trans-desc').value.trim() || _transSeccion;
+        const entrada = { id: Date.now(), desc, monto, tipo: _transTipo, seccion: _transSeccion, fecha };
+        if (_transSubcat) entrada.subcategoria = _transSeccion + ' › ' + _transSubcat;
+        if (_transTipo === 'gasto') entrada.catId = document.getElementById('trans-cat-presup').value;
+        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
+        dbGastosVar[mes].push(entrada);
+        saveGastosVar();
+
+        const btn = document.getElementById('trans-guardar-btn');
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Guardado';
+        btn.style.pointerEvents = 'none';
+        setTimeout(() => {
+            btn.innerHTML = 'Guardar';
+            btn.style.pointerEvents = 'auto';
+            cerrarModalTrans();
+        }, 800);
+
+        renderGastosTab();
+        renderFinanzas();
+        if (currentFinTab === 'historial') renderHistorial();
+    }
+
+    // ── Sub-tab Gastos: balance + lista + por categoría ───────────────────
+    function formatFechaLista(iso) {
+        const d = parseFechaLocal(iso);
+        const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+        return dias[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+    }
+
+    function renderBalanceMes() {
+        const elNeto = document.getElementById('bal-neto');
+        if (!elNeto) return;
+        const mes      = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const ingresos = totalIngresosMes + sumIngresosManualesMes(mes);
+        const gastos   = totalGastosFijosReales() + sumGastosMes(mes);
+        const balance  = ingresos - gastos;
+        elNeto.innerText   = fmt(balance);
+        elNeto.style.color = balance >= 0 ? 'var(--text-main)' : '#f87171';
+        document.getElementById('bal-ingresos').innerText = fmt(ingresos);
+        document.getElementById('bal-gastos').innerText   = fmt(gastos);
+        document.getElementById('bal-mes-label').innerText = formatPeriodoLabel(mes);
+    }
+
+    function transItemHTML(g, mes, conFecha = false) {
+        const esIngreso = g.tipo === 'ingreso';
+        const seccion   = seccionDeTrans(g);
+        const icono     = SECCION_ICONS[seccion] || '➕';
+        const subcatChip = g.subcategoria && g.subcategoria.includes(' › ')
+            ? `<span style="display:inline-block;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:1px 7px;font-size:0.65rem;font-weight:600;color:#00d4ff;margin-left:6px;vertical-align:middle;">${g.subcategoria.split(' › ')[1]}</span>`
+            : '';
+        const fechaTxt = conFecha && g.fecha ? ' · ' + g.fecha.split('-').reverse().slice(0,2).join('/') : '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">${icono}</div>
+                <div style="min-width:0;">
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.desc}${subcatChip}</div>
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-top:1px;">${seccion}${fechaTxt}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <span style="font-size:0.92rem;font-weight:700;color:${esIngreso ? '#34d399' : '#f87171'};">${esIngreso ? '+' : '-'}$${(g.monto||0).toLocaleString('es-AR')}</span>
+                <button onclick="eliminarGastoManual('${g.id}','${mes}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:6px;">✕</button>
+            </div>
+        </div>`;
     }
 
     function renderGastosTab() {
-        const sel = document.getElementById('gv-cat');
-        if (sel) {
-            sel.innerHTML = getCatsActivas()
-                .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
-                .join('');
-        }
-        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        const gastos = (dbGastosVar[mes] || []).slice().reverse();
-        const lista  = document.getElementById('gastos-mes-lista');
+        renderBalanceMes();
+        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const trans = dbGastosVar[mes] || [];
+        const lista = document.getElementById('gastos-mes-lista');
         if (!lista) return;
-        if (gastos.length === 0) {
-            lista.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:10px 0;text-align:center;">Sin gastos registrados este mes.</p>';
+        if (trans.length === 0) {
+            lista.innerHTML = `<div style="text-align:center;padding:18px 0;">
+                <div style="font-size:1.6rem;margin-bottom:6px;">🧾</div>
+                <p style="font-size:0.75rem;color:var(--text-muted);">Sin transacciones este mes.<br>¡Registrá tu primer gasto!</p>
+            </div>`;
+        } else {
+            // Agrupar por fecha desc; entradas viejas sin fecha al final
+            const grupos = {};
+            trans.forEach(g => { const k = g.fecha || ''; (grupos[k] = grupos[k] || []).push(g); });
+            const keys = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
+            lista.innerHTML = keys.map(k => {
+                const label = k ? formatFechaLista(k) : 'Sin fecha';
+                const filas = grupos[k].slice().reverse().map(g => transItemHTML(g, mes)).join('');
+                return `<div style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:10px 0 2px;">${label}</div>` + filas;
+            }).join('');
+        }
+        renderTransPorCat();
+    }
+
+    function toggleTransPorCat() {
+        const body = document.getElementById('trans-porcat-body');
+        const abierto = body.style.display !== 'none';
+        body.style.display = abierto ? 'none' : 'block';
+        document.getElementById('tpc-chevron').innerText = abierto ? '▼' : '▲';
+        if (!abierto) renderTransPorCat();
+    }
+
+    function renderTransPorCat() {
+        const wrap = document.getElementById('trans-porcat-body');
+        if (!wrap || wrap.style.display === 'none') return;
+        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const gastos = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso');
+        const porSec = {};
+        gastos.forEach(g => { const s = seccionDeTrans(g); porSec[s] = (porSec[s] || 0) + (g.monto || 0); });
+        const total = Object.values(porSec).reduce((s, v) => s + v, 0);
+        if (!total) {
+            wrap.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:8px 0;">Sin gastos este mes.</p>';
             return;
         }
-        const cats = getCatsActivas();
-        lista.innerHTML = gastos.map(g => {
-            const cat = cats.find(c => String(c.id) === String(g.catId));
-            const catLabel = cat ? (cat.icon || '') + ' ' + cat.nombre : '';
-            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);">
-                <div>
-                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);">${g.desc}</div>
-                    <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">${catLabel}</div>
+        const colores = ['#00d4ff','#34d399','#fbbf24','#a5b4fc','#f87171','#38bdf8','#f472b6','#facc15'];
+        wrap.innerHTML = Object.entries(porSec).sort((a, b) => b[1] - a[1]).map(([s, m], i) => {
+            const pct = Math.round(m / total * 100);
+            const lim = parseFloat(dbLimitesCat[s]) || 0;
+            let badge = '';
+            if (lim > 0) {
+                const uso = m / lim;
+                if (uso >= 1)        badge = '<span style="font-size:0.62rem;font-weight:700;color:#f87171;margin-left:6px;">🔴 Excedido</span>';
+                else if (uso >= 0.8) badge = `<span style="font-size:0.62rem;font-weight:700;color:#fbbf24;margin-left:6px;">⚠️ ${Math.round(uso*100)}%</span>`;
+            }
+            const color = colores[i % colores.length];
+            return `<div style="margin-bottom:9px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                    <span style="font-size:0.74rem;font-weight:600;color:var(--text-main);">${SECCION_ICONS[s] || '➕'} ${s}${badge}</span>
+                    <span style="font-size:0.72rem;color:var(--text-muted);"><strong style="color:var(--text-main);">${fmt(m)}</strong> · ${pct}%</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:0.95rem;font-weight:700;color:#f87171;">-$${g.monto.toLocaleString('es-AR')}</span>
-                    <button onclick="eliminarGastoManual('${g.id}','${mes}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:2px 6px;">✕</button>
+                <div style="background:#21262d;border-radius:6px;height:6px;overflow:hidden;">
+                    <div class="tpc-bar" data-w="${pct}" style="width:0%;height:100%;border-radius:6px;background:${color};transition:width 0.6s ease-out;"></div>
                 </div>
             </div>`;
         }).join('');
-    }
-
-    function agregarGastoManual() {
-        const desc  = document.getElementById('gv-desc').value.trim();
-        const monto = parseFloat(document.getElementById('gv-monto').value);
-        const catId = document.getElementById('gv-cat').value;
-        if (!desc || !monto || monto <= 0) { alert('Completá descripción y monto.'); return; }
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
-        dbGastosVar[mes].push({ id: Date.now(), catId, desc, monto });
-        saveGastosVar();
-        document.getElementById('gv-desc').value  = '';
-        document.getElementById('gv-monto').value = '';
-        renderGastosTab();
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            wrap.querySelectorAll('.tpc-bar').forEach(b => { b.style.width = b.dataset.w + '%'; });
+        }));
     }
 
     function eliminarGastoManual(id, mes) {
@@ -2161,6 +2631,207 @@
         dbGastosVar[mes] = dbGastosVar[mes].filter(g => String(g.id) !== String(id));
         saveGastosVar();
         renderGastosTab();
+        renderFinanzas();
+        if (currentFinTab === 'historial') renderHistorial();
+    }
+
+    // ── Comparativa vs mes anterior ───────────────────────────────────────
+    function prevMesKey(mes) {
+        const [y, m] = mes.split('-').map(Number);
+        const d = new Date(y, m - 2, 1);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    function ingresosDeMes(mes) {
+        const extras = dbHoras
+            .filter(h => h.fecha && !h.coordinar && monthKeyFromDate(parseFechaLocal(h.fecha)) === mes)
+            .reduce((s, h) => s + (h.neto || 0), 0);
+        return VALORES.NETO_BASE + extras + sumIngresosManualesMes(mes);
+    }
+
+    function renderComparativaMes() {
+        const el = document.getElementById('comp-mes');
+        if (!el) return;
+        const mes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const prev = prevMesKey(mes);
+        const hayPrevTrans = (dbGastosVar[prev] || []).length > 0;
+        const hayPrevHoras = dbHoras.some(h => h.fecha && !h.coordinar && monthKeyFromDate(parseFechaLocal(h.fecha)) === prev);
+        if (!hayPrevTrans && !hayPrevHoras) { el.style.display = 'none'; return; }
+
+        const gAct = sumGastosMes(mes),  gPrev = sumGastosMes(prev);
+        const iAct = ingresosDeMes(mes), iPrev = ingresosDeMes(prev);
+
+        const fila = (label, prevV, actV, subeEsMalo) => {
+            if (prevV === 0 && actV === 0) return '';
+            const delta  = actV - prevV;
+            const pct    = prevV > 0 ? Math.round(Math.abs(delta) / prevV * 100) : 100;
+            const sube   = delta > 0;
+            const mejora = subeEsMalo ? !sube : sube;
+            const flecha = delta === 0 ? '' :
+                `<span style="font-size:0.72rem;font-weight:700;color:${mejora ? '#34d399' : '#f87171'};">${sube ? '▲' : '▼'} ${sube ? '+' : '-'}${pct}%</span>`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;">
+                <span style="font-size:0.75rem;color:var(--text-muted);">${label}</span>
+                <span style="font-size:0.78rem;color:var(--text-main);">${fmt(prevV)} <span style="color:var(--text-muted);">→</span> <strong>${fmt(actV)}</strong> ${flecha}</span>
+            </div>`;
+        };
+
+        el.innerHTML = `<div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">vs mes anterior (${formatPeriodoLabel(prev)})</div>`
+            + fila('Gastos', gPrev, gAct, true)
+            + fila('Ingresos', iPrev, iAct, false);
+        el.style.display = 'block';
+    }
+
+    // ── Límites por categoría ─────────────────────────────────────────────
+    function toggleLimites() {
+        const body = document.getElementById('limites-body');
+        const abierto = body.style.display !== 'none';
+        body.style.display = abierto ? 'none' : 'block';
+        document.getElementById('limites-chevron').innerText = abierto ? '▼' : '▲';
+        if (!abierto) renderLimites();
+    }
+
+    function setLimiteCat(seccion, raw) {
+        const val = parseFloat(String(raw).replace(/\./g, '').replace(',', '.')) || 0;
+        if (val > 0) dbLimitesCat[seccion] = val;
+        else delete dbLimitesCat[seccion];
+        saveLimitesCat();
+        renderLimites();
+        renderTransPorCat();
+    }
+
+    function renderLimites() {
+        const lista = document.getElementById('limites-lista');
+        if (!lista) return;
+        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const gastos = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso');
+        const porSec = {};
+        gastos.forEach(g => { const s = seccionDeTrans(g); porSec[s] = (porSec[s] || 0) + (g.monto || 0); });
+
+        let excedidas = 0;
+        lista.innerHTML = getSeccionesGasto().map(s => {
+            const lim     = parseFloat(dbLimitesCat[s]) || 0;
+            const gastado = porSec[s] || 0;
+            const uso     = lim > 0 ? gastado / lim : 0;
+            const superado = lim > 0 && uso >= 1;
+            const alerta   = lim > 0 && !superado && uso >= 0.8;
+            if (superado) excedidas++;
+            const badge = superado ? '<span style="font-size:0.62rem;font-weight:700;color:#f87171;">🔴 Excedido</span>'
+                : (alerta ? `<span style="font-size:0.62rem;font-weight:700;color:#fbbf24;">⚠️ ${Math.round(uso*100)}%</span>` : '');
+            const barra = lim > 0
+                ? `<div style="background:#21262d;border-radius:5px;height:4px;margin-top:5px;overflow:hidden;">
+                       <div style="width:${Math.min(100, Math.round(uso*100))}%;height:100%;border-radius:5px;background:${superado ? '#f87171' : (alerta ? '#fbbf24' : '#34d399')};"></div>
+                   </div>`
+                : '';
+            return `<div style="padding:8px 10px;margin-bottom:6px;background:var(--bg-input);border-radius:10px;border:0.5px solid ${superado ? 'rgba(248,113,113,0.44)' : 'var(--border)'};">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <span style="font-size:0.76rem;font-weight:600;color:var(--text-main);flex:1;min-width:0;">${SECCION_ICONS[s] || '➕'} ${s} ${badge}</span>
+                    ${lim > 0 ? `<span style="font-size:0.66rem;color:var(--text-muted);white-space:nowrap;">${fmt(gastado)} /</span>` : ''}
+                    <input inputmode="numeric" placeholder="Sin límite" value="${lim > 0 ? lim.toLocaleString('es-AR') : ''}"
+                        onblur="setLimiteCat('${s.replace(/'/g, "\\'")}', this.value)"
+                        style="width:88px;text-align:right;font-size:0.76rem;font-weight:700;color:var(--text-main);background:transparent;border:none;border-bottom:0.5px solid var(--border);outline:none;font-family:inherit;padding:2px 0;">
+                </div>
+                ${barra}
+            </div>`;
+        }).join('');
+
+        const bdg = document.getElementById('limites-badge');
+        if (bdg) {
+            bdg.style.display = excedidas > 0 ? 'inline-block' : 'none';
+            bdg.innerText = excedidas > 0 ? excedidas + ' excedida' + (excedidas > 1 ? 's' : '') : '';
+        }
+    }
+
+    // ── Historial de transacciones ────────────────────────────────────────
+    function getTransFiltradas() {
+        const q    = (document.getElementById('hist-q')?.value || '').trim().toLowerCase();
+        const tipo = document.getElementById('hist-tipo')?.value || '';
+        const cat  = document.getElementById('hist-cat')?.value || '';
+        const mesF = document.getElementById('hist-mes')?.value || '';
+        const todas = [];
+        Object.keys(dbGastosVar).sort((a, b) => b.localeCompare(a)).forEach(mes => {
+            if (mesF && mes !== mesF) return;
+            (dbGastosVar[mes] || []).forEach(g => todas.push({ ...g, _mes: mes }));
+        });
+        return todas.filter(g => {
+            const gTipo = g.tipo === 'ingreso' ? 'ingreso' : 'gasto';
+            if (tipo && gTipo !== tipo) return false;
+            if (cat && seccionDeTrans(g) !== cat) return false;
+            if (q && !(g.desc || '').toLowerCase().includes(q)) return false;
+            return true;
+        });
+    }
+
+    function renderHistorial() {
+        const lista = document.getElementById('hist-lista');
+        if (!lista) return;
+
+        // Poblar filtros una sola vez (categorías e historial de meses)
+        const selCat = document.getElementById('hist-cat');
+        if (selCat && selCat.options.length <= 1) {
+            selCat.innerHTML = '<option value="">Categoría</option>' +
+                [...getSeccionesGasto(), ...CATS_INGRESO.filter(c => c !== 'Otro')]
+                    .map(s => `<option value="${s}">${SECCION_ICONS[s] || ''} ${s}</option>`).join('');
+        }
+        const selMes = document.getElementById('hist-mes');
+        if (selMes) {
+            const actual = selMes.value;
+            const meses = Object.keys(dbGastosVar).filter(m => (dbGastosVar[m] || []).length > 0).sort((a, b) => b.localeCompare(a));
+            selMes.innerHTML = '<option value="">Mes</option>' +
+                meses.map(m => `<option value="${m}">${formatPeriodoLabel(m)}</option>`).join('');
+            selMes.value = actual;
+        }
+
+        const trans = getTransFiltradas();
+        if (trans.length === 0) {
+            lista.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:14px 0;">Sin transacciones que coincidan.</p>';
+            return;
+        }
+        // Agrupar por período
+        const grupos = {};
+        trans.forEach(g => { (grupos[g._mes] = grupos[g._mes] || []).push(g); });
+        lista.innerHTML = Object.keys(grupos).sort((a, b) => b.localeCompare(a)).map(mes => {
+            const filas = grupos[mes].slice().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.id - a.id)
+                .map(g => transItemHTML(g, mes, true)).join('');
+            const totalMes = grupos[mes].reduce((s, g) => s + (g.tipo === 'ingreso' ? g.monto : -g.monto), 0);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;">
+                <span style="font-size:0.68rem;font-weight:700;color:#388bfd;text-transform:uppercase;letter-spacing:0.5px;">${formatPeriodoLabel(mes)}</span>
+                <span style="font-size:0.68rem;font-weight:700;color:${totalMes >= 0 ? '#34d399' : '#f87171'};">${totalMes >= 0 ? '+' : ''}${fmt(totalMes)}</span>
+            </div>` + filas;
+        }).join('');
+    }
+
+    async function exportarHistorialExcel() {
+        const trans = getTransFiltradas();
+        if (trans.length === 0) { alert('No hay transacciones para exportar.'); return; }
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet('Transacciones');
+        ws.columns = [
+            { header: 'Fecha',       key: 'fecha',   width: 12 },
+            { header: 'Período',     key: 'mes',     width: 16 },
+            { header: 'Tipo',        key: 'tipo',    width: 10 },
+            { header: 'Categoría',   key: 'cat',     width: 20 },
+            { header: 'Descripción', key: 'desc',    width: 32 },
+            { header: 'Monto',       key: 'monto',   width: 14 },
+        ];
+        ws.getRow(1).font = { bold: true };
+        trans.forEach(g => {
+            ws.addRow({
+                fecha: g.fecha || '',
+                mes:   formatPeriodoLabel(g._mes),
+                tipo:  g.tipo === 'ingreso' ? 'Ingreso' : 'Gasto',
+                cat:   seccionDeTrans(g),
+                desc:  g.desc || '',
+                monto: g.tipo === 'ingreso' ? (g.monto || 0) : -(g.monto || 0),
+            });
+        });
+        ws.getColumn('monto').numFmt = '#,##0';
+        const buf  = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'transacciones.xlsx';
+        a.click();
+        URL.revokeObjectURL(a.href);
     }
 
     // ── Form toggles ──────────────────────────────────────────────────────
@@ -2173,23 +2844,70 @@
         f.style.display = f.style.display === 'none' ? 'block' : 'none';
     }
 
+
     function calcDisponible() {
         const ingreso    = totalIngresosMes;
         const totalFijos = totalGastosFijosReales();
         const mes        = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        const gastadoCats= (dbGastosVar[mes] || []).reduce((s,g) => s+(g.monto||0), 0);
-        return { ingreso, totalFijos, gastadoCats, disponible: Math.max(0, ingreso - totalFijos - gastadoCats) };
+        const gastadoCats= sumGastosMes(mes);
+        const calculado  = Math.max(0, ingreso - totalFijos - gastadoCats);
+        const override   = localStorage.getItem('disponible_override_' + mes);
+        const disponible = override !== null ? parseFloat(override) : calculado;
+        return { ingreso, totalFijos, gastadoCats, disponible, tieneOverride: override !== null };
+    }
+
+    function activarEditDisponible() {
+        const { disponible } = calcDisponible();
+        document.getElementById('fin-disp-display').style.display = 'none';
+        const wrap = document.getElementById('fin-disp-edit');
+        wrap.style.display = 'flex';
+        const inp = document.getElementById('fin-disp-input');
+        inp.value = disponible;
+        setTimeout(() => { inp.focus(); inp.select(); }, 30);
+    }
+
+    function confirmarEditDisponible() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const raw = document.getElementById('fin-disp-input').value;
+        const val = parseFloat(String(raw).replace(/\./g, '').replace(',', '.'));
+        if (!isNaN(val) && val >= 0) {
+            localStorage.setItem('disponible_override_' + mes, val);
+        }
+        document.getElementById('fin-disp-edit').style.display = 'none';
+        document.getElementById('fin-disp-display').style.display = 'inline-flex';
+        renderFinanzas();
+    }
+
+    function cancelarEditDisponible() {
+        document.getElementById('fin-disp-edit').style.display = 'none';
+        document.getElementById('fin-disp-display').style.display = 'inline-flex';
+    }
+
+    function resetDisponibleOverride() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        localStorage.removeItem('disponible_override_' + mes);
+        renderFinanzas();
     }
 
     function renderFinanzas() {
-        const { ingreso, totalFijos, gastadoCats, disponible } = calcDisponible();
+        const { ingreso, totalFijos, gastadoCats, disponible, tieneOverride } = calcDisponible();
 
-        const el_neto = document.getElementById('fin-neto-top');
-        const el_fij  = document.getElementById('fin-fijos-top');
-        const el_disp = document.getElementById('fin-disponible');
+        const el_neto  = document.getElementById('fin-neto-top');
+        const el_fij   = document.getElementById('fin-fijos-top');
+        const el_disp  = document.getElementById('fin-disponible');
+        const el_overrideInfo = document.getElementById('fin-disp-override-info');
+        const el_calculado    = document.getElementById('fin-disp-calculado');
         if (el_neto) el_neto.innerText = fmt(ingreso);
         if (el_fij)  el_fij.innerText  = fmt(totalFijos);
-        if (el_disp) el_disp.innerText = fmt(disponible);
+        if (el_disp) {
+            el_disp.innerText   = fmt(disponible);
+            el_disp.style.color = tieneOverride ? '#00d4ff' : 'var(--c-green)';
+        }
+        if (el_overrideInfo) el_overrideInfo.style.display = tieneOverride ? 'block' : 'none';
+        if (el_calculado && tieneOverride) {
+            const calculadoReal = Math.max(0, ingreso - totalFijos - gastadoCats);
+            el_calculado.innerText = fmt(calculadoReal);
+        }
         renderSaludFinanciera(ingreso, totalFijos, gastadoCats, disponible);
 
         // Gastos fijos lista
@@ -2223,6 +2941,9 @@
         if (currentFinTab === 'gastos')      renderGastosTab();
         if (currentFinTab === 'metas')       { renderMetas(); renderCuotas(); }
         renderHistorialAportes();
+        renderComparativaMes();
+        renderLimites();
+
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────
@@ -2978,6 +3699,7 @@
     let _reciboBase64      = null;
     let _reciboMime        = null;
     let _reciboSubcategoria = null;
+    let _reciboFecha       = null;
 
     function abrirEscanerRecibo() {
         if (!SYNC_URL) {
@@ -2999,6 +3721,7 @@
         _reciboBase64       = null;
         _reciboMime         = null;
         _reciboSubcategoria = null;
+        _reciboFecha        = null;
         document.getElementById('recibo-subcateg-wrap').style.display = 'none';
 
         document.getElementById('modal-recibo').style.display = 'flex';
@@ -3052,6 +3775,7 @@
             const seccion = d.seccion || d.categoria_sugerida || '';
             const subcat  = d.subcategoria || '';
             _reciboSubcategoria = subcat ? `${seccion} › ${subcat}` : seccion;
+            _reciboFecha = (d.fecha && /^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) ? d.fecha : null;
 
             const chipWrap = document.getElementById('recibo-subcateg-wrap');
             const chipEl   = document.getElementById('recibo-subcateg-chip');
@@ -3087,21 +3811,75 @@
 
         if (!desc || !monto || monto <= 0) { alert('Completá descripción y monto.'); return; }
 
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const fecha = _reciboFecha || hoyISO();
+        const mes   = monthKeyFromDate(parseFechaLocal(fecha));
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
-        const entrada = { id: Date.now(), catId, desc, monto };
-        if (_reciboSubcategoria) entrada.subcategoria = _reciboSubcategoria;
+        const entrada = { id: Date.now(), catId, desc, monto, tipo: 'gasto', fecha };
+        if (_reciboSubcategoria) {
+            entrada.subcategoria = _reciboSubcategoria;
+            entrada.seccion      = _reciboSubcategoria.split(' › ')[0];
+        } else {
+            entrada.seccion = 'Otro';
+        }
         dbGastosVar[mes].push(entrada);
         saveGastosVar();
 
         cerrarEscanerRecibo();
-
-        const dispEl = document.getElementById('dist-disponible');
-        const disponible = dispEl ? parseFloat(dispEl.textContent.replace(/[^0-9.-]/g, '')) || 0 : 0;
-        renderDistribucion(disponible);
         renderGastosTab();
+        renderFinanzas();
     }
 </script>
+<!-- ── Modal nueva transacción ── -->
+<div id="modal-trans" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalTrans()">
+    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="font-size:1rem;font-weight:700;color:#f0f4f8;">Nueva transacción</div>
+            <button onclick="cerrarModalTrans()" style="background:none;border:none;color:#8892b0;font-size:1.1rem;cursor:pointer;padding:4px 8px;">✕</button>
+        </div>
+        <!-- Toggle tipo -->
+        <div style="display:flex;background:#0a0e27;border-radius:12px;padding:4px;gap:4px;margin-bottom:16px;">
+            <button id="trans-pill-gasto" onclick="setTransTipo('gasto')" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;background:rgba(248,113,113,0.15);color:#f87171;">↓ Gasto</button>
+            <button id="trans-pill-ingreso" onclick="setTransTipo('ingreso')" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;background:transparent;color:#8892b0;">↑ Ingreso</button>
+        </div>
+        <!-- Monto -->
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="display:inline-flex;align-items:center;gap:6px;">
+                <span style="font-size:1.6rem;font-weight:700;color:#8892b0;">$</span>
+                <input id="trans-monto" inputmode="decimal" placeholder="0" style="font-size:1.8rem;font-weight:700;color:#f0f4f8;background:#0a0e27;border:1px solid #1e2a47;border-radius:12px;padding:8px 14px;width:180px;text-align:center;outline:none;font-family:inherit;">
+            </div>
+        </div>
+        <!-- Grid categorías -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:0.7rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;">Categoría</div>
+            <button id="trans-cat-edit-btn" onclick="toggleCatEdit()" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#8892b0;padding:2px 6px;border-radius:6px;font-family:inherit;font-weight:600;">✏ Editar</button>
+        </div>
+        <div id="trans-cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;"></div>
+        <!-- Subcategorías -->
+        <div id="trans-subcat-wrap" style="display:none;margin-bottom:14px;"></div>
+        <!-- Descripción + fecha -->
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:12px;">
+            <div>
+                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Descripción</div>
+                <input id="trans-desc" class="input" placeholder="¿En qué gastaste?" style="padding:9px 10px;font-size:0.83rem;">
+            </div>
+            <div>
+                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Fecha</div>
+                <input id="trans-fecha" type="date" class="input" style="padding:9px 10px;font-size:0.8rem;">
+            </div>
+        </div>
+        <!-- Categoría de presupuesto (solo gastos) -->
+        <div id="trans-cat-presup-wrap" style="margin-bottom:16px;">
+            <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Categoría de presupuesto</div>
+            <select id="trans-cat-presup" class="select-modern" style="width:100%;font-size:0.83rem;padding:9px 10px;"></select>
+        </div>
+        <button id="trans-guardar-btn" onclick="guardarTrans()" style="width:100%;padding:13px;background:var(--success);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;min-height:48px;">
+            Guardar
+        </button>
+        <button onclick="cerrarModalTrans()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px;">
+            Cancelar
+        </button>
+    </div>
+</div>
 <!-- ── Modal configuración sync ── -->
 <div id="modal-sync" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
     <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;">
