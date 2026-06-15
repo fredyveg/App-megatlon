@@ -278,48 +278,6 @@
 
     <main class="tab-content" id="tab-finanzas">
 
-        <!-- ── Resumen top ── -->
-        <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
-            <!-- Disponible — protagonista -->
-            <div style="text-align:center;margin-bottom:16px;">
-                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:6px;">Disponible para distribuir</div>
-
-                <!-- Vista normal (click activa edición) -->
-                <div id="fin-disp-display" onclick="activarEditDisponible()" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;">
-                    <span id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</span>
-                    <span style="font-size:0.75rem;color:var(--text-muted);opacity:0.6;margin-top:4px;">✎</span>
-                </div>
-
-                <!-- Vista edición -->
-                <div id="fin-disp-edit" style="display:none;align-items:center;justify-content:center;gap:6px;">
-                    <span style="font-size:1.8rem;font-weight:700;color:var(--text-muted);">$</span>
-                    <input id="fin-disp-input" inputmode="numeric"
-                        onkeydown="if(event.key==='Enter')confirmarEditDisponible();if(event.key==='Escape')cancelarEditDisponible();"
-                        style="font-size:1.8rem;font-weight:700;color:var(--c-green);background:var(--bg-input);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:4px 14px;width:160px;text-align:center;outline:none;font-family:inherit;">
-                    <button onclick="confirmarEditDisponible()" style="font-size:1rem;color:#34d399;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:4px 10px;cursor:pointer;">✓</button>
-                    <button onclick="cancelarEditDisponible()" style="font-size:1rem;color:var(--text-muted);background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
-                </div>
-
-                <!-- Badge override activo -->
-                <div id="fin-disp-override-info" style="display:none;margin-top:6px;">
-                    <span style="font-size:0.68rem;color:var(--text-muted);">Calculado: <span id="fin-disp-calculado" style="color:var(--text-main);font-weight:600;">$0</span></span>
-                    <button onclick="resetDisponibleOverride()" style="margin-left:8px;font-size:0.68rem;color:#00d4ff;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">↩ restablecer</button>
-                </div>
-            </div>
-            <!-- Neto y Fijos debajo -->
-            <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
-                <div style="text-align:center;padding:0 10px;">
-                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
-                    <div id="fin-neto-top" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">$0</div>
-                </div>
-                <div style="background:var(--border);"></div>
-                <div style="text-align:center;padding:0 10px;">
-                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
-                    <div id="fin-fijos-top" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
-                </div>
-            </div>
-        </div>
 
 
         <!-- ── Sub-tabs ── -->
@@ -352,8 +310,13 @@
                     <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Balance del mes</div>
                     <div id="bal-mes-label" style="font-size:0.7rem;color:var(--text-muted);font-weight:600;"></div>
                 </div>
-                <div style="text-align:center;margin-bottom:14px;">
-                    <div id="bal-neto" style="font-size:2.2rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;line-height:1;">$0</div>
+                <div style="text-align:center;margin-bottom:14px;" onclick="editarBalanceNeto()">
+                    <div id="bal-neto" style="font-size:2.2rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;line-height:1;cursor:pointer;">$0</div>
+                    <input id="bal-neto-input" inputmode="decimal" placeholder="0"
+                        onblur="guardarBalanceNeto(this.value)"
+                        onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cerrarEditBalanceNeto();"
+                        style="display:none;font-size:1.9rem;font-weight:700;letter-spacing:-1px;width:75%;text-align:center;padding:4px 8px;border-radius:10px;background:rgba(0,0,0,0.3);border:1px solid var(--primary);color:var(--text-main);outline:none;font-family:inherit;">
+                    <div id="bal-neto-hint" style="display:none;font-size:0.6rem;color:var(--text-muted);margin-top:5px;">editado manualmente · tocá para cambiar &nbsp;<span onclick="event.stopPropagation();limpiarBalanceNeto()" style="color:#f87171;cursor:pointer;">✕ restaurar</span></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;background:rgba(10,14,39,0.5);border-radius:10px;padding:10px 0;">
                     <div style="text-align:center;padding:0 8px;">
@@ -402,6 +365,41 @@
 
         <!-- ══ SUB-TAB: PRESUPUESTO ══ -->
         <div id="fin-presupuesto" style="display:none;">
+
+            <!-- Disponible para distribuir -->
+            <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
+                <div style="text-align:center;margin-bottom:16px;">
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:6px;">Disponible para distribuir</div>
+                    <div id="fin-disp-display" onclick="activarEditDisponible()" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;">
+                        <span id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</span>
+                        <span style="font-size:0.75rem;color:var(--text-muted);opacity:0.6;margin-top:4px;">✎</span>
+                    </div>
+                    <div id="fin-disp-edit" style="display:none;align-items:center;justify-content:center;gap:6px;">
+                        <span style="font-size:1.8rem;font-weight:700;color:var(--text-muted);">$</span>
+                        <input id="fin-disp-input" inputmode="numeric"
+                            onkeydown="if(event.key==='Enter')confirmarEditDisponible();if(event.key==='Escape')cancelarEditDisponible();"
+                            style="font-size:1.8rem;font-weight:700;color:var(--c-green);background:var(--bg-input);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:4px 14px;width:160px;text-align:center;outline:none;font-family:inherit;">
+                        <button onclick="confirmarEditDisponible()" style="font-size:1rem;color:#34d399;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:4px 10px;cursor:pointer;">✓</button>
+                        <button onclick="cancelarEditDisponible()" style="font-size:1rem;color:var(--text-muted);background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
+                    </div>
+                    <div id="fin-disp-override-info" style="display:none;margin-top:6px;">
+                        <span style="font-size:0.68rem;color:var(--text-muted);">Calculado: <span id="fin-disp-calculado" style="color:var(--text-main);font-weight:600;">$0</span></span>
+                        <button onclick="resetDisponibleOverride()" style="margin-left:8px;font-size:0.68rem;color:#00d4ff;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">↩ restablecer</button>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
+                    <div style="text-align:center;padding:0 10px;">
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
+                        <div id="fin-neto-top" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">$0</div>
+                    </div>
+                    <div style="background:var(--border);"></div>
+                    <div style="text-align:center;padding:0 10px;">
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
+                        <div id="fin-fijos-top" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Comparativa vs mes anterior -->
             <div id="comp-mes" style="display:none;background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:14px 18px;margin-bottom:12px;"></div>
@@ -636,6 +634,21 @@
     <!-- ── Stats Tab ── -->
     <main class="tab-content" id="tab-stats">
 
+        <!-- ── Sub-tabs Stats ── -->
+        <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
+            <button onclick="switchStatsTab('horas')" id="stab-horas"
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
+                <i class="fa-solid fa-clock" style="margin-right:5px;font-size:0.72rem;"></i>Horas
+            </button>
+            <button onclick="switchStatsTab('gastos')" id="stab-gastos"
+                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
+                <i class="fa-solid fa-chart-column" style="margin-right:5px;font-size:0.72rem;"></i>Gastos
+            </button>
+        </div>
+
+        <!-- ══ SUB-TAB: HORAS ══ -->
+        <div id="stats-horas" style="display:block;">
+
         <!-- Gráfico de barras + selector de año integrado -->
         <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -674,6 +687,52 @@
 
         <!-- Totales del año -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;" id="stats-totales"></div>
+
+        </div><!-- fin #stats-horas -->
+
+        <!-- ══ SUB-TAB: GASTOS ══ -->
+        <div id="stats-gastos" style="display:none;">
+
+            <!-- Selector de año -->
+            <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+                <select id="stats-gastos-anio" class="select-modern" onchange="renderStatsGastos()" style="font-size:0.72rem;padding:4px 10px;"></select>
+            </div>
+
+            <!-- Gasto mensual -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:14px;">
+                    <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-chart-column"></i></div>
+                    <span class="card-title-text">Gasto variable por mes</span>
+                </div>
+                <canvas id="chart-gastos-mes" style="width:100%;height:160px;display:block;"></canvas>
+            </div>
+
+            <!-- Ingresos vs Gastos -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                    <div class="card-title" style="margin-bottom:0;">
+                        <div class="card-title-icon" style="background:rgba(56,139,253,0.12);color:#388bfd;"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <span class="card-title-text">Ingresos vs Gastos</span>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <span style="font-size:0.7rem;color:var(--c-green);display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:var(--c-green);border-radius:50%;display:inline-block;"></span>Ingresos</span>
+                        <span style="font-size:0.7rem;color:#f87171;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#f87171;border-radius:50%;display:inline-block;"></span>Gastos</span>
+                    </div>
+                </div>
+                <canvas id="chart-ing-vs-gas" style="width:100%;height:160px;display:block;"></canvas>
+            </div>
+
+            <!-- Distribución por categoría -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:16px;">
+                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-chart-pie"></i></div>
+                    <span class="card-title-text">Distribución por categoría</span>
+                </div>
+                <canvas id="chart-dist-cat" style="width:100%;max-width:220px;height:220px;display:block;margin:0 auto 16px;"></canvas>
+                <div id="stats-dist-cat"></div>
+            </div>
+
+        </div><!-- fin #stats-gastos -->
 
     </main>
 
@@ -2524,12 +2583,53 @@
         const mes      = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         const ingresos = totalIngresosMes + sumIngresosManualesMes(mes);
         const gastos   = totalGastosFijosReales() + sumGastosMes(mes);
-        const balance  = ingresos - gastos;
+        const calculado = ingresos - gastos;
+        const override  = localStorage.getItem('bal_neto_override_' + mes);
+        const balance   = override !== null ? parseFloat(override) : calculado;
         elNeto.innerText   = fmt(balance);
         elNeto.style.color = balance >= 0 ? 'var(--text-main)' : '#f87171';
+        const hint = document.getElementById('bal-neto-hint');
+        if (hint) hint.style.display = override !== null ? 'block' : 'none';
         document.getElementById('bal-ingresos').innerText = fmt(ingresos);
         document.getElementById('bal-gastos').innerText   = fmt(gastos);
         document.getElementById('bal-mes-label').innerText = formatPeriodoLabel(mes);
+    }
+
+    function editarBalanceNeto() {
+        const elNeto  = document.getElementById('bal-neto');
+        const elInput = document.getElementById('bal-neto-input');
+        if (!elNeto || !elInput) return;
+        const raw = elNeto.innerText.replace(/[^0-9,.-]/g, '').replace(',', '.');
+        elInput.value = raw;
+        elNeto.style.display  = 'none';
+        const hint = document.getElementById('bal-neto-hint');
+        if (hint) hint.style.display = 'none';
+        elInput.style.display = 'block';
+        elInput.focus();
+        elInput.select();
+    }
+
+    function cerrarEditBalanceNeto() {
+        document.getElementById('bal-neto').style.display  = 'block';
+        document.getElementById('bal-neto-input').style.display = 'none';
+        renderBalanceMes();
+    }
+
+    function guardarBalanceNeto(raw) {
+        const val = parseFloat(raw.replace(',', '.'));
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        if (!isNaN(val)) {
+            localStorage.setItem('bal_neto_override_' + mes, val);
+        }
+        document.getElementById('bal-neto').style.display  = 'block';
+        document.getElementById('bal-neto-input').style.display = 'none';
+        renderBalanceMes();
+    }
+
+    function limpiarBalanceNeto() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        localStorage.removeItem('bal_neto_override_' + mes);
+        renderBalanceMes();
     }
 
     function transItemHTML(g, mes, conFecha = false) {
@@ -3169,6 +3269,199 @@
         sel.innerHTML = '';
         anios.forEach(a => sel.add(new Option(a, a)));
         sel.value = prev || anioActual;
+    }
+
+    function switchStatsTab(tab) {
+        ['horas','gastos'].forEach(t => {
+            const panel = document.getElementById('stats-' + t);
+            const btn   = document.getElementById('stab-' + t);
+            if (!panel || !btn) return;
+            const on = t === tab;
+            panel.style.display  = on ? 'block' : 'none';
+            btn.style.background = on ? 'var(--bg-input)' : 'transparent';
+            btn.style.color      = on ? 'var(--text-main)' : 'var(--text-muted)';
+        });
+        if (tab === 'gastos') { setupStatsGastosAnio(); renderStatsGastos(); }
+        if (tab === 'horas')  { setupStatsAnio(); renderStats(); }
+    }
+
+    function setupStatsGastosAnio() {
+        const sel = document.getElementById('stats-gastos-anio');
+        if (!sel) return;
+        const anioActual = new Date().getFullYear().toString();
+        const aniosGastos = [...new Set(Object.keys(dbGastosVar).map(k => k.substring(0,4)).filter(Boolean))];
+        const anios = [...new Set([...aniosGastos, anioActual])];
+        anios.sort().reverse();
+        const prev = sel.value;
+        sel.innerHTML = '';
+        anios.forEach(a => sel.add(new Option(a, a)));
+        sel.value = prev || anioActual;
+    }
+
+    function getMesesGastosData(anio) {
+        const mesesNombre = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const horasData = getMesesData(anio);
+        return mesesNombre.map((nombre, idx) => {
+            const key = `${anio}-${String(idx+1).padStart(2,'0')}`;
+            const gastos   = sumGastosMes(key);
+            const ingresos = horasData[idx].neto + sumIngresosManualesMes(key);
+            return { nombre, key, gastos, ingresos };
+        });
+    }
+
+    function renderStatsGastos() {
+        const anio = document.getElementById('stats-gastos-anio')?.value;
+        if (!anio) return;
+        const data = getMesesGastosData(anio);
+        const maxGastos = Math.max(...data.map(d => d.gastos), 1);
+        const maxTotal  = Math.max(...data.map(d => Math.max(d.gastos, d.ingresos)), 1);
+
+        setTimeout(() => {
+            // ── Gráfico 1: gasto variable por mes ──
+            drawBarChart('chart-gastos-mes', data, maxGastos, (ctx, x, bw, ch, pad, d, max) => {
+                if (d.gastos === 0) {
+                    ctx.fillStyle = '#21262d';
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(x, pad.top + ch - 3, bw, 3, 2);
+                    else ctx.rect(x, pad.top + ch - 3, bw, 3);
+                    ctx.fill();
+                    return;
+                }
+                const h = (d.gastos / max) * ch;
+                ctx.fillStyle = '#f87171';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(x, pad.top + ch - h, bw, h, [3,3,0,0]);
+                else ctx.rect(x, pad.top + ch - h, bw, h);
+                ctx.fill();
+                ctx.fillStyle = '#f0f4f8';
+                ctx.font = `bold ${Math.min(9, bw)}px Inter, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('$' + Math.round(d.gastos / 1000) + 'k', x + bw/2, pad.top + ch - h - 3);
+            });
+
+            // ── Gráfico 2: ingresos vs gastos (barras agrupadas) ──
+            const canvas2 = document.getElementById('chart-ing-vs-gas');
+            if (!canvas2) return;
+            const dpr = window.devicePixelRatio || 1;
+            const W2 = canvas2.offsetWidth || 280;
+            const H2 = 160;
+            canvas2.width  = W2 * dpr;
+            canvas2.height = H2 * dpr;
+            canvas2.style.width  = W2 + 'px';
+            canvas2.style.height = H2 + 'px';
+            const ctx2 = canvas2.getContext('2d');
+            ctx2.scale(dpr, dpr);
+            ctx2.clearRect(0, 0, W2, H2);
+            const p2 = { top: 10, bottom: 28, left: 4, right: 4 };
+            const cW2 = W2 - p2.left - p2.right;
+            const cH2 = H2 - p2.top - p2.bottom;
+            const groupW = cW2 / data.length;
+            const bw2 = Math.max(2, Math.floor(groupW * 0.36));
+            const gap2 = Math.max(1, Math.floor(groupW * 0.06));
+
+            ctx2.strokeStyle = '#21262d'; ctx2.lineWidth = 0.5;
+            [0.25,0.5,0.75,1].forEach(p => {
+                const y = p2.top + cH2 * (1-p);
+                ctx2.beginPath(); ctx2.moveTo(p2.left, y); ctx2.lineTo(W2 - p2.right, y); ctx2.stroke();
+            });
+
+            data.forEach((d, i) => {
+                const bx = p2.left + i * groupW + (groupW - bw2*2 - gap2) / 2;
+                const by = p2.top + cH2;
+                if (d.ingresos > 0) {
+                    const hI = (d.ingresos / maxTotal) * cH2;
+                    ctx2.fillStyle = '#34d399';
+                    ctx2.beginPath();
+                    if (ctx2.roundRect) ctx2.roundRect(bx, by - hI, bw2, hI, [3,3,0,0]);
+                    else ctx2.rect(bx, by - hI, bw2, hI);
+                    ctx2.fill();
+                }
+                if (d.gastos > 0) {
+                    const hG = (d.gastos / maxTotal) * cH2;
+                    ctx2.fillStyle = '#f87171';
+                    ctx2.beginPath();
+                    if (ctx2.roundRect) ctx2.roundRect(bx + bw2 + gap2, by - hG, bw2, hG, [3,3,0,0]);
+                    else ctx2.rect(bx + bw2 + gap2, by - hG, bw2, hG);
+                    ctx2.fill();
+                }
+                ctx2.fillStyle = '#7d8590';
+                ctx2.font = `${Math.min(9, bw2*2)}px Inter, sans-serif`;
+                ctx2.textAlign = 'center';
+                ctx2.fillText(d.nombre, bx + bw2 + gap2/2, H2 - 6);
+            });
+
+            // ── Gráfico 3: torta por categoría ──
+            const PIE_COLORS = ['#a78bfa','#34d399','#f87171','#60a5fa','#fbbf24','#f472b6','#38bdf8','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
+            const totalesCat = {};
+            data.forEach(d => {
+                (dbGastosVar[d.key] || []).filter(g => g.tipo !== 'ingreso').forEach(g => {
+                    const s = seccionDeTrans(g);
+                    totalesCat[s] = (totalesCat[s] || 0) + (g.monto || 0);
+                });
+            });
+            const totalAnio = Object.values(totalesCat).reduce((a,b) => a+b, 0);
+            const sorted = Object.entries(totalesCat).sort((a,b) => b[1]-a[1]).filter(([,v]) => v > 0);
+            const el = document.getElementById('stats-dist-cat');
+            const cPie = document.getElementById('chart-dist-cat');
+            if (!el) return;
+            if (sorted.length === 0) {
+                if (cPie) cPie.style.display = 'none';
+                el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:10px 0;">No hay gastos registrados en ' + anio + '.</p>';
+                return;
+            }
+            // Dibujar torta (donut)
+            if (cPie) {
+                cPie.style.display = 'block';
+                const dpr = window.devicePixelRatio || 1;
+                const size = Math.min(cPie.offsetWidth || 220, 220);
+                cPie.width  = size * dpr;
+                cPie.height = size * dpr;
+                cPie.style.width  = size + 'px';
+                cPie.style.height = size + 'px';
+                const cp = cPie.getContext('2d');
+                cp.scale(dpr, dpr);
+                cp.clearRect(0, 0, size, size);
+                const cx = size / 2, cy = size / 2, r = size / 2 - 6, innerR = r * 0.52;
+                let startAngle = -Math.PI / 2;
+                sorted.forEach(([, val], i) => {
+                    const slice = (val / totalAnio) * Math.PI * 2;
+                    cp.beginPath();
+                    cp.moveTo(cx, cy);
+                    cp.arc(cx, cy, r, startAngle, startAngle + slice);
+                    cp.closePath();
+                    cp.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+                    cp.fill();
+                    startAngle += slice;
+                });
+                // Hueco interior (donut)
+                cp.beginPath();
+                cp.arc(cx, cy, innerR, 0, Math.PI * 2);
+                cp.fillStyle = '#141d3a'; // --bg-card
+                cp.fill();
+                // Total en el centro
+                cp.fillStyle = '#f0f4f8';
+                cp.font = `bold ${Math.round(size * 0.095)}px Inter, sans-serif`;
+                cp.textAlign = 'center';
+                cp.textBaseline = 'middle';
+                cp.fillText(fmt(totalAnio), cx, cy - 7);
+                cp.fillStyle = '#8892b0';
+                cp.font = `${Math.round(size * 0.065)}px Inter, sans-serif`;
+                cp.fillText('total', cx, cy + 12);
+            }
+            // Leyenda debajo
+            el.innerHTML = sorted.map(([s, total], i) => {
+                const pct = (total / totalAnio * 100).toFixed(1);
+                const color = PIE_COLORS[i % PIE_COLORS.length];
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="width:10px;height:10px;border-radius:3px;background:${color};flex-shrink:0;display:inline-block;"></span>
+                        <span style="font-size:0.8rem;font-weight:600;color:var(--text-main);">${SECCION_ICONS[s] || '➕'} ${s}</span>
+                    </div>
+                    <span style="font-size:0.78rem;color:var(--text-muted);">${fmt(total)} <span style="color:${color};font-weight:700;">${pct}%</span></span>
+                </div>`;
+            }).join('');
+        }, 50);
     }
 
     function getMesesData(anio) {
