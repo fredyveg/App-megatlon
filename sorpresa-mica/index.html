@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0a14">
+<title>Una sorpresa para Mica 💜</title>
+<style>
+  /* ===== Tokens ===== */
+  :root {
+    --bg: #0d0a14;
+    --bg-2: #17102a;
+    --violeta: #8a4fff;
+    --violeta-claro: #b794ff;
+    --lavanda: #d9c8ff;
+    --blanco: #f5f2ff;
+    --papel: #fdfbff;
+    --tinta: #2a2140;
+    --sombra-violeta: 0 0 40px rgba(138, 79, 255, 0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--blanco);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.bloqueado { overflow: hidden; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    touch-action: manipulation;
+  }
+
+  img { max-width: 100%; display: block; }
+
+  section {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  h1, h2 { line-height: 1.2; }
+
+  /* ===== Botón de mute flotante ===== */
+  #btn-mute {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 50;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(23, 16, 42, 0.85);
+    border: 1px solid rgba(183, 148, 255, 0.4);
+    font-size: 22px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #btn-mute.visible { display: flex; }
+
+  /* ===== Landing ===== */
+  #landing {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    min-height: 100vh;
+    min-height: 100svh;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(138, 79, 255, 0.25), transparent 60%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    transition: opacity 0.6s ease-in, visibility 0.6s;
+  }
+  #landing.oculta {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  #landing .estrellas {
+    font-size: 28px;
+    letter-spacing: 12px;
+    animation: brillar 2.2s ease-in-out infinite;
+  }
+
+  @keyframes brillar {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  #landing h1 {
+    font-size: clamp(28px, 8vw, 40px);
+    color: var(--lavanda);
+    padding: 0 24px;
+  }
+  #landing h1 strong { color: var(--violeta-claro); }
+
+  #btn-abrir {
+    padding: 18px 40px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--blanco);
+    background: linear-gradient(135deg, var(--violeta), #6a2fd9);
+    border-radius: 999px;
+    box-shadow: var(--sombra-violeta);
+    animation: latido 1.8s ease-in-out infinite;
+  }
+
+  @keyframes latido {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
+  /* ===== Contenido principal ===== */
+  #contenido {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease-out 0.3s;
+  }
+  #contenido.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* ===== Sobre / carta ===== */
+  #seccion-carta {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sobre-wrap { position: relative; }
+
+  #sobre {
+    position: relative;
+    width: min(300px, 80vw);
+    height: 200px;
+    margin: 0 auto;
+    cursor: pointer;
+    perspective: 900px;
+    background: none;
+    transition: opacity 0.5s ease-in;
+  }
+  #sobre.desaparece { opacity: 0; pointer-events: none; }
+
+  .sobre-cuerpo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #3a2470, #241548);
+    border-radius: 10px;
+  }
+
+  .carta-mini {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 14px;
+    bottom: 14px;
+    background: var(--papel);
+    border-radius: 5px;
+    z-index: 2;
+    transition: transform 0.7s ease-out 0.5s;
+  }
+  #sobre.abierto .carta-mini { transform: translateY(-65%); }
+
+  .sobre-frente {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: linear-gradient(200deg, #4b2e91, #2c1a58);
+    clip-path: polygon(0 0, 50% 48%, 100% 0, 100% 100%, 0 100%);
+    border-radius: 10px;
+  }
+
+  .sobre-solapa {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    z-index: 4;
+    background: linear-gradient(180deg, #5b3aad, #3a2470);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    border-radius: 10px 10px 0 0;
+    transform-origin: top center;
+    transition: transform 0.7s ease-in, z-index 0s 0.35s;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .sobre-solapa::after {
+    content: '💜';
+    font-size: 26px;
+    margin-top: 30px;
+  }
+  #sobre.abierto .sobre-solapa {
+    transform: rotateX(180deg);
+    z-index: 1;
+  }
+
+  .sobre-hint {
+    margin-top: 28px;
+    color: var(--violeta-claro);
+    font-size: 17px;
+    animation: brillar 2s ease-in-out infinite;
+    transition: opacity 0.4s;
+  }
+  .sobre-hint.oculta { opacity: 0; }
+
+  .carta-texto {
+    display: none;
+    background: var(--papel);
+    color: var(--tinta);
+    border-radius: 14px;
+    padding: 32px 26px;
+    text-align: left;
+    box-shadow: var(--sombra-violeta);
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .carta-texto.visible {
+    display: block;
+    animation: aparecerCarta 0.8s ease-out;
+  }
+  @keyframes aparecerCarta {
+    from { opacity: 0; transform: translateY(24px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .carta-texto p { margin-bottom: 16px; font-size: 17px; }
+  .carta-texto .firma {
+    text-align: right;
+    font-weight: 700;
+    color: var(--violeta);
+    margin-bottom: 0;
+  }
+
+  .flecha-scroll {
+    display: none;
+    margin-top: 32px;
+    font-size: 15px;
+    color: var(--violeta-claro);
+    animation: rebotar 1.6s ease-in-out infinite;
+  }
+  .flecha-scroll.visible { display: block; }
+  @keyframes rebotar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ===== Reveals al scrollear ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* ===== Entradas ===== */
+  #seccion-entradas h2, #seccion-final h2 {
+    font-size: clamp(24px, 7vw, 32px);
+    color: var(--lavanda);
+    margin-bottom: 8px;
+  }
+  #seccion-entradas .sub, #seccion-final .sub {
+    color: var(--violeta-claro);
+    margin-bottom: 32px;
+  }
+
+  #seccion-entradas figure {
+    margin: 0 auto 24px;
+    max-width: 380px;
+  }
+  #seccion-entradas img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: var(--sombra-violeta);
+    border: 1px solid rgba(183, 148, 255, 0.3);
+  }
+
+  /* ===== Reveal final ===== */
+  #btn-reveal {
+    padding: 16px 36px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--blanco);
+    background: linear-gradient(135deg, var(--violeta), #6a2fd9);
+    border-radius: 999px;
+    box-shadow: var(--sombra-violeta);
+    animation: latido 1.8s ease-in-out infinite;
+  }
+
+  #overlay-felix {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 6, 20, 0.96);
+    padding: 24px;
+    text-align: center;
+  }
+  #overlay-felix.visible {
+    display: flex;
+    animation: aparecerCarta 0.6s ease-out;
+  }
+  #overlay-felix img {
+    max-height: 62vh;
+    max-height: 62svh;
+    width: auto;
+    max-width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 0 60px rgba(138, 79, 255, 0.55);
+    animation: resplandor 2.4s ease-in-out infinite;
+  }
+  @keyframes resplandor {
+    0%, 100% { box-shadow: 0 0 40px rgba(138, 79, 255, 0.4); }
+    50% { box-shadow: 0 0 90px rgba(183, 148, 255, 0.75); }
+  }
+  #overlay-felix .mensaje-puerta {
+    margin-top: 24px;
+    font-size: clamp(20px, 6vw, 28px);
+    font-weight: 700;
+    color: var(--lavanda);
+    max-width: 420px;
+  }
+  #btn-cerrar-overlay {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--blanco);
+    font-size: 20px;
+  }
+
+  /* ===== Confetti ===== */
+  .confetti {
+    position: fixed;
+    top: -20px;
+    z-index: 61;
+    border-radius: 2px;
+    pointer-events: none;
+    animation: caerConfetti linear forwards;
+  }
+  @keyframes caerConfetti {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(115vh) rotate(720deg); opacity: 0.7; }
+  }
+
+  /* ===== Cierre ===== */
+  #seccion-cierre {
+    padding-bottom: 96px;
+  }
+  #seccion-cierre p {
+    font-size: 18px;
+    color: var(--lavanda);
+  }
+  #seccion-cierre .corazon {
+    font-size: 40px;
+    margin-top: 16px;
+    animation: latido 1.8s ease-in-out infinite;
+  }
+
+  /* ===== Reduced motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.15s !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="bloqueado">
+
+  <!-- Música de fondo: subí musica.mp3 a esta misma carpeta -->
+  <audio id="musica" src="musica.mp3" loop preload="auto"></audio>
+
+  <button id="btn-mute" aria-label="Silenciar música" aria-pressed="false">🔊</button>
+
+  <!-- ===== 1. Landing ===== -->
+  <section id="landing">
+    <div class="estrellas" aria-hidden="true">✦ ✧ ✦</div>
+    <h1>Mica, tenés una <strong>sorpresa</strong> esperándote</h1>
+    <button id="btn-abrir">Abrir sorpresa 💜</button>
+  </section>
+
+  <!-- ===== Contenido (aparece al abrir) ===== -->
+  <main id="contenido">
+
+    <!-- ===== 2. Carta ===== -->
+    <section id="seccion-carta">
+      <div class="sobre-wrap">
+        <div id="sobre" role="button" tabindex="0" aria-label="Abrir la carta">
+          <div class="sobre-cuerpo"></div>
+          <div class="carta-mini"></div>
+          <div class="sobre-frente"></div>
+          <div class="sobre-solapa"></div>
+        </div>
+        <p class="sobre-hint" id="sobre-hint">Tocá el sobre 💌</p>
+      </div>
+      <div class="carta-texto" id="carta-texto"></div>
+      <p class="flecha-scroll" id="flecha-scroll">deslizá para seguir ⬇</p>
+    </section>
+
+    <!-- ===== 3. Entradas ===== -->
+    <section id="seccion-entradas">
+      <h2 class="reveal">VAS A VER A STRAY KIDS EN VIVO 🎤</h2>
+      <p class="sub reveal">Sí, es real: estas son TUS entradas 🎫</p>
+      <figure class="reveal">
+        <img src="entrada1.jpg" alt="Entrada para el show de Stray Kids"
+             onerror="this.closest('figure').style.display='none'">
+      </figure>
+      <figure class="reveal">
+        <img src="entrada2.jpg" alt="Segunda entrada para el show de Stray Kids"
+             onerror="this.closest('figure').style.display='none'">
+      </figure>
+    </section>
+
+    <!-- ===== 4. Regalo final ===== -->
+    <section id="seccion-final">
+      <h2 class="reveal">Y tu regalo final es...</h2>
+      <p class="sub reveal">Este no entra en la pantalla 👀</p>
+      <button id="btn-reveal" class="reveal">Descubrilo 💜</button>
+    </section>
+
+    <!-- ===== 5. Cierre ===== -->
+    <section id="seccion-cierre">
+      <p class="reveal" id="texto-cierre"></p>
+      <div class="corazon reveal" aria-hidden="true">💜</div>
+    </section>
+
+  </main>
+
+  <!-- Overlay del regalo final: subí felix.jpg a esta misma carpeta -->
+  <div id="overlay-felix" role="dialog" aria-label="Tu regalo final">
+    <button id="btn-cerrar-overlay" aria-label="Cerrar">✕</button>
+    <img src="felix.jpg" alt="Felix de Stray Kids" onerror="this.style.display='none'">
+    <p class="mensaje-puerta" id="mensaje-puerta"></p>
+  </div>
+
+<script>
+  // ============================================================
+  // ✏️ EDITÁ ACÁ — Todos los textos de la página
+  // ============================================================
+
+  // Carta principal (cada línea en blanco separa un párrafo)
+  const TEXTO_CARTA = `Mica:
+
+Todos tenemos un sueño. El tuyo lo conocemos hace mucho, porque nunca dejaste de hablar de él.
+
+Desde que descubriste a Stray Kids, ellos te acompañan todos los días: en tu música, en tu pieza, en tus sueños. Y hoy preparamos algo muy especial para vos... 🤫
+
+Pero antes, queremos que sepas algo más importante que cualquier regalo: nunca dejes de soñar así de grande, y nunca dejes de ser la persona buena, generosa y luminosa que sos. Los sueños se cumplen — vos sos la prueba.
+
+Ahora sí... seguí bajando. 👇`;
+
+  const FIRMA = 'Te queremos con todo el corazón 💜';
+
+  // Mensaje que aparece con la foto de Felix
+  const TEXTO_PUERTA = 'Tu regalo final te espera en la puerta... 🚪💜 ¡Andá a abrirla!';
+
+  // Mensaje de cierre al final de la página
+  const TEXTO_CIERRE = 'Nunca dejes de soñar. STAY por siempre ✨';
+
+  // Volumen inicial de la música (0 a 1)
+  const VOLUMEN = 0.6;
+
+  // ============================================================
+  // Lógica (no hace falta tocar de acá para abajo)
+  // ============================================================
+
+  const $ = id => document.getElementById(id);
+  const musica = $('musica');
+  const btnMute = $('btn-mute');
+
+  // Inyectar textos editables
+  $('carta-texto').innerHTML =
+    TEXTO_CARTA.trim().split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('') +
+    `<p class="firma">${FIRMA}</p>`;
+  $('mensaje-puerta').textContent = TEXTO_PUERTA;
+  $('texto-cierre').textContent = TEXTO_CIERRE;
+
+  // --- Abrir sorpresa: desbloquea el audio (debe ser en el tap) y transiciona ---
+  $('btn-abrir').addEventListener('click', () => {
+    musica.volume = VOLUMEN;
+    // Si el navegador bloquea el play igual seguimos: el botón de mute queda como reintento
+    musica.play().catch(() => {});
+    btnMute.classList.add('visible');
+    $('landing').classList.add('oculta');
+    $('contenido').classList.add('visible');
+    document.body.classList.remove('bloqueado');
+    window.scrollTo(0, 0);
+  });
+
+  // --- Mute / unmute (también reintenta el play por si iOS lo bloqueó) ---
+  btnMute.addEventListener('click', () => {
+    if (musica.paused) musica.play().catch(() => {});
+    musica.muted = !musica.muted;
+    btnMute.textContent = musica.muted ? '🔇' : '🔊';
+    btnMute.setAttribute('aria-pressed', String(musica.muted));
+    btnMute.setAttribute('aria-label', musica.muted ? 'Activar música' : 'Silenciar música');
+  });
+
+  // --- Sobre que se abre ---
+  const sobre = $('sobre');
+  function abrirSobre() {
+    if (sobre.classList.contains('abierto')) return;
+    sobre.classList.add('abierto');
+    $('sobre-hint').classList.add('oculta');
+    // Cuando termina la animación del sobre, mostramos la carta completa
+    setTimeout(() => {
+      sobre.classList.add('desaparece');
+      setTimeout(() => {
+        sobre.parentElement.style.display = 'none';
+        $('carta-texto').classList.add('visible');
+        $('flecha-scroll').classList.add('visible');
+      }, 500);
+    }, 1400);
+  }
+  sobre.addEventListener('click', abrirSobre);
+  sobre.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirSobre(); }
+  });
+
+  // --- Reveals al scrollear ---
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // --- Regalo final: overlay + confetti ---
+  const overlay = $('overlay-felix');
+
+  function lanzarConfetti() {
+    const colores = ['#8a4fff', '#b794ff', '#d9c8ff', '#f5f2ff', '#6a2fd9'];
+    for (let i = 0; i < 40; i++) {
+      const c = document.createElement('span');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.width = 6 + Math.random() * 6 + 'px';
+      c.style.height = 10 + Math.random() * 8 + 'px';
+      c.style.background = colores[i % colores.length];
+      c.style.animationDuration = 2.5 + Math.random() * 2 + 's';
+      c.style.animationDelay = Math.random() * 1.2 + 's';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 6000);
+    }
+  }
+
+  $('btn-reveal').addEventListener('click', () => {
+    overlay.classList.add('visible');
+    lanzarConfetti();
+  });
+
+  $('btn-cerrar-overlay').addEventListener('click', () => {
+    overlay.classList.remove('visible');
+  });
+</script>
+</body>
+</html>
