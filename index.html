@@ -843,6 +843,42 @@
 <script>
     const VALORES = { BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 };
 
+    // Escala de haberes por período de liquidación (el más reciente cuyo "desde" <= key gana).
+    // La clave es el período interno 'YYYY-MM' (que se rotula por su mes de fin: '2026-05' = recibo "Jun 26").
+    // Neto = 83% del bruto (descuentos 17%: jubilación 11% + ley 19032 3% + obra social 3%).
+    const ESCALA_VALORES = [
+        { desde: '2026-05', BRUTO_BASE: 1798000, NETO_BASE: 1492340, HORA_BRUTA: 8990, HORA_NETA: 7461.7 },  // recibo 6/2026 (+7,02%)
+        { desde: '2000-01', BRUTO_BASE: 1680000, NETO_BASE: 1394400, HORA_BRUTA: 8400, HORA_NETA: 6972 },
+    ];
+    // Devuelve el set de valores vigente para un período (clave 'YYYY-MM').
+    const valoresDeMes = (key) => key ? (ESCALA_VALORES.find(v => key >= v.desde) || ESCALA_VALORES[ESCALA_VALORES.length - 1]) : VALORES;
+
+    // Clasifica las horas de un turno en 50% / 100% según el día (LCT art. 201):
+    //   Lun a Vie  → todas al 50%
+    //   Sábado     → hasta las 13:00 al 50%, desde las 13:00 al 100%
+    //   Domingo    → todas al 100%
+    // (Los feriados se pagan al 100% pero la app no tiene calendario de feriados; se cargan a mano si hace falta.)
+    function clasificarHoras(fechaStr, hi, hf) {
+        const dow = parseFechaLocal(fechaStr).getDay();   // 0=Dom … 6=Sáb
+        let h50 = 0, h100 = 0;
+        for (let h = hi; h < hf; h++) {
+            const es100 = dow === 0 ? true : dow === 6 ? h >= 13 : false;
+            if (es100) h100++; else h50++;
+        }
+        return { h50, h100 };
+    }
+
+    // Recalcula h50/h100 de los turnos ya guardados con el criterio por día (idempotente).
+    function normalizarHoras() {
+        let cambio = false;
+        dbHoras.forEach(t => {
+            if (t.coordinar || t.hStartVal == null || t.hEndVal == null || !t.fecha) return;
+            const { h50, h100 } = clasificarHoras(t.fecha, t.hStartVal, t.hEndVal);
+            if (t.h50 !== h50 || t.h100 !== h100) { t.h50 = h50; t.h100 = h100; cambio = true; }
+        });
+        if (cambio) { localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush(); }
+    }
+
     // ── Sincronización Google Sheets ──────────────────────────────────────
     // Pegá acá la URL de tu Web App después de publicar el Apps Script
     let SYNC_URL = localStorage.getItem('sync_url') || '';
@@ -956,6 +992,7 @@
         autoDistConfig   = { ...AUTO_DIST_DEFAULT, ...(JSON.parse(localStorage.getItem('auto_dist_config')) || {}) };
         DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom'))     || [];
         if (!distPcts) { distPcts = {}; DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; }); }
+        normalizarHoras();
     }
 
     // Push automático cada vez que se guarda algo (con debounce de 3s)
@@ -1012,6 +1049,7 @@
         }
         selInicio.value = 18; selFin.value = 21;
 
+        normalizarHoras();   // migra turnos viejos al criterio por día
         setupMonthSelector();
         // Inicializar el mes activo antes del primer render
         _mesActivoCargado = document.getElementById('select-mes').value;
@@ -1150,16 +1188,14 @@
             const hi = parseInt(document.getElementById('in-inicio').value);
             const hf = parseInt(document.getElementById('in-fin').value);
             if (hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
-            let h50 = 0, h100 = 0;
-            for (let h = hi; h < hf; h++) {
-                if (h >= 13) h100++; else h50++;
-            }
+            const { h50, h100 } = clasificarHoras(f, hi, hf);
+            const Vf = valoresDeMes(monthKeyFromDate(parseFechaLocal(f)));
             dbHoras.push({
                 id: Date.now(), fecha: f, tareas: t,
                 hStartVal: hi, hEndVal: hf,
                 txt: `${hi}:00 a ${hf}:00`, h50, h100,
-                neto:  (h50 * VALORES.HORA_NETA  * 1.5) + (h100 * VALORES.HORA_NETA  * 2),
-                bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2),
+                neto:  (h50 * Vf.HORA_NETA  * 1.5) + (h100 * Vf.HORA_NETA  * 2),
+                bruto: (h50 * Vf.HORA_BRUTA * 1.5) + (h100 * Vf.HORA_BRUTA * 2),
                 coordinar: false
             });
         }
@@ -2741,10 +2777,11 @@
     }
 
     function ingresosDeMes(mes) {
+        const V = valoresDeMes(mes);
         const extras = dbHoras
             .filter(h => h.fecha && !h.coordinar && monthKeyFromDate(parseFechaLocal(h.fecha)) === mes)
-            .reduce((s, h) => s + (h.neto || 0), 0);
-        return VALORES.NETO_BASE + extras + sumIngresosManualesMes(mes);
+            .reduce((s, h) => s + ((h.h50 || 0) * V.HORA_NETA * 1.5) + ((h.h100 || 0) * V.HORA_NETA * 2), 0);
+        return V.NETO_BASE + extras + sumIngresosManualesMes(mes);
     }
 
     function renderComparativaMes() {
@@ -3143,16 +3180,17 @@
         const periodoLabel = document.getElementById('periodo-label');
         if (periodoLabel) periodoLabel.innerText = 'Total a cobrar';
         listHoras.innerHTML = "";
+        const V = valoresDeMes(mesSel);   // haberes vigentes en el período visto
         let tNeto = 0, tBruto = 0, tHoras = 0, t50 = 0, t100 = 0;
 
         dbHoras
             .filter(i => fechaEnPeriodo(i.fecha, mesSel))
             .sort((a, b) => b.fecha.localeCompare(a.fecha))
             .forEach(i => {
-                tNeto  += i.neto  || 0;
-                tBruto += i.bruto || 0;
                 const h50i  = i.h50  || 0;
                 const h100i = i.h100 || 0;
+                tNeto  += (h50i * V.HORA_NETA  * 1.5) + (h100i * V.HORA_NETA  * 2);
+                tBruto += (h50i * V.HORA_BRUTA * 1.5) + (h100i * V.HORA_BRUTA * 2);
                 tHoras += h50i + h100i;
                 t50    += h50i;
                 t100   += h100i;
@@ -3184,13 +3222,14 @@
             });
 
         document.getElementById('view-extra-neto').innerText = '+' + fmt(tNeto);
+        document.getElementById('view-neto-base').innerText  = fmt(V.NETO_BASE);
         document.getElementById('bd-total').innerText = tHoras + 'h';
         document.getElementById('bd-50').innerText    = t50    + 'h';
         document.getElementById('bd-100').innerText   = t100   + 'h';
 
-        totalIngresosMes = VALORES.NETO_BASE + tNeto;
+        totalIngresosMes = V.NETO_BASE + tNeto;
         document.getElementById('view-total-neto').innerText  = fmt(totalIngresosMes);
-        document.getElementById('view-total-bruto').innerText = fmt(VALORES.BRUTO_BASE + tBruto);
+        document.getElementById('view-total-bruto').innerText = fmt(V.BRUTO_BASE + tBruto);
 
         if (listHoras.innerHTML === "") listHoras.innerHTML = `<p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:10px;">No hay turnos registrados en este período.</p>`;
 
@@ -3234,18 +3273,16 @@
         const hf = parseInt(document.getElementById('edit-fin').value);
         if (!f || hf <= hi) return alert("Error: La hora de salida debe ser mayor a la de entrada.");
 
-        let h50 = 0, h100 = 0;
-        for (let h = hi; h < hf; h++) {
-            if (h >= 13) h100++; else h50++;
-        }
+        const { h50, h100 } = clasificarHoras(f, hi, hf);
 
+        const Vf = valoresDeMes(monthKeyFromDate(parseFechaLocal(f)));
         dbHoras = dbHoras.map(x => x.id !== id ? x : {
             ...x, fecha: f, tareas: t,
             hStartVal: hi, hEndVal: hf,
             txt: `${hi}:00 a ${hf}:00`, h50, h100,
             coordinar: false,  // al confirmar horas ya no es "a coordinar"
-            neto:  (h50 * VALORES.HORA_NETA  * 1.5) + (h100 * VALORES.HORA_NETA  * 2),
-            bruto: (h50 * VALORES.HORA_BRUTA * 1.5) + (h100 * VALORES.HORA_BRUTA * 2)
+            neto:  (h50 * Vf.HORA_NETA  * 1.5) + (h100 * Vf.HORA_NETA  * 2),
+            bruto: (h50 * Vf.HORA_BRUTA * 1.5) + (h100 * Vf.HORA_BRUTA * 2)
         });
         localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush();
         cerrarModal();
@@ -3467,10 +3504,11 @@
         return mesesNombre.map((nombre, idx) => {
             const key = `${anio}-${String(idx+1).padStart(2,'0')}`;
             const registros = dbHoras.filter(i => fechaEnPeriodo(i.fecha, key) && !i.coordinar);
+            const V     = valoresDeMes(key);
             const h50   = registros.reduce((s,i) => s+(i.h50||0), 0);
             const h100  = registros.reduce((s,i) => s+(i.h100||0), 0);
-            const neto  = registros.reduce((s,i) => s+(i.neto||0), 0);
-            const bruto = registros.reduce((s,i) => s+(i.bruto||0), 0);
+            const neto  = (h50 * V.HORA_NETA  * 1.5) + (h100 * V.HORA_NETA  * 2);
+            const bruto = (h50 * V.HORA_BRUTA * 1.5) + (h100 * V.HORA_BRUTA * 2);
             return { nombre, key, h50, h100, hTotal: h50+h100, neto, bruto, registros: registros.length };
         });
     }
