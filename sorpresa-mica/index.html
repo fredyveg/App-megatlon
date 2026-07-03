@@ -302,8 +302,18 @@
     border: 1px solid rgba(183, 148, 255, 0.3);
   }
 
+  /* ===== Revelación de entradas con botón ===== */
+  #entradas-contenido { display: none; }
+  #entradas-contenido.visible { display: block; }
+  #entradas-contenido.visible > * {
+    animation: aparecerCarta 0.6s ease-out backwards;
+  }
+  #entradas-contenido.visible > *:nth-child(2) { animation-delay: 0.2s; }
+  #entradas-contenido.visible > *:nth-child(3) { animation-delay: 0.45s; }
+  #entradas-contenido.visible > *:nth-child(4) { animation-delay: 0.7s; }
+
   /* ===== Reveal final ===== */
-  #btn-reveal {
+  #btn-reveal, #btn-entradas {
     padding: 16px 36px;
     font-size: 18px;
     font-weight: 700;
@@ -435,16 +445,22 @@
 
     <!-- ===== 3. Entradas ===== -->
     <section id="seccion-entradas">
-      <h2 class="reveal">VAS A VER A STRAY KIDS EN VIVO 🎤</h2>
-      <p class="sub reveal">Sí, es real: estas son TUS entradas 🎫</p>
-      <figure class="reveal">
-        <img src="entrada1.jpg" alt="Entrada para el show de Stray Kids"
-             onerror="this.closest('figure').style.display='none'">
-      </figure>
-      <figure class="reveal">
-        <img src="entrada2.jpg" alt="Segunda entrada para el show de Stray Kids"
-             onerror="this.closest('figure').style.display='none'">
-      </figure>
+      <div id="entradas-teaser">
+        <h2 class="reveal">Y ahora... lo que estabas esperando 🥁</h2>
+        <button id="btn-entradas" class="reveal">Ver mi sorpresa 🎁</button>
+      </div>
+      <div id="entradas-contenido">
+        <h2>VAS A VER A STRAY KIDS EN VIVO 🎤</h2>
+        <p class="sub">Sí, es real: estas son TUS entradas 🎫</p>
+        <figure>
+          <img src="entrada1.jpg" alt="Entrada para el show de Stray Kids"
+               onerror="this.closest('figure').style.display='none'">
+        </figure>
+        <figure>
+          <img src="entrada2.jpg" alt="Segunda entrada para el show de Stray Kids"
+               onerror="this.closest('figure').style.display='none'">
+        </figure>
+      </div>
     </section>
 
     <!-- ===== 4. Regalo final ===== -->
@@ -582,6 +598,13 @@ Ahora sí... seguí bajando. 👇`;
       setTimeout(() => c.remove(), 6000);
     }
   }
+
+  // --- Revelación de entradas con botón ---
+  $('btn-entradas').addEventListener('click', () => {
+    $('entradas-teaser').style.display = 'none';
+    $('entradas-contenido').classList.add('visible');
+    lanzarConfetti();
+  });
 
   $('btn-reveal').addEventListener('click', () => {
     overlay.classList.add('visible');
