@@ -341,6 +341,18 @@
                 <i class="fa-solid fa-plus"></i> Nueva transacción
             </button>
 
+            <!-- Calendario -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
+                <button onclick="toggleCalendario()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-calendar-days"></i></div>
+                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Calendario</span>
+                    </div>
+                    <span id="cal-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
+                </button>
+                <div id="cal-body" style="display:none;padding:0 12px 14px;"></div>
+            </div>
+
             <!-- Movimientos del mes -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div class="card-title">
@@ -2363,7 +2375,7 @@
     let _transSubcatEditing = false;
     let _transCatEditing    = false;
 
-    function abrirModalTrans() {
+    function abrirModalTrans(fechaPre) {
         _transTipo          = 'gasto';
         _transSeccion       = null;
         _transSubcat        = null;
@@ -2371,7 +2383,7 @@
         _transCatEditing    = false;
         document.getElementById('trans-monto').value = '';
         document.getElementById('trans-desc').value  = '';
-        document.getElementById('trans-fecha').value = hoyISO();
+        document.getElementById('trans-fecha').value = fechaPre || hoyISO();
         const sel = document.getElementById('trans-cat-presup');
         sel.innerHTML = getCatsActivas()
             .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
@@ -2712,6 +2724,89 @@
             }).join('');
         }
         renderTransPorCat();
+        renderCalendario();
+    }
+
+    // ── Vista calendario ──────────────────────────────────────────────────
+    let _calDiaSel = null;
+    const milesCorto = (n) => n >= 1000 ? Math.round(n / 1000) + 'k' : String(Math.round(n));
+
+    function toggleCalendario() {
+        const body = document.getElementById('cal-body');
+        const abierto = body.style.display !== 'none';
+        body.style.display = abierto ? 'none' : 'block';
+        document.getElementById('cal-chevron').innerText = abierto ? '▼' : '▲';
+        if (!abierto) renderCalendario();
+    }
+
+    function renderCalendario() {
+        const body = document.getElementById('cal-body');
+        if (!body || body.style.display === 'none') return;
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const { start, end } = getPeriodoBounds(mes);
+        const trans = dbGastosVar[mes] || [];
+
+        // Totales por fecha ISO
+        const porDia = {};
+        trans.forEach(g => {
+            if (!g.fecha) return;
+            const d = (porDia[g.fecha] = porDia[g.fecha] || { gasto: 0, ingreso: 0 });
+            if (g.tipo === 'ingreso') d.ingreso += g.monto || 0; else d.gasto += g.monto || 0;
+        });
+
+        const hoy   = hoyISO();
+        const isoDe = (d) => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        const dias = [];
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) dias.push(new Date(d));
+        const primerDow = (dias[0].getDay() + 6) % 7;   // lunes primero
+
+        const cabecera = ['L','M','M','J','V','S','D']
+            .map(x => `<div style="text-align:center;font-size:0.6rem;color:var(--text-muted);font-weight:700;padding:2px 0;">${x}</div>`).join('');
+
+        let celdas = '';
+        for (let i = 0; i < primerDow; i++) celdas += '<div></div>';
+        dias.forEach(d => {
+            const iso   = isoDe(d);
+            const info  = porDia[iso];
+            const esHoy = iso === hoy;
+            const sel   = iso === _calDiaSel;
+            const g     = info?.gasto   || 0;
+            const ing   = info?.ingreso || 0;
+            celdas += `<div onclick="selDiaCalendario('${iso}')" style="cursor:pointer;border-radius:8px;padding:3px 1px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;border:1px solid ${sel ? 'var(--primary)' : 'transparent'};background:${esHoy ? 'rgba(0,212,255,0.08)' : (info ? 'var(--bg-input)' : 'transparent')};">
+                <span style="font-size:0.68rem;font-weight:600;color:${esHoy ? 'var(--primary)' : 'var(--text-main)'};">${d.getDate()}</span>
+                ${g   ? `<span style="font-size:0.5rem;font-weight:700;color:#f87171;line-height:1.15;">-${milesCorto(g)}</span>` : ''}
+                ${ing ? `<span style="font-size:0.5rem;font-weight:700;color:#34d399;line-height:1.15;">+${milesCorto(ing)}</span>` : ''}
+            </div>`;
+        });
+
+        body.innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;">${cabecera}${celdas}</div>
+            <div id="cal-dia-detalle"></div>`;
+        renderCalDiaDetalle();
+    }
+
+    function selDiaCalendario(iso) {
+        _calDiaSel = (_calDiaSel === iso) ? null : iso;
+        renderCalendario();
+    }
+
+    function renderCalDiaDetalle() {
+        const cont = document.getElementById('cal-dia-detalle');
+        if (!cont) return;
+        if (!_calDiaSel) { cont.innerHTML = ''; return; }
+        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const items = (dbGastosVar[mes] || []).filter(g => g.fecha === _calDiaSel);
+        const filas = items.length
+            ? items.slice().reverse().map(g => transItemHTML(g, mes)).join('')
+            : '<p style="font-size:0.72rem;color:var(--text-muted);text-align:center;padding:8px 0;">Sin movimientos este día.</p>';
+        cont.innerHTML = `
+            <div style="border-top:0.5px solid var(--border);margin-top:4px;padding-top:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                    <span style="font-size:0.7rem;font-weight:700;color:var(--text-main);text-transform:uppercase;letter-spacing:0.5px;">${formatFechaLista(_calDiaSel)}</span>
+                    <button onclick="abrirModalTrans('${_calDiaSel}')" style="background:rgba(0,212,255,0.1);border:0.5px solid rgba(0,212,255,0.3);border-radius:8px;padding:4px 10px;color:var(--primary);font-size:0.7rem;font-weight:700;cursor:pointer;">+ Agregar</button>
+                </div>
+                ${filas}
+            </div>`;
     }
 
     function toggleTransPorCat() {
