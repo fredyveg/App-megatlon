@@ -278,369 +278,82 @@
 
     <main class="tab-content" id="tab-finanzas">
 
+        <!-- Header: navegación de mes + escanear -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <button onclick="finMesNav(-1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">‹</button>
+                <div id="fin-mes-label" style="font-size:1.05rem;font-weight:700;color:var(--text-main);min-width:108px;text-align:center;">—</div>
+                <button onclick="finMesNav(1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">›</button>
+            </div>
+            <button onclick="abrirEscanerRecibo()" style="display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:10px;padding:0 12px;height:34px;color:#00d4ff;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                <i class="fa-solid fa-camera"></i> Escanear
+            </button>
+        </div>
 
+        <!-- Resumen Ingresos / Gastos / Balance -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:11px 0;margin-bottom:12px;">
+            <div style="text-align:center;padding:0 6px;">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Ingresos</div>
+                <div id="fin-sum-ing" style="font-size:0.92rem;font-weight:700;color:#38bdf8;">$0</div>
+            </div>
+            <div style="text-align:center;padding:0 6px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Gastos</div>
+                <div id="fin-sum-gas" style="font-size:0.92rem;font-weight:700;color:#f87171;">$0</div>
+            </div>
+            <div style="text-align:center;padding:0 6px;">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Balance</div>
+                <div id="fin-sum-bal" style="font-size:0.92rem;font-weight:700;color:var(--text-main);">$0</div>
+            </div>
+        </div>
 
-        <!-- ── Sub-tabs ── -->
+        <!-- Selector de vistas -->
         <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
-            <button onclick="switchFinTab('gastos')" id="ftab-gastos"
-                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">
-                <i class="fa-solid fa-receipt" style="margin-right:5px;font-size:0.72rem;"></i>Gastos
-            </button>
-            <button onclick="switchFinTab('presupuesto')" id="ftab-presupuesto"
-                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-chart-pie" style="margin-right:5px;font-size:0.72rem;"></i>Mensual
-            </button>
-            <button onclick="switchFinTab('metas')" id="ftab-metas"
-                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-flag-checkered" style="margin-right:5px;font-size:0.72rem;"></i>Compr.
-            </button>
-            <button onclick="switchFinTab('historial')" id="ftab-historial"
-                style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">
-                <i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;font-size:0.72rem;"></i>Historial
-            </button>
+            <button onclick="switchFinVista('diario')" id="fv-diario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">Diario</button>
+            <button onclick="switchFinVista('calendario')" id="fv-calendario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Calendario</button>
+            <button onclick="switchFinVista('mensual')" id="fv-mensual" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Mensual</button>
+            <button onclick="switchFinVista('cuentas')" id="fv-cuentas" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Cuentas</button>
         </div>
 
-        <!-- ══ SUB-TAB: GASTOS ══ -->
-        <div id="fin-gastos" style="display:block;">
+        <!-- ══ VISTA: DIARIO ══ -->
+        <div id="finv-diario" style="display:block;">
+            <div id="fin-diario-lista"></div>
+        </div>
 
-            <!-- Hero balance del mes -->
-            <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:12px;position:relative;overflow:hidden;">
-                <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;">Balance del mes</div>
-                    <div id="bal-mes-label" style="font-size:0.7rem;color:var(--text-muted);font-weight:600;"></div>
-                </div>
-                <div style="text-align:center;margin-bottom:14px;" onclick="editarBalanceNeto()">
-                    <div id="bal-neto" style="font-size:2.2rem;font-weight:700;color:var(--text-main);letter-spacing:-1px;line-height:1;cursor:pointer;">$0</div>
-                    <input id="bal-neto-input" inputmode="decimal" placeholder="0"
-                        onblur="guardarBalanceNeto(this.value)"
-                        onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cerrarEditBalanceNeto();"
-                        style="display:none;font-size:1.9rem;font-weight:700;letter-spacing:-1px;width:75%;text-align:center;padding:4px 8px;border-radius:10px;background:rgba(0,0,0,0.3);border:1px solid var(--primary);color:var(--text-main);outline:none;font-family:inherit;">
-                    <div id="bal-neto-hint" style="display:none;font-size:0.6rem;color:var(--text-muted);margin-top:5px;">editado manualmente · tocá para cambiar &nbsp;<span onclick="event.stopPropagation();limpiarBalanceNeto()" style="color:#f87171;cursor:pointer;">✕ restaurar</span></div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;background:rgba(10,14,39,0.5);border-radius:10px;padding:10px 0;">
-                    <div style="text-align:center;padding:0 8px;">
-                        <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">↑ Ingresos</div>
-                        <div id="bal-ingresos" style="font-size:0.95rem;font-weight:700;color:var(--c-green);">$0</div>
-                    </div>
-                    <div style="background:var(--border);"></div>
-                    <div style="text-align:center;padding:0 8px;">
-                        <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">↓ Gastos</div>
-                        <div id="bal-gastos" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Escanear recibo -->
-            <button onclick="abrirEscanerRecibo()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;min-height:44px;">
-                <i class="fa-solid fa-camera"></i> Escanear recibo con IA
-            </button>
-
-            <!-- Nueva transacción -->
-            <button onclick="abrirModalTrans()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--primary);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;min-height:48px;">
-                <i class="fa-solid fa-plus"></i> Nueva transacción
-            </button>
-
-            <!-- Calendario -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
-                <button onclick="toggleCalendario()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-calendar-days"></i></div>
-                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Calendario</span>
-                    </div>
-                    <span id="cal-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
-                </button>
-                <div id="cal-body" style="display:none;padding:0 12px 14px;"></div>
-            </div>
-
-            <!-- Movimientos del mes -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div class="card-title">
-                    <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-list"></i></div>
-                    <span class="card-title-text">Movimientos del mes</span>
-                </div>
-                <div id="gastos-mes-lista"></div>
-            </div>
-
-            <!-- Gastos por categoría -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
-                <button onclick="toggleTransPorCat()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-chart-simple"></i></div>
-                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Por categoría</span>
-                    </div>
-                    <span id="tpc-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
-                </button>
-                <div id="trans-porcat-body" style="display:none;padding:0 16px 14px;"></div>
+        <!-- ══ VISTA: CALENDARIO ══ -->
+        <div id="finv-calendario" style="display:none;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:12px 12px 14px;">
+                <div id="cal-body"></div>
             </div>
         </div>
 
-        <!-- ══ SUB-TAB: PRESUPUESTO ══ -->
-        <div id="fin-presupuesto" style="display:none;">
-
-            <!-- Disponible para distribuir -->
-            <div style="background:var(--bg-hero);border-top:2px solid var(--c-green);border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;">
-                <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(52,211,153,0.06);border-radius:50%;pointer-events:none;"></div>
-                <div style="text-align:center;margin-bottom:16px;">
-                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;font-weight:600;margin-bottom:6px;">Disponible para distribuir</div>
-                    <div id="fin-disp-display" onclick="activarEditDisponible()" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;">
-                        <span id="fin-disponible" style="font-size:2.2rem;font-weight:700;color:var(--c-green);letter-spacing:-1px;line-height:1;">$0</span>
-                        <span style="font-size:0.75rem;color:var(--text-muted);opacity:0.6;margin-top:4px;">✎</span>
-                    </div>
-                    <div id="fin-disp-edit" style="display:none;align-items:center;justify-content:center;gap:6px;">
-                        <span style="font-size:1.8rem;font-weight:700;color:var(--text-muted);">$</span>
-                        <input id="fin-disp-input" inputmode="numeric"
-                            onkeydown="if(event.key==='Enter')confirmarEditDisponible();if(event.key==='Escape')cancelarEditDisponible();"
-                            style="font-size:1.8rem;font-weight:700;color:var(--c-green);background:var(--bg-input);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:4px 14px;width:160px;text-align:center;outline:none;font-family:inherit;">
-                        <button onclick="confirmarEditDisponible()" style="font-size:1rem;color:#34d399;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:4px 10px;cursor:pointer;">✓</button>
-                        <button onclick="cancelarEditDisponible()" style="font-size:1rem;color:var(--text-muted);background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;">✕</button>
-                    </div>
-                    <div id="fin-disp-override-info" style="display:none;margin-top:6px;">
-                        <span style="font-size:0.68rem;color:var(--text-muted);">Calculado: <span id="fin-disp-calculado" style="color:var(--text-main);font-weight:600;">$0</span></span>
-                        <button onclick="resetDisponibleOverride()" style="margin-left:8px;font-size:0.68rem;color:#00d4ff;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">↩ restablecer</button>
-                    </div>
+        <!-- ══ VISTA: MENSUAL ══ -->
+        <div id="finv-mensual" style="display:none;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;">
+                <div class="card-title" style="margin-bottom:14px;">
+                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-chart-pie"></i></div>
+                    <span class="card-title-text">Gastos por categoría</span>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 0.5px 1fr;gap:0;background:var(--bg-input);border-radius:12px;padding:10px 0;">
-                    <div style="text-align:center;padding:0 10px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Neto del mes</div>
-                        <div id="fin-neto-top" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">$0</div>
-                    </div>
-                    <div style="background:var(--border);"></div>
-                    <div style="text-align:center;padding:0 10px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">Gastos fijos</div>
-                        <div id="fin-fijos-top" style="font-size:0.95rem;font-weight:700;color:#f87171;">$0</div>
-                    </div>
-                </div>
+                <canvas id="fin-mensual-donut" style="width:100%;max-width:220px;height:220px;display:block;margin:0 auto 16px;"></canvas>
+                <div id="fin-mensual-cats"></div>
             </div>
+        </div>
 
-            <!-- Comparativa vs mes anterior -->
-            <div id="comp-mes" style="display:none;background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:14px 18px;margin-bottom:12px;"></div>
-
-            <!-- Gastos fijos -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <!-- ══ VISTA: CUENTAS ══ -->
+        <div id="finv-cuentas" style="display:none;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-receipt"></i></div>
-                        <span class="card-title-text">Gastos fijos</span>
+                        <div class="card-title-icon" style="background:rgba(56,189,248,0.12);color:#38bdf8;"><i class="fa-solid fa-wallet"></i></div>
+                        <span class="card-title-text">Cuentas</span>
                     </div>
-                    <button onclick="toggleFormFijo()" id="btn-toggle-fijo"
-                        style="background:rgba(31,111,235,0.12);border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 10px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">
-                        + Agregar
-                    </button>
+                    <button onclick="agregarCuentaPrompt()" style="background:rgba(56,189,248,0.1);border:0.5px solid rgba(56,189,248,0.3);border-radius:8px;padding:4px 10px;color:#38bdf8;font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
                 </div>
-                <div id="gastos-fijos-lista" style="margin-bottom:4px;"></div>
-                <div id="form-fijo" style="display:none;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);">
-                    <div style="display:flex;gap:6px;">
-                        <input type="text" id="gf-nombre" class="input" placeholder="Ej: Alquiler" style="flex:1;padding:8px 10px;font-size:0.82rem;">
-                        <input type="text" id="gf-monto" class="input" inputmode="numeric" placeholder="$" style="width:90px;padding:8px 10px;font-size:0.82rem;text-align:right;">
-                        <button onclick="agregarGastoFijo()" style="background:#1f6feb;color:#e6edf3;border:none;border-radius:9px;padding:8px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;">✓</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Distribución -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(0,212,255,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                    <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(0,212,255,0.1);color:var(--primary);"><i class="fa-solid fa-chart-pie"></i></div>
-                        <span class="card-title-text">Distribuir disponible</span>
-                    </div>
-                    <div style="display:flex;gap:6px;">
-                        <button onclick="toggleNuevaCat()" style="background:transparent;border:0.5px solid rgba(56,139,253,0.3);border-radius:8px;padding:4px 8px;color:#388bfd;font-size:0.7rem;font-weight:600;cursor:pointer;">+ Cat</button>
-                        <button onclick="resetDistribucion()" style="background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text-muted);font-size:0.7rem;cursor:pointer;">↺</button>
-                    </div>
-                </div>
-                <div id="dist-resumen" style="display:grid;grid-template-columns:1fr 0.5px 1fr 0.5px 1fr;background:var(--bg-input);border-radius:10px;padding:10px 0;margin-bottom:12px;">
-                    <div style="text-align:center;padding:0 8px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Disponible</div>
-                        <div id="dist-disponible" style="font-size:1rem;font-weight:700;color:#34d399;letter-spacing:-0.3px;line-height:1;">$0</div>
-                    </div>
-                    <div style="background:var(--border);"></div>
-                    <div style="text-align:center;padding:0 8px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Asignado</div>
-                        <div id="dist-asignado" style="font-size:1rem;font-weight:700;color:var(--text-main);line-height:1;">$0</div>
-                    </div>
-                    <div style="background:var(--border);"></div>
-                    <div id="dist-estado-card" style="text-align:center;padding:0 8px;transition:0.2s;">
-                        <div id="dist-estado-label" style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;">Sin asignar</div>
-                        <div id="dist-sin-asignar-top" style="font-size:1rem;font-weight:700;color:#f87171;line-height:1;">$0</div>
-                    </div>
-                </div>
-                <div style="display:flex;gap:7px;margin-bottom:8px;">
-                    <button onclick="aplicarAutoDistribucion()" style="flex:1;background:rgba(56,139,253,0.08);border:0.5px solid rgba(56,139,253,0.22);border-radius:10px;padding:8px 10px;color:#79c0ff;font-size:0.74rem;font-weight:700;cursor:pointer;">Auto</button>
-                    <button id="dist-sim-btn" onclick="toggleSimulacionDist()" style="flex:1;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">Simular</button>
-                    <button onclick="toggleAutoDistConfig()" style="width:42px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:0.74rem;font-weight:700;cursor:pointer;">%</button>
-                </div>
-                <div id="dist-sim-actions" style="display:none;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;">
-                    <button onclick="aplicarSimulacionDist()" style="padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:9px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Aplicar simulación</button>
-                    <button onclick="cancelarSimulacionDist()" style="padding:7px;background:rgba(248,113,113,0.08);border:0.5px solid rgba(248,113,113,0.22);border-radius:9px;color:#f87171;font-size:0.72rem;font-weight:700;cursor:pointer;">Cancelar</button>
-                </div>
-                <div id="auto-dist-form" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Auto distribución</div>
-                        <div id="auto-dist-total" style="font-size:0.7rem;color:var(--text-muted);font-weight:700;">100%</div>
-                    </div>
-                    <div id="auto-dist-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;"></div>
-                    <div style="border-top:0.5px solid var(--border);padding-top:8px;margin-bottom:8px;">
-                        <div style="font-size:0.6rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.45px;margin-bottom:7px;">Plantillas</div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-                            <button onclick="aplicarAutoDistPlantilla('base')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Base 50/20/20/10</button>
-                            <button onclick="aplicarAutoDistPlantilla('ajustado')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Mes ajustado</button>
-                            <button onclick="aplicarAutoDistPlantilla('ahorro')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Liquidez</button>
-                            <button onclick="aplicarAutoDistPlantilla('inversion')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Invertir más</button>
-                            <button onclick="aplicarAutoDistPlantilla('ocio')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Ocio cuidado</button>
-                            <button onclick="aplicarAutoDistPlantilla('defensivo')" style="padding:7px;background:rgba(255,255,255,0.025);border:0.5px solid var(--border);border-radius:8px;color:var(--text-main);font-size:0.68rem;cursor:pointer;">Defensivo</button>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:7px;">
-                        <button onclick="guardarAutoDistConfig()" style="flex:1;padding:7px;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.25);border-radius:8px;color:#34d399;font-size:0.72rem;font-weight:700;cursor:pointer;">Guardar</button>
-                        <button onclick="resetAutoDistConfig()" style="padding:7px 10px;background:transparent;border:0.5px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.72rem;cursor:pointer;">Reset</button>
-                    </div>
-                </div>
-                <!-- Sliders -->
-                <div id="dist-sliders" style="display:flex;flex-direction:column;gap:10px;"></div>
-                <!-- Nueva categoría form -->
-                <div id="nueva-cat-form" style="display:none;margin-top:12px;padding:12px;background:var(--bg-input);border-radius:12px;border:0.5px solid var(--border);">
-                    <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Nueva categoría</div>
-                    <div style="display:flex;gap:6px;margin-bottom:8px;">
-                        <input id="nueva-cat-icon" class="input" placeholder="🏷" style="width:46px;padding:7px;font-size:1.1rem;text-align:center;">
-                        <input id="nueva-cat-nombre" class="input" placeholder="Nombre" style="flex:1;padding:7px 10px;font-size:0.83rem;">
-                        <input id="nueva-cat-color" type="color" value="#a5b4fc" style="width:36px;height:36px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg-input);cursor:pointer;padding:2px;">
-                    </div>
-                    <div style="display:flex;gap:6px;">
-                        <button onclick="agregarCat()" style="flex:1;padding:8px;background:#1f6feb;color:#e6edf3;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;">+ Agregar</button>
-                        <button onclick="document.getElementById('nueva-cat-form').style.display='none'" style="padding:8px 12px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--text-muted);cursor:pointer;">✕</button>
-                    </div>
-                </div>
-                <!-- Gráfico barra apilada + sin asignar -->
-                <div style="margin-top:14px;">
-                    <div id="dist-stack" style="display:flex;height:7px;border-radius:8px;overflow:hidden;gap:1px;margin-bottom:6px;"></div>
-                    <div id="dist-restante-row" style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:var(--bg-input);border-radius:8px;">
-                        <span style="font-size:0.68rem;color:var(--text-muted);">Sin asignar</span>
-                        <span id="dist-restante" style="font-size:0.78rem;font-weight:700;color:#f87171;">$0</span>
-                    </div>
-                </div>
-                <!-- Leyenda -->
-                <div id="dist-leyenda" style="display:none;"></div>
-            </div>
-
-            <!-- Límites por categoría -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(251,191,36,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
-                <button onclick="toggleLimites()" style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;min-height:44px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="card-title-icon" style="background:rgba(251,191,36,0.1);color:#fbbf24;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-gauge-high"></i></div>
-                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Límites por categoría</span>
-                        <span id="limites-badge" style="display:none;font-size:0.7rem;background:rgba(248,113,113,0.12);color:#f87171;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
-                    </div>
-                    <span id="limites-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
-                </button>
-                <div id="limites-body" style="display:none;padding:0 16px 14px;">
-                    <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:10px;">Definí un tope mensual por categoría. Te aviso al llegar al 80%.</div>
-                    <div id="limites-lista"></div>
-                </div>
-            </div>
-
-            <!-- Historial de aportes colapsable -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:14px;overflow:hidden;margin-bottom:12px;">
-                <button onclick="toggleHistorial()"
-                    style="width:100%;background:none;border:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <span style="font-size:1rem;font-weight:600;color:var(--text-main);">Historial de aportes</span>
-                        <span id="hist-badge" style="font-size:0.7rem;background:rgba(56,139,253,0.12);color:#388bfd;border-radius:20px;padding:1px 7px;font-weight:600;"></span>
-                    </div>
-                    <span id="hist-chevron" style="font-size:0.7rem;color:var(--text-muted);">▼</span>
-                </button>
-                <div id="historial-wrapper" style="display:none;padding:0 16px 12px;">
-                    <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:8px;">Tocá ↩ para revertir cualquier aporte.</div>
-                    <div id="historial-aportes"></div>
-                </div>
+                <div id="fin-cuentas-lista"></div>
             </div>
         </div>
 
-        </div>
-
-        <!-- ══ SUB-TAB: METAS ══ -->
-        <div id="fin-metas" style="display:none;">
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(245,158,11,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                    <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(245,158,11,0.12);color:var(--c-amber);"><i class="fa-solid fa-bullseye"></i></div>
-                        <span class="card-title-text">Mis metas</span>
-                    </div>
-                    <button onclick="toggleFormMeta()" style="background:rgba(251,191,36,0.1);border:0.5px solid rgba(251,191,36,0.3);border-radius:8px;padding:4px 10px;color:var(--c-amber);font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
-                </div>
-                <div id="metas-lista"></div>
-                <div id="form-meta" style="display:none;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);">
-                    <div style="display:flex;gap:6px;">
-                        <input type="text" id="meta-nombre" class="input" placeholder="Ej: Vacaciones" style="flex:1;padding:8px 10px;font-size:0.82rem;">
-                        <input type="text" id="meta-monto" class="input" inputmode="numeric" placeholder="Meta $" style="width:100px;padding:8px 10px;font-size:0.82rem;text-align:right;">
-                        <button onclick="agregarMeta()" style="background:#22c55e;color:#0d1117;border:none;border-radius:9px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;">+ Agregar</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cuotas -->
-            <div id="cuotas-resumen" style="margin-bottom:12px;"></div>
-            <div id="cuotas-lista" style="margin-bottom:12px;"></div>
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div class="card-title" style="margin-bottom:12px;">
-                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-credit-card"></i></div>
-                    <span class="card-title-text">Nueva cuota</span>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Descripción</div>
-                        <input type="text" id="cuota-nombre" class="input" placeholder="Ej: Heladera" style="padding:8px 10px;font-size:0.83rem;">
-                    </div>
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Monto por cuota</div>
-                        <input type="text" id="cuota-monto" class="input" inputmode="numeric" placeholder="$0" style="padding:8px 10px;font-size:0.83rem;text-align:right;">
-                    </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Total cuotas</div>
-                        <input type="text" id="cuota-total" class="input" inputmode="numeric" placeholder="Ej: 6" style="padding:8px 10px;font-size:0.83rem;text-align:center;">
-                    </div>
-                    <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Ya pagadas</div>
-                        <input type="text" id="cuota-pagadas" class="input" inputmode="numeric" placeholder="0" style="padding:8px 10px;font-size:0.83rem;text-align:center;" value="0">
-                    </div>
-                </div>
-                <button onclick="agregarCuota()" style="width:100%;padding:11px;background:#1f6feb;color:#e6edf3;border:none;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">+ Agregar cuota</button>
-            </div>
-        </div>
-
-        <!-- ══ SUB-TAB: HISTORIAL ══ -->
-        <div id="fin-historial" style="display:none;">
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <span class="card-title-text">Historial</span>
-                    </div>
-                    <button onclick="exportarHistorialExcel()" style="background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:6px 12px;color:#34d399;font-size:0.7rem;font-weight:600;cursor:pointer;min-height:32px;">
-                        <i class="fa-solid fa-file-excel" style="margin-right:4px;"></i>Excel
-                    </button>
-                </div>
-                <input id="hist-q" class="input" placeholder="🔍 Buscar por descripción..." oninput="renderHistorial()" style="width:100%;padding:9px 12px;font-size:0.83rem;margin-bottom:8px;">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
-                    <select id="hist-tipo" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
-                        <option value="">Todos</option>
-                        <option value="gasto">Gastos</option>
-                        <option value="ingreso">Ingresos</option>
-                    </select>
-                    <select id="hist-cat" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
-                        <option value="">Categoría</option>
-                    </select>
-                    <select id="hist-mes" class="select-modern" onchange="renderHistorial()" style="font-size:0.75rem;padding:7px 8px;">
-                        <option value="">Mes</option>
-                    </select>
-                </div>
-                <div id="hist-lista"></div>
-            </div>
-        </div>
+        <!-- Botón flotante agregar -->
+        <button onclick="abrirModalTrans()" style="position:fixed;right:18px;bottom:88px;width:56px;height:56px;border-radius:50%;background:var(--primary);border:none;color:#0a0e27;font-size:1.7rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,212,255,0.35);z-index:900;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
 
     </main>
     <!-- ── Stats Tab ── -->
@@ -900,7 +613,8 @@
         'db_horas_v1', 'db_gastos_fijos', 'db_metas', 'db_gastos_var',
         'db_historial_aport', 'db_cuotas_v1', 'dist_pcts', 'dist_montos',
         'dist_modo', 'dist_vinculos', 'auto_dist_config', 'dist_cats_custom',
-        'meses_vistos', 'app_v2_limites_cat', 'app_v2_subcats_custom', 'app_v2_cats_custom'
+        'meses_vistos', 'app_v2_limites_cat', 'app_v2_subcats_custom', 'app_v2_cats_custom',
+        'app_v2_cuentas'
     ];
 
     let _syncStatus = 'idle'; // idle | syncing | ok | error
@@ -997,6 +711,7 @@
         dbLimitesCat     = JSON.parse(localStorage.getItem('app_v2_limites_cat'))   || {};
         dbSubcatsCustom  = JSON.parse(localStorage.getItem('app_v2_subcats_custom')) || {};
         dbCatsCustom     = JSON.parse(localStorage.getItem('app_v2_cats_custom'))    || {};
+        dbCuentas        = JSON.parse(localStorage.getItem('app_v2_cuentas'))        || dbCuentas;
         distPcts         = JSON.parse(localStorage.getItem('dist_pcts'))            || null;
         distMontos       = JSON.parse(localStorage.getItem('dist_montos'))          || {};
         distModo         = JSON.parse(localStorage.getItem('dist_modo'))            || {};
@@ -1471,6 +1186,15 @@
     const saveHistAport    = () => { localStorage.setItem('db_historial_aport', JSON.stringify(dbHistorialAport)); schedulePush(); };
     let dbLimitesCat       = JSON.parse(localStorage.getItem('app_v2_limites_cat'))   || {};
     const saveLimitesCat   = () => { localStorage.setItem('app_v2_limites_cat',    JSON.stringify(dbLimitesCat));   schedulePush(); };
+
+    // ── Cuentas (efectivo / banco / tarjeta / …) ──────────────────────────
+    let dbCuentas = JSON.parse(localStorage.getItem('app_v2_cuentas')) || [
+        { id: 'efectivo', nombre: 'Efectivo', icon: '💵', color: '#34d399' },
+        { id: 'banco',    nombre: 'Banco',    icon: '🏦', color: '#38bdf8' },
+        { id: 'tarjeta',  nombre: 'Tarjeta',  icon: '💳', color: '#a78bfa' },
+    ];
+    const saveCuentas = () => { localStorage.setItem('app_v2_cuentas', JSON.stringify(dbCuentas)); schedulePush(); };
+    const cuentaDe    = (id) => dbCuentas.find(c => c.id === id) || null;
     let dbSubcatsCustom    = JSON.parse(localStorage.getItem('app_v2_subcats_custom')) || {};
     const saveSubcatsCustom = () => { localStorage.setItem('app_v2_subcats_custom', JSON.stringify(dbSubcatsCustom)); schedulePush(); };
     const getSubcats = (seccion) => dbSubcatsCustom[seccion] !== undefined ? dbSubcatsCustom[seccion] : (SECCIONES_SUBCATS[seccion] || []);
@@ -1487,7 +1211,7 @@
         return [...CATS_INGRESO.filter(s => !c.removed.includes(s)), ...c.added];
     }
     // Suma solo gastos (entradas sin tipo = gasto, retrocompatible)
-    const sumGastosMes          = (mes) => (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso').reduce((s,g) => s+(g.monto||0), 0);
+    const sumGastosMes          = (mes) => (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer').reduce((s,g) => s+(g.monto||0), 0);
     const sumIngresosManualesMes = (mes) => (dbGastosVar[mes] || []).filter(g => g.tipo === 'ingreso').reduce((s,g) => s+(g.monto||0), 0);
     // Sección de una entrada (las viejas la llevan dentro de subcategoria "Sección › Subcat")
     const seccionDeTrans = (g) => g.seccion || (g.subcategoria ? g.subcategoria.split(' › ')[0] : 'Otro');
@@ -2351,43 +2075,252 @@
         renderDistribucion(dAjust);
     }
     let finTabActivo = 'presupuesto';
-    function switchFinTab(tab) {
-        currentFinTab = tab;
-        ['gastos','presupuesto','metas','historial'].forEach(t => {
-            const panel = document.getElementById('fin-' + t);
-            const btn   = document.getElementById('ftab-' + t);
+    // ── Vistas de Finanzas (Diario / Calendario / Mensual / Cuentas) ──────
+    let _finVista = 'diario';
+    const MESES_ABR = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+    function switchFinVista(v) {
+        _finVista = v;
+        ['diario','calendario','mensual','cuentas'].forEach(t => {
+            const panel = document.getElementById('finv-' + t);
+            const btn   = document.getElementById('fv-' + t);
             if (!panel || !btn) return;
-            const on = t === tab;
+            const on = t === v;
             panel.style.display  = on ? 'block' : 'none';
-            btn.style.background = on ? 'var(--bg-input)' : 'transparent';
-            btn.style.color      = on ? 'var(--text-main)' : 'var(--text-muted)';
+            btn.style.background  = on ? 'var(--bg-input)' : 'transparent';
+            btn.style.color       = on ? 'var(--text-main)' : 'var(--text-muted)';
         });
-        if (tab === 'gastos')      renderGastosTab();
-        if (tab === 'presupuesto') renderFinanzas();
-        if (tab === 'metas')       { renderMetas(); renderCuotas(); }
-        if (tab === 'historial')   renderHistorial();
+        renderFinanzas();
+    }
+
+    function finMesNav(delta) {
+        const sel = document.getElementById('select-mes');
+        if (!sel) return;
+        const nuevo = addMonthsToKey(sel.value || monthKeyFromDate(new Date()), delta);
+        if (![...sel.options].some(o => o.value === nuevo)) {
+            const { end } = getPeriodoBounds(nuevo);
+            sel.add(new Option(MESES_ABR[end.getMonth()] + ' ' + String(end.getFullYear()).slice(2) + ' · ' + formatPeriodoCorto(nuevo), nuevo));
+        }
+        sel.value = nuevo;
+        renderTodo();   // recalcula horas + finanzas para el nuevo período
+    }
+
+    function renderFinHeader() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const lbl = document.getElementById('fin-mes-label');
+        if (lbl) { const { end } = getPeriodoBounds(mes); lbl.innerText = MESES_ABR[end.getMonth()] + ' ' + end.getFullYear(); }
+    }
+
+    function renderFinResumen() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        let ing = 0, gas = 0;
+        (dbGastosVar[mes] || []).forEach(g => {
+            if (g.tipo === 'transfer') return;   // las transferencias no son ingreso ni gasto
+            if (g.tipo === 'ingreso') ing += g.monto||0; else gas += g.monto||0;
+        });
+        const iEl = document.getElementById('fin-sum-ing');
+        const gEl = document.getElementById('fin-sum-gas');
+        const bEl = document.getElementById('fin-sum-bal');
+        if (iEl) iEl.innerText = fmt(ing);
+        if (gEl) gEl.innerText = fmt(gas);
+        if (bEl) { const bal = ing - gas; bEl.innerText = fmt(bal); bEl.style.color = bal >= 0 ? 'var(--text-main)' : '#f87171'; }
+    }
+
+    // Fila de movimiento estilo Money Manager (categoría · descripción · cuenta · monto)
+    function transRowDiario(g, mes) {
+        const esIng    = g.tipo === 'ingreso';
+        const esTransf = g.tipo === 'transfer';
+        const cuenta   = cuentaDe(g.cuentaId);
+        let seccion, icono, cuentaTxt, desc, color, signo;
+        if (esTransf) {
+            const dest = cuentaDe(g.cuentaDestId);
+            seccion   = 'Transferencia';
+            icono     = '🔄';
+            cuentaTxt = `<span style="font-size:0.66rem;color:var(--text-muted);">${cuenta ? cuenta.nombre : '?'} → ${dest ? dest.nombre : '?'}</span>`;
+            desc      = g.desc || 'Transferencia';
+            color     = 'var(--text-main)';
+            signo     = '';
+        } else {
+            seccion   = seccionDeTrans(g);
+            icono     = SECCION_ICONS[seccion] || (esIng ? '💰' : '➕');
+            cuentaTxt = cuenta ? `<span style="font-size:0.66rem;color:var(--text-muted);">· ${cuenta.icon || ''} ${cuenta.nombre}</span>` : '';
+            desc      = g.desc || (g.subcategoria && g.subcategoria.includes(' › ') ? g.subcategoria.split(' › ')[1] : seccion);
+            color     = esIng ? '#38bdf8' : '#f87171';
+            signo     = esIng ? '' : '-';
+        }
+        return `<div onclick="if(confirm('¿Borrar este movimiento?'))eliminarGastoManual('${g.id}','${mes}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid rgba(30,42,71,0.55);cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">${icono}</div>
+                <div style="min-width:0;">
+                    <div style="font-size:0.68rem;color:var(--text-muted);">${seccion}</div>
+                    <div style="font-size:0.85rem;font-weight:600;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc} ${cuentaTxt}</div>
+                </div>
+            </div>
+            <span style="font-size:0.9rem;font-weight:700;color:${color};flex-shrink:0;margin-left:8px;">${signo}${fmt(g.monto||0)}</span>
+        </div>`;
+    }
+
+    function renderDiario() {
+        const cont = document.getElementById('fin-diario-lista');
+        if (!cont) return;
+        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const trans = dbGastosVar[mes] || [];
+        if (trans.length === 0) {
+            cont.innerHTML = `<div style="text-align:center;padding:44px 0;"><div style="font-size:2rem;margin-bottom:10px;">🧾</div><p style="font-size:0.82rem;color:var(--text-muted);">Sin movimientos este mes.<br>Tocá el botón + para registrar uno.</p></div>`;
+            return;
+        }
+        const grupos = {};
+        trans.forEach(g => { const k = g.fecha || ''; (grupos[k] = grupos[k] || []).push(g); });
+        const keys = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
+        const diasSem = ['dom','lun','mar','mié','jue','vie','sáb'];
+        cont.innerHTML = keys.map(k => {
+            const arr = grupos[k];
+            let ingD = 0, gasD = 0;
+            arr.forEach(g => {
+                if (g.tipo === 'transfer') return;
+                if (g.tipo === 'ingreso') ingD += g.monto||0; else gasD += g.monto||0;
+            });
+            let cab;
+            if (k) {
+                const d = parseFechaLocal(k);
+                cab = `<div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:1.2rem;font-weight:700;color:var(--text-main);">${String(d.getDate()).padStart(2,'0')}</span>
+                    <span style="font-size:0.58rem;font-weight:700;color:var(--text-muted);background:var(--bg-input);border-radius:6px;padding:2px 6px;text-transform:uppercase;">${diasSem[d.getDay()]}</span>
+                    <span style="font-size:0.66rem;color:var(--text-muted);">${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}</span>
+                </div>`;
+            } else {
+                cab = `<span style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">Sin fecha</span>`;
+            }
+            const totales = `<div style="display:flex;gap:12px;align-items:center;">
+                ${ingD ? `<span style="font-size:0.78rem;font-weight:700;color:#38bdf8;">${fmt(ingD)}</span>` : ''}
+                ${gasD ? `<span style="font-size:0.78rem;font-weight:700;color:#f87171;">-${fmt(gasD)}</span>` : ''}
+            </div>`;
+            const filas = arr.slice().reverse().map(g => transRowDiario(g, mes)).join('');
+            return `<div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:4px 14px 2px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);">${cab}${totales}</div>
+                ${filas}
+            </div>`;
+        }).join('');
+    }
+
+    function renderFinMensual() {
+        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const trans = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer');
+        const cont  = document.getElementById('fin-mensual-cats');
+        const cv    = document.getElementById('fin-mensual-donut');
+        if (!cont || !cv) return;
+        const tot = {};
+        trans.forEach(g => { const s = seccionDeTrans(g); tot[s] = (tot[s] || 0) + (g.monto || 0); });
+        const sorted = Object.entries(tot).sort((a, b) => b[1] - a[1]).filter(([, v]) => v > 0);
+        const total  = sorted.reduce((s, [, v]) => s + v, 0);
+        const COLORS = ['#a78bfa','#34d399','#f87171','#60a5fa','#fbbf24','#f472b6','#38bdf8','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
+        if (sorted.length === 0) {
+            cv.style.display = 'none';
+            cont.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:20px 0;">Sin gastos este mes.</p>';
+            return;
+        }
+        cv.style.display = 'block';
+        const dpr = window.devicePixelRatio || 1;
+        const size = Math.min(cv.offsetWidth || 220, 220);
+        cv.width = size * dpr; cv.height = size * dpr;
+        cv.style.width = size + 'px'; cv.style.height = size + 'px';
+        const cp = cv.getContext('2d');
+        cp.scale(dpr, dpr);
+        cp.clearRect(0, 0, size, size);
+        const cx = size/2, cy = size/2, r = size/2 - 6, innerR = r * 0.52;
+        let ang = -Math.PI / 2;
+        sorted.forEach(([, val], i) => {
+            const slice = (val / total) * Math.PI * 2;
+            cp.beginPath(); cp.moveTo(cx, cy); cp.arc(cx, cy, r, ang, ang + slice); cp.closePath();
+            cp.fillStyle = COLORS[i % COLORS.length]; cp.fill();
+            ang += slice;
+        });
+        cp.beginPath(); cp.arc(cx, cy, innerR, 0, Math.PI * 2); cp.fillStyle = '#141d3a'; cp.fill();
+        cp.fillStyle = '#f0f4f8'; cp.font = `bold ${Math.round(size*0.095)}px Inter, sans-serif`;
+        cp.textAlign = 'center'; cp.textBaseline = 'middle';
+        cp.fillText(fmt(total), cx, cy - 7);
+        cp.fillStyle = '#8892b0'; cp.font = `${Math.round(size*0.065)}px Inter, sans-serif`;
+        cp.fillText('gastado', cx, cy + 12);
+        cont.innerHTML = sorted.map(([s, m], i) => {
+            const pct = (m / total * 100).toFixed(1);
+            const color = COLORS[i % COLORS.length];
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="width:10px;height:10px;border-radius:3px;background:${color};flex-shrink:0;display:inline-block;"></span>
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-main);">${SECCION_ICONS[s] || '➕'} ${s}</span>
+                </div>
+                <span style="font-size:0.78rem;color:var(--text-muted);">${fmt(m)} <span style="color:${color};font-weight:700;">${pct}%</span></span>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Cuentas ───────────────────────────────────────────────────────────
+    function renderCuentas() {
+        const cont = document.getElementById('fin-cuentas-lista');
+        if (!cont) return;
+        const saldos = {};
+        dbCuentas.forEach(c => saldos[c.id] = 0);
+        Object.values(dbGastosVar).forEach(arr => arr.forEach(g => {
+            const m = g.monto || 0;
+            if (g.tipo === 'transfer') {
+                // resta del origen, suma al destino
+                if (g.cuentaId     && saldos[g.cuentaId]     !== undefined) saldos[g.cuentaId]     -= m;
+                if (g.cuentaDestId && saldos[g.cuentaDestId] !== undefined) saldos[g.cuentaDestId] += m;
+                return;
+            }
+            if (!g.cuentaId || saldos[g.cuentaId] === undefined) return;
+            saldos[g.cuentaId] += (g.tipo === 'ingreso' ? 1 : -1) * m;
+        }));
+        cont.innerHTML = dbCuentas.map(c => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:0.5px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1.05rem;">${c.icon || '💳'}</div>
+                    <span style="font-size:0.9rem;font-weight:600;color:var(--text-main);">${c.nombre}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:0.9rem;font-weight:700;color:${saldos[c.id] >= 0 ? 'var(--text-main)' : '#f87171'};">${fmt(saldos[c.id])}</span>
+                    <button onclick="eliminarCuenta('${c.id}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;">✕</button>
+                </div>
+            </div>`).join('');
+    }
+
+    function agregarCuentaPrompt() {
+        const nombre = prompt('Nombre de la cuenta (ej: Mercado Pago):');
+        if (!nombre || !nombre.trim()) return;
+        const icon = (prompt('Emoji para la cuenta (opcional):', '💳') || '💳').trim() || '💳';
+        dbCuentas.push({ id: 'c' + Date.now(), nombre: nombre.trim(), icon, color: '#38bdf8' });
+        saveCuentas();
+        renderCuentas();
+    }
+
+    function eliminarCuenta(id) {
+        if (dbCuentas.length <= 1) { alert('Tenés que tener al menos una cuenta.'); return; }
+        if (!confirm('¿Eliminar esta cuenta? Los movimientos que la usaban quedan sin cuenta asignada.')) return;
+        dbCuentas = dbCuentas.filter(c => c.id !== id);
+        saveCuentas();
+        renderCuentas();
     }
 
     // ── Modal nueva transacción ───────────────────────────────────────────
-    let _transTipo          = 'gasto';
-    let _transSeccion       = null;
-    let _transSubcat        = null;
-    let _transSubcatEditing = false;
-    let _transCatEditing    = false;
+    let _transTipo       = 'gasto';
+    let _transSeccion    = null;
+    let _transSubcat     = null;
+    let _transCuenta     = null;
+    let _transCuentaDest = null;
+    let _transPanel      = null;   // 'cat' | 'cuenta' | 'cuentaDest' | null
+    let _panelCatSel     = null;   // categoría resaltada en el panel (para ver subcats)
+    let _transCatEditing = false;
 
     function abrirModalTrans(fechaPre) {
-        _transTipo          = 'gasto';
-        _transSeccion       = null;
-        _transSubcat        = null;
-        _transSubcatEditing = false;
-        _transCatEditing    = false;
+        _transSeccion    = null;
+        _transSubcat     = null;
+        _transCuenta     = (dbCuentas[0] && dbCuentas[0].id) || null;
+        _transCuentaDest = null;
+        _panelCatSel     = null;
+        _transCatEditing = false;
         document.getElementById('trans-monto').value = '';
         document.getElementById('trans-desc').value  = '';
         document.getElementById('trans-fecha').value = fechaPre || hoyISO();
-        const sel = document.getElementById('trans-cat-presup');
-        sel.innerHTML = getCatsActivas()
-            .map(c => `<option value="${c.id}">${c.icon || ''} ${c.nombre}</option>`)
-            .join('');
         setTransTipo('gasto');
         document.getElementById('modal-trans').style.display = 'flex';
         setTimeout(() => document.getElementById('trans-monto').focus(), 350);
@@ -2398,74 +2331,155 @@
     }
 
     function setTransTipo(tipo) {
-        _transTipo          = tipo;
-        _transSeccion       = null;
-        _transSubcat        = null;
-        _transSubcatEditing = false;
-        _transCatEditing    = false;
-        const pg = document.getElementById('trans-pill-gasto');
-        const pi = document.getElementById('trans-pill-ingreso');
-        const esGasto = tipo === 'gasto';
-        pg.style.background = esGasto ? 'rgba(248,113,113,0.15)' : 'transparent';
-        pg.style.color      = esGasto ? '#f87171' : 'var(--text-muted)';
-        pi.style.background = esGasto ? 'transparent' : 'rgba(52,211,153,0.15)';
-        pi.style.color      = esGasto ? 'var(--text-muted)' : '#34d399';
-        document.getElementById('trans-cat-presup-wrap').style.display = esGasto ? 'block' : 'none';
-        document.getElementById('trans-desc').placeholder = esGasto ? '¿En qué gastaste?' : '¿De dónde vino?';
-        renderTransCatGrid();
-        renderTransSubcatWrap();
+        _transTipo    = tipo;
+        _transSeccion = null;
+        _transSubcat  = null;
+        _panelCatSel  = null;
+        const estilos = {
+            ingreso:  { id: 'trans-pill-ingreso',  color: '#38bdf8' },
+            gasto:    { id: 'trans-pill-gasto',    color: '#f87171' },
+            transfer: { id: 'trans-pill-transfer', color: '#e6edf3' },
+        };
+        Object.entries(estilos).forEach(([t, e]) => {
+            const b = document.getElementById(e.id);
+            if (!b) return;
+            const on = t === tipo;
+            b.style.border = on ? '1px solid ' + e.color : '0.5px solid var(--border)';
+            b.style.color  = on ? e.color : 'var(--text-muted)';
+        });
+        const esTransfer = tipo === 'transfer';
+        document.getElementById('trans-row-cat-wrap').style.display  = esTransfer ? 'none' : 'flex';
+        document.getElementById('trans-row-dest-wrap').style.display = esTransfer ? 'flex' : 'none';
+        document.getElementById('trans-row-cuenta-label').innerText  = esTransfer ? 'Origen' : 'Cuenta';
+        cerrarPanelTrans();
+        actualizarRowsTrans();
     }
 
-    function renderTransCatGrid() {
-        const grid = document.getElementById('trans-cat-grid');
-        const cats = _transTipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
-        const ed   = _transCatEditing;
+    function actualizarRowsTrans() {
+        const vacio = '<span style="color:var(--text-muted);opacity:0.6;">Elegir…</span>';
+        const rCat = document.getElementById('trans-row-cat');
+        if (rCat) rCat.innerHTML = _transSeccion
+            ? `<span style="color:var(--text-main);">${SECCION_ICONS[_transSeccion] || '➕'} ${_transSeccion}${_transSubcat ? ' › ' + _transSubcat : ''}</span>`
+            : vacio;
+        const rCta = document.getElementById('trans-row-cuenta');
+        const c1 = cuentaDe(_transCuenta);
+        if (rCta) rCta.innerHTML = c1 ? `<span style="color:var(--text-main);">${c1.icon || ''} ${c1.nombre}</span>` : vacio;
+        const rDst = document.getElementById('trans-row-dest');
+        const c2 = cuentaDe(_transCuentaDest);
+        if (rDst) rDst.innerHTML = c2 ? `<span style="color:var(--text-main);">${c2.icon || ''} ${c2.nombre}</span>` : vacio;
+    }
 
-        let html = cats.map(s => {
-            const esc  = s.replace(/'/g, "\\'");
-            const icon = SECCION_ICONS[s] || '➕';
-            if (ed) {
-                return `<div style="position:relative;">
-                    <button style="width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;min-height:56px;border-radius:11px;
-                        background:var(--bg-input);border:0.5px solid var(--border);opacity:0.65;cursor:default;font-family:inherit;">
-                        <span style="font-size:1.15rem;">${icon}</span>
-                        <span style="font-size:0.6rem;font-weight:600;color:var(--text-muted);line-height:1.1;text-align:center;">${s}</span>
-                    </button>
-                    <button onclick="eliminarCatTrans('${esc}')"
-                        style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#f87171;border:none;cursor:pointer;color:#0a0e27;font-size:0.8rem;font-weight:900;display:flex;align-items:center;justify-content:center;">×</button>
-                </div>`;
+    // ── Panel selector inferior (categoría / cuenta) ──────────────────────
+    function abrirPanelTrans(which) {
+        _transPanel  = which;
+        _panelCatSel = (which === 'cat') ? _transSeccion : _panelCatSel;
+        renderPanelTrans();
+        const p = document.getElementById('trans-panel');
+        p.style.display = 'block';
+        setTimeout(() => p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+    }
+
+    function cerrarPanelTrans() {
+        _transPanel = null;
+        const p = document.getElementById('trans-panel');
+        if (p) p.style.display = 'none';
+    }
+
+    function renderPanelTrans() {
+        const title = document.getElementById('trans-panel-title');
+        const body  = document.getElementById('trans-panel-body');
+        const editB = document.getElementById('trans-panel-edit');
+        if (!body) return;
+
+        if (_transPanel === 'cat') {
+            title.innerText = 'Categoría';
+            editB.style.display = 'block';
+            editB.innerText = _transCatEditing ? 'Listo' : '✏';
+            const cats = _transTipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
+            const izq = cats.map(s => {
+                const esc  = s.replace(/'/g, "\\'");
+                const icon = SECCION_ICONS[s] || '➕';
+                const subcats = _transTipo === 'gasto' ? getSubcats(s) : [];
+                const on = s === _panelCatSel;
+                const der = _transCatEditing
+                    ? `<span onclick="event.stopPropagation();eliminarCatTrans('${esc}')" style="color:#f87171;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>`
+                    : (subcats.length ? '<span style="color:var(--text-muted);font-size:0.75rem;">›</span>' : '');
+                return `<button onclick="panelSelCat('${esc}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 10px;background:${on ? 'var(--bg-input)' : 'transparent'};border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;text-align:left;">
+                    <span style="font-size:0.84rem;color:var(--text-main);">${icon} ${s}</span>${der}
+                </button>`;
+            }).join('') + (_transCatEditing ? `<div style="display:flex;gap:6px;padding:10px 8px;">
+                <input id="cat-new-inp" placeholder="Nueva…" maxlength="20" onkeydown="if(event.key==='Enter')agregarCatTrans()" style="flex:1;min-width:0;padding:6px 10px;border-radius:8px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.78rem;outline:none;font-family:inherit;">
+                <button onclick="agregarCatTrans()" style="padding:6px 12px;border-radius:8px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.8rem;font-weight:700;cursor:pointer;">+</button>
+            </div>` : '');
+
+            let der;
+            if (_transTipo === 'gasto' && _panelCatSel) {
+                const subcats = getSubcats(_panelCatSel);
+                der = `<button onclick="panelSelSubcat(null)" style="width:100%;text-align:left;padding:12px 10px;background:transparent;border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-main);font-weight:600;">${_panelCatSel} <span style="font-weight:400;color:var(--text-muted);">(general)</span></button>`
+                    + subcats.map(s => {
+                        const esc = s.replace(/'/g, "\\'");
+                        const del = _transCatEditing ? `<span onclick="event.stopPropagation();eliminarSubcatTrans('${esc}')" style="color:#f87171;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>` : '';
+                        return `<button onclick="panelSelSubcat('${esc}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 10px;background:transparent;border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-muted);text-align:left;">${s}${del}</button>`;
+                    }).join('')
+                    + `<div style="display:flex;gap:6px;padding:10px 6px;">
+                        <input id="subcat-new-inp" placeholder="Nueva…" onkeydown="if(event.key==='Enter')agregarSubcatTrans()" style="flex:1;min-width:0;padding:6px 8px;border-radius:8px;background:var(--bg-input);border:0.5px solid var(--border);color:var(--text-main);font-size:0.75rem;outline:none;font-family:inherit;">
+                        <button onclick="agregarSubcatTrans()" style="padding:6px 10px;border-radius:8px;background:var(--bg-input);border:0.5px solid var(--border);color:var(--text-muted);font-size:0.8rem;cursor:pointer;">+</button>
+                    </div>`;
+            } else if (_transTipo === 'gasto') {
+                der = '<div style="padding:22px 10px;font-size:0.72rem;color:var(--text-muted);text-align:center;">Elegí una categoría ←</div>';
+            } else {
+                der = '<div style="padding:22px 10px;font-size:0.72rem;color:var(--text-muted);text-align:center;">Tocá para seleccionar</div>';
             }
-            const on = s === _transSeccion;
-            return `<button onclick="selTransCat('${esc}')"
-                style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;min-height:56px;border-radius:11px;cursor:pointer;font-family:inherit;transition:0.15s;
-                background:${on ? 'rgba(0,212,255,0.12)' : 'var(--bg-input)'};
-                border:${on ? '1px solid rgba(0,212,255,0.5)' : '0.5px solid var(--border)'};">
-                <span style="font-size:1.15rem;">${icon}</span>
-                <span style="font-size:0.6rem;font-weight:600;color:${on ? '#00d4ff' : 'var(--text-muted)'};line-height:1.1;text-align:center;">${s}</span>
-            </button>`;
-        }).join('');
-
-        if (ed) {
-            html += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;border-radius:11px;background:rgba(0,212,255,0.05);border:1px dashed rgba(0,212,255,0.3);padding:6px 4px;">
-                <input id="cat-new-inp" placeholder="Nueva…" maxlength="20" onkeydown="if(event.key==='Enter')agregarCatTrans()"
-                    style="width:90%;padding:3px 6px;border-radius:8px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.62rem;outline:none;font-family:inherit;text-align:center;">
-                <button onclick="agregarCatTrans()" style="padding:2px 10px;border-radius:8px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.7rem;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
+            body.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;">
+                <div style="overflow-y:auto;max-height:300px;border-right:0.5px solid var(--border);">${izq}</div>
+                <div style="overflow-y:auto;max-height:300px;">${der}</div>
             </div>`;
+        } else {
+            title.innerText = _transPanel === 'cuentaDest' ? 'Cuenta destino' : 'Cuentas';
+            editB.style.display = 'none';
+            body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);">`
+                + dbCuentas.map(c => `<button onclick="panelSelCuenta('${c.id}')" style="padding:17px 6px;background:transparent;border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</button>`).join('')
+                + `<button onclick="agregarCuentaPrompt();renderPanelTrans()" style="padding:17px 6px;background:transparent;border:0.5px dashed var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-muted);">+ Nueva</button>`
+                + `</div>`;
         }
+    }
 
-        grid.innerHTML = html;
+    function panelSelCat(seccion) {
+        if (_transCatEditing) { _panelCatSel = seccion; renderPanelTrans(); return; }
+        const subcats = _transTipo === 'gasto' ? getSubcats(seccion) : [];
+        if (subcats.length === 0) {
+            _transSeccion = seccion;
+            _transSubcat  = null;
+            cerrarPanelTrans();
+            actualizarRowsTrans();
+        } else {
+            _panelCatSel = seccion;
+            renderPanelTrans();
+        }
+    }
 
-        const editBtn = document.getElementById('trans-cat-edit-btn');
-        if (editBtn) { editBtn.textContent = ed ? 'Listo' : '✏ Editar'; editBtn.style.color = ed ? '#00d4ff' : '#8892b0'; }
-        if (ed) setTimeout(() => { const i = document.getElementById('cat-new-inp'); if(i) i.focus(); }, 50);
+    function panelSelSubcat(sub) {
+        if (_transCatEditing && sub) return;   // en modo edición no se selecciona
+        _transSeccion = _panelCatSel;
+        _transSubcat  = sub || null;
+        cerrarPanelTrans();
+        actualizarRowsTrans();
+    }
+
+    function panelSelCuenta(id) {
+        if (_transPanel === 'cuentaDest') _transCuentaDest = id;
+        else _transCuenta = id;
+        cerrarPanelTrans();
+        actualizarRowsTrans();
     }
 
     function toggleCatEdit() {
         _transCatEditing = !_transCatEditing;
         if (!_transCatEditing && _transSeccion && !getCatsGasto().concat(getCatsIngreso()).includes(_transSeccion)) {
             _transSeccion = null; _transSubcat = null;
+            actualizarRowsTrans();
         }
-        renderTransCatGrid();
+        renderPanelTrans();
     }
 
     function agregarCatTrans() {
@@ -2473,147 +2487,94 @@
         if (!inp) return;
         const val = inp.value.trim();
         if (!val) return;
-        const tipo = _transTipo;
-        const key  = tipo === 'ingreso' ? 'ingreso' : 'gasto';
+        const key = _transTipo === 'ingreso' ? 'ingreso' : 'gasto';
         if (!dbCatsCustom[key]) dbCatsCustom[key] = { added: [], removed: [] };
-        const current = tipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
+        const current = _transTipo === 'ingreso' ? getCatsIngreso() : getCatsGasto();
         if (current.includes(val)) { inp.value = ''; return; }
         dbCatsCustom[key].added.push(val);
         saveTransCatsCustom();
         inp.value = '';
-        renderTransCatGrid();
+        renderPanelTrans();
     }
 
     function eliminarCatTrans(seccion) {
-        const tipo = _transTipo;
-        const key  = tipo === 'ingreso' ? 'ingreso' : 'gasto';
+        const key = _transTipo === 'ingreso' ? 'ingreso' : 'gasto';
         if (!dbCatsCustom[key]) dbCatsCustom[key] = { added: [], removed: [] };
         if (dbCatsCustom[key].added.includes(seccion)) {
             dbCatsCustom[key].added = dbCatsCustom[key].added.filter(s => s !== seccion);
         } else {
             if (!dbCatsCustom[key].removed.includes(seccion)) dbCatsCustom[key].removed.push(seccion);
         }
-        if (_transSeccion === seccion) { _transSeccion = null; _transSubcat = null; }
+        if (_transSeccion === seccion) { _transSeccion = null; _transSubcat = null; actualizarRowsTrans(); }
+        if (_panelCatSel === seccion) _panelCatSel = null;
         saveTransCatsCustom();
-        renderTransCatGrid();
-        renderTransSubcatWrap();
-    }
-
-    function selTransCat(seccion) {
-        _transSeccion       = seccion;
-        _transSubcat        = null;
-        _transSubcatEditing = false;
-        renderTransCatGrid();
-        renderTransSubcatWrap();
-        if (_transTipo === 'gasto') {
-            const sel = document.getElementById('trans-cat-presup');
-            const sugerida = SECCION_TO_CAT[seccion];
-            if (sugerida && sel.querySelector(`option[value="${sugerida}"]`)) sel.value = sugerida;
-        }
-    }
-
-    function renderTransSubcatWrap() {
-        const wrap = document.getElementById('trans-subcat-wrap');
-        if (!wrap) return;
-        // No mostrar para ingresos
-        if (!_transSeccion || _transTipo === 'ingreso') { wrap.style.display = 'none'; return; }
-        wrap.style.display = 'block';
-        const subcats = getSubcats(_transSeccion);
-        const ed = _transSubcatEditing;
-
-        const chipsHTML = subcats.map(s => {
-            const esc = s.replace(/'/g, "\\'");
-            if (ed) {
-                return `<span style="display:inline-flex;align-items:center;gap:2px;padding:4px 8px 4px 11px;border-radius:20px;background:var(--bg-input);border:0.5px solid var(--border);font-size:0.75rem;color:var(--text-muted);">
-                    ${s}
-                    <button onclick="eliminarSubcatTrans('${esc}')" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:1rem;padding:0 0 0 2px;line-height:1;font-weight:700;">×</button>
-                </span>`;
-            }
-            const on = s === _transSubcat;
-            return `<button onclick="selTransSubcat('${esc}')"
-                style="padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:600;transition:0.15s;
-                background:${on ? 'rgba(0,212,255,0.15)' : 'var(--bg-input)'};
-                border:${on ? '1px solid rgba(0,212,255,0.5)' : '0.5px solid var(--border)'};
-                color:${on ? '#00d4ff' : 'var(--text-muted)'};">${s}</button>`;
-        }).join('');
-
-        const addHTML = ed ? `<span style="display:inline-flex;align-items:center;gap:4px;">
-            <input id="subcat-new-inp" placeholder="Nueva…" onkeydown="if(event.key==='Enter')agregarSubcatTrans()"
-                style="width:90px;padding:4px 8px;border-radius:20px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.75rem;outline:none;font-family:inherit;">
-            <button onclick="agregarSubcatTrans()" style="padding:4px 10px;border-radius:20px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
-        </span>` : '';
-
-        wrap.innerHTML = `
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
-                <div style="font-size:0.65rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;">
-                    Subcategoría <span style="font-weight:400;opacity:0.6;">(opcional)</span>
-                </div>
-                <button onclick="toggleSubcatEdit()" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:${ed ? '#00d4ff' : '#8892b0'};padding:2px 6px;border-radius:6px;font-family:inherit;font-weight:600;">
-                    ${ed ? 'Listo' : '✏ Editar'}
-                </button>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${chipsHTML}${addHTML}</div>`;
-
-        if (ed) setTimeout(() => { const i = document.getElementById('subcat-new-inp'); if(i) i.focus(); }, 50);
-    }
-
-    function selTransSubcat(subcat) {
-        _transSubcat = (_transSubcat === subcat) ? null : subcat;
-        renderTransSubcatWrap();
-    }
-
-    function toggleSubcatEdit() {
-        _transSubcatEditing = !_transSubcatEditing;
-        if (!_transSubcatEditing && _transSubcat && !getSubcats(_transSeccion).includes(_transSubcat)) _transSubcat = null;
-        renderTransSubcatWrap();
+        renderPanelTrans();
     }
 
     function agregarSubcatTrans() {
         const inp = document.getElementById('subcat-new-inp');
-        if (!inp) return;
+        const sec = _panelCatSel || _transSeccion;
+        if (!inp || !sec) return;
         const val = inp.value.trim();
         if (!val) return;
-        const current = getSubcats(_transSeccion);
+        const current = getSubcats(sec);
         if (current.includes(val)) { inp.value = ''; return; }
-        dbSubcatsCustom[_transSeccion] = [...current, val];
+        dbSubcatsCustom[sec] = [...current, val];
         saveSubcatsCustom();
-        renderTransSubcatWrap();
+        renderPanelTrans();
     }
 
     function eliminarSubcatTrans(subcat) {
-        const current = getSubcats(_transSeccion);
-        dbSubcatsCustom[_transSeccion] = current.filter(s => s !== subcat);
-        if (_transSubcat === subcat) _transSubcat = null;
+        const sec = _panelCatSel || _transSeccion;
+        if (!sec) return;
+        dbSubcatsCustom[sec] = getSubcats(sec).filter(s => s !== subcat);
+        if (_transSubcat === subcat) { _transSubcat = null; actualizarRowsTrans(); }
         saveSubcatsCustom();
-        renderTransSubcatWrap();
+        renderPanelTrans();
     }
 
-    function guardarTrans() {
+    function guardarTrans(continuar) {
         const monto = parseFloat(String(document.getElementById('trans-monto').value).replace(',', '.'));
-        if (!monto || monto <= 0)  { alert('Ingresá un monto válido.'); return; }
-        if (!_transSeccion)        { alert('Elegí una categoría.'); return; }
+        if (!monto || monto <= 0) { alert('Ingresá un monto válido.'); return; }
         const fecha = document.getElementById('trans-fecha').value || hoyISO();
         const mes   = monthKeyFromDate(parseFechaLocal(fecha));
-        const desc  = document.getElementById('trans-desc').value.trim() || _transSeccion;
-        const entrada = { id: Date.now(), desc, monto, tipo: _transTipo, seccion: _transSeccion, fecha };
-        if (_transSubcat) entrada.subcategoria = _transSeccion + ' › ' + _transSubcat;
-        if (_transTipo === 'gasto') entrada.catId = document.getElementById('trans-cat-presup').value;
+        const nota  = document.getElementById('trans-desc').value.trim();
+
+        let entrada;
+        if (_transTipo === 'transfer') {
+            if (!_transCuenta || !_transCuentaDest) { alert('Elegí cuenta de origen y destino.'); return; }
+            if (_transCuenta === _transCuentaDest)  { alert('Origen y destino no pueden ser la misma cuenta.'); return; }
+            entrada = { id: Date.now(), desc: nota || 'Transferencia', monto, tipo: 'transfer', fecha,
+                        cuentaId: _transCuenta, cuentaDestId: _transCuentaDest };
+        } else {
+            if (!_transSeccion) { alert('Elegí una categoría.'); return; }
+            entrada = { id: Date.now(), desc: nota || _transSeccion, monto, tipo: _transTipo, seccion: _transSeccion, fecha,
+                        cuentaId: _transCuenta || (dbCuentas[0] && dbCuentas[0].id) || null };
+            if (_transSubcat) entrada.subcategoria = _transSeccion + ' › ' + _transSubcat;
+        }
+
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         dbGastosVar[mes].push(entrada);
         saveGastosVar();
-
-        const btn = document.getElementById('trans-guardar-btn');
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Guardado';
-        btn.style.pointerEvents = 'none';
-        setTimeout(() => {
-            btn.innerHTML = 'Guardar';
-            btn.style.pointerEvents = 'auto';
-            cerrarModalTrans();
-        }, 800);
-
-        renderGastosTab();
         renderFinanzas();
-        if (currentFinTab === 'historial') renderHistorial();
+
+        if (continuar) {
+            // Guardar y seguir cargando: limpia monto/nota/categoría, mantiene tipo, fecha y cuenta
+            document.getElementById('trans-monto').value = '';
+            document.getElementById('trans-desc').value  = '';
+            _transSeccion = null; _transSubcat = null;
+            actualizarRowsTrans();
+            document.getElementById('trans-monto').focus();
+        } else {
+            const btn = document.getElementById('trans-guardar-btn');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Guardado';
+            btn.style.pointerEvents = 'none';
+            setTimeout(() => {
+                btn.innerHTML = 'Guardar';
+                btn.style.pointerEvents = 'auto';
+                cerrarModalTrans();
+            }, 600);
+        }
     }
 
     // ── Sub-tab Gastos: balance + lista + por categoría ───────────────────
@@ -2701,47 +2662,16 @@
         </div>`;
     }
 
-    function renderGastosTab() {
-        renderBalanceMes();
-        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        const trans = dbGastosVar[mes] || [];
-        const lista = document.getElementById('gastos-mes-lista');
-        if (!lista) return;
-        if (trans.length === 0) {
-            lista.innerHTML = `<div style="text-align:center;padding:18px 0;">
-                <div style="font-size:1.6rem;margin-bottom:6px;">🧾</div>
-                <p style="font-size:0.75rem;color:var(--text-muted);">Sin transacciones este mes.<br>¡Registrá tu primer gasto!</p>
-            </div>`;
-        } else {
-            // Agrupar por fecha desc; entradas viejas sin fecha al final
-            const grupos = {};
-            trans.forEach(g => { const k = g.fecha || ''; (grupos[k] = grupos[k] || []).push(g); });
-            const keys = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
-            lista.innerHTML = keys.map(k => {
-                const label = k ? formatFechaLista(k) : 'Sin fecha';
-                const filas = grupos[k].slice().reverse().map(g => transItemHTML(g, mes)).join('');
-                return `<div style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:10px 0 2px;">${label}</div>` + filas;
-            }).join('');
-        }
-        renderTransPorCat();
-        renderCalendario();
-    }
+    // Alias: cualquier mutación de transacciones re-renderiza la vista de Finanzas activa
+    function renderGastosTab() { renderFinanzas(); }
 
     // ── Vista calendario ──────────────────────────────────────────────────
     let _calDiaSel = null;
     const milesCorto = (n) => n >= 1000 ? Math.round(n / 1000) + 'k' : String(Math.round(n));
 
-    function toggleCalendario() {
-        const body = document.getElementById('cal-body');
-        const abierto = body.style.display !== 'none';
-        body.style.display = abierto ? 'none' : 'block';
-        document.getElementById('cal-chevron').innerText = abierto ? '▼' : '▲';
-        if (!abierto) renderCalendario();
-    }
-
     function renderCalendario() {
         const body = document.getElementById('cal-body');
-        if (!body || body.style.display === 'none') return;
+        if (!body) return;
         const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         const { start, end } = getPeriodoBounds(mes);
         const trans = dbGastosVar[mes] || [];
@@ -2749,7 +2679,7 @@
         // Totales por fecha ISO
         const porDia = {};
         trans.forEach(g => {
-            if (!g.fecha) return;
+            if (!g.fecha || g.tipo === 'transfer') return;
             const d = (porDia[g.fecha] = porDia[g.fecha] || { gasto: 0, ingreso: 0 });
             if (g.tipo === 'ingreso') d.ingreso += g.monto || 0; else d.gasto += g.monto || 0;
         });
@@ -3119,61 +3049,14 @@
         renderFinanzas();
     }
 
+    // Dispatcher de la pestaña Finanzas (estilo Money Manager)
     function renderFinanzas() {
-        const { ingreso, totalFijos, gastadoCats, disponible, tieneOverride } = calcDisponible();
-
-        const el_neto  = document.getElementById('fin-neto-top');
-        const el_fij   = document.getElementById('fin-fijos-top');
-        const el_disp  = document.getElementById('fin-disponible');
-        const el_overrideInfo = document.getElementById('fin-disp-override-info');
-        const el_calculado    = document.getElementById('fin-disp-calculado');
-        if (el_neto) el_neto.innerText = fmt(ingreso);
-        if (el_fij)  el_fij.innerText  = fmt(totalFijos);
-        if (el_disp) {
-            el_disp.innerText   = fmt(disponible);
-            el_disp.style.color = tieneOverride ? '#00d4ff' : 'var(--c-green)';
-        }
-        if (el_overrideInfo) el_overrideInfo.style.display = tieneOverride ? 'block' : 'none';
-        if (el_calculado && tieneOverride) {
-            const calculadoReal = Math.max(0, ingreso - totalFijos - gastadoCats);
-            el_calculado.innerText = fmt(calculadoReal);
-        }
-        renderSaludFinanciera(ingreso, totalFijos, gastadoCats, disponible);
-
-        // Gastos fijos lista
-        const gfl = document.getElementById('gastos-fijos-lista');
-        if (gfl) {
-            const gastosFijosVisibles = dbGastosFijos.filter(g => !g.esCuota);
-            if (gastosFijosVisibles.length === 0) {
-                gfl.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);padding:10px 0;">Sin gastos fijos. Agregá uno arriba.</p>';
-            } else {
-                const pctFijos = ingreso > 0 ? Math.round((totalFijos/ingreso)*100) : 0;
-                gfl.innerHTML = gastosFijosVisibles.map(g => {
-                    const esCuota = !!g.esCuota;
-                    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);">'
-                        + '<span style="font-size:0.8rem;color:' + (esCuota?'var(--text-muted)':'var(--text-main)') + ';flex:1;">' + (esCuota?'🔗 ':'') + g.nombre + '</span>'
-                        + '<div style="display:flex;align-items:center;gap:8px;">'
-                         +   '<input type="text" inputmode="numeric" value="' + (g.monto||0) + '" ' + (esCuota ? 'disabled' : '') + ' onblur="actualizarGastoFijo(' + g.id + ',this.value)" style="-moz-appearance:textfield;appearance:textfield;width:100px;background:var(--bg-input);color:' + (esCuota ? '#7d8590' : 'var(--text-main)') + ';border:0.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.8rem;text-align:right;outline:none;">'
-                        +   (esCuota
-                            ? '<span style="font-size:0.6rem;color:var(--text-muted);">auto</span>'
-                            : '<button onclick="eliminarGastoFijo(' + JSON.stringify(g.id) + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;">✕</button>')
-                        + '</div>'
-                        + '</div>';
-                }).join('')
-                + '<div style="display:flex;justify-content:space-between;padding:8px 0 4px;">'
-                +   '<span style="font-size:0.7rem;color:var(--text-muted);">Total fijos · ' + pctFijos + '% del sueldo</span>'
-                +   '<span style="font-size:0.8rem;font-weight:700;color:#f87171;">' + fmt(totalFijos) + '</span>'
-                + '</div>';
-            }
-        }
-
-        renderDistribucion(disponible);
-        if (currentFinTab === 'gastos')      renderGastosTab();
-        if (currentFinTab === 'metas')       { renderMetas(); renderCuotas(); }
-        renderHistorialAportes();
-        renderComparativaMes();
-        renderLimites();
-
+        renderFinHeader();
+        renderFinResumen();
+        if (_finVista === 'diario')     renderDiario();
+        if (_finVista === 'calendario') renderCalendario();
+        if (_finVista === 'mensual')    renderFinMensual();
+        if (_finVista === 'cuentas')    renderCuentas();
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────
@@ -3524,7 +3407,7 @@
             const PIE_COLORS = ['#a78bfa','#34d399','#f87171','#60a5fa','#fbbf24','#f472b6','#38bdf8','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
             const totalesCat = {};
             data.forEach(d => {
-                (dbGastosVar[d.key] || []).filter(g => g.tipo !== 'ingreso').forEach(g => {
+                (dbGastosVar[d.key] || []).filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer').forEach(g => {
                     const s = seccionDeTrans(g);
                     totalesCat[s] = (totalesCat[s] || 0) + (g.monto || 0);
                 });
@@ -4239,6 +4122,7 @@
         const mes   = monthKeyFromDate(parseFechaLocal(fecha));
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         const entrada = { id: Date.now(), catId, desc, monto, tipo: 'gasto', fecha };
+        entrada.cuentaId = (dbCuentas[0] && dbCuentas[0].id) || null;
         if (_reciboSubcategoria) {
             entrada.subcategoria = _reciboSubcategoria;
             entrada.seccion      = _reciboSubcategoria.split(' › ')[0];
@@ -4255,53 +4139,58 @@
 </script>
 <!-- ── Modal nueva transacción ── -->
 <div id="modal-trans" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalTrans()">
-    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:22px 20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:20px 20px 16px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="font-size:1rem;font-weight:700;color:#f0f4f8;">Nueva transacción</div>
             <button onclick="cerrarModalTrans()" style="background:none;border:none;color:#8892b0;font-size:1.1rem;cursor:pointer;padding:4px 8px;">✕</button>
         </div>
-        <!-- Toggle tipo -->
-        <div style="display:flex;background:#0a0e27;border-radius:12px;padding:4px;gap:4px;margin-bottom:16px;">
-            <button id="trans-pill-gasto" onclick="setTransTipo('gasto')" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;background:rgba(248,113,113,0.15);color:#f87171;">↓ Gasto</button>
-            <button id="trans-pill-ingreso" onclick="setTransTipo('ingreso')" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;background:transparent;color:#8892b0;">↑ Ingreso</button>
+        <!-- Toggle tipo (estilo Money Manager: outline) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+            <button id="trans-pill-ingreso" onclick="setTransTipo('ingreso')" style="padding:10px 4px;border-radius:10px;background:transparent;border:0.5px solid var(--border);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-muted);min-height:44px;">Ingreso</button>
+            <button id="trans-pill-gasto" onclick="setTransTipo('gasto')" style="padding:10px 4px;border-radius:10px;background:transparent;border:1px solid #f87171;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#f87171;min-height:44px;">Gasto</button>
+            <button id="trans-pill-transfer" onclick="setTransTipo('transfer')" style="padding:10px 4px;border-radius:10px;background:transparent;border:0.5px solid var(--border);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-muted);min-height:44px;">Transfer.</button>
         </div>
-        <!-- Monto -->
-        <div style="text-align:center;margin-bottom:16px;">
-            <div style="display:inline-flex;align-items:center;gap:6px;">
-                <span style="font-size:1.6rem;font-weight:700;color:#8892b0;">$</span>
-                <input id="trans-monto" inputmode="decimal" placeholder="0" style="font-size:1.8rem;font-weight:700;color:#f0f4f8;background:#0a0e27;border:1px solid #1e2a47;border-radius:12px;padding:8px 14px;width:180px;text-align:center;outline:none;font-family:inherit;">
+        <!-- Filas estilo formulario -->
+        <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Fecha</span>
+            <input id="trans-fecha" type="date" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;color-scheme:dark;">
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Importe</span>
+            <input id="trans-monto" inputmode="decimal" placeholder="$ 0" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:1rem;font-weight:700;outline:none;font-family:inherit;">
+        </div>
+        <div id="trans-row-cat-wrap" style="display:flex;align-items:center;gap:10px;padding:3px 0;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Categoría</span>
+            <div id="trans-row-cat" onclick="abrirPanelTrans('cat')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
+            <span id="trans-row-cuenta-label" style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Cuenta</span>
+            <div id="trans-row-cuenta" onclick="abrirPanelTrans('cuenta')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+        </div>
+        <div id="trans-row-dest-wrap" style="display:none;align-items:center;gap:10px;padding:3px 0;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Destino</span>
+            <div id="trans-row-dest" onclick="abrirPanelTrans('cuentaDest')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:3px 0;margin-bottom:16px;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Nota</span>
+            <input id="trans-desc" placeholder="Opcional" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;">
+        </div>
+        <!-- Botones Guardar / Continuar -->
+        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;">
+            <button id="trans-guardar-btn" onclick="guardarTrans(false)" style="padding:13px;background:var(--success);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
+            <button onclick="guardarTrans(true)" style="padding:13px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Continuar</button>
+        </div>
+        <!-- Panel selector inferior (categoría / cuentas) -->
+        <div id="trans-panel" style="display:none;margin:14px -20px -16px;border-top:0.5px solid #1e2a47;background:#101832;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(136,146,176,0.08);">
+                <span id="trans-panel-title" style="font-size:0.85rem;font-weight:700;color:#f0f4f8;">Categoría</span>
+                <div style="display:flex;gap:16px;align-items:center;">
+                    <button id="trans-panel-edit" onclick="toggleCatEdit()" style="background:none;border:none;color:#8892b0;font-size:0.85rem;cursor:pointer;font-family:inherit;">✏</button>
+                    <button onclick="cerrarPanelTrans()" style="background:none;border:none;color:#8892b0;font-size:1rem;cursor:pointer;">✕</button>
+                </div>
             </div>
+            <div id="trans-panel-body"></div>
         </div>
-        <!-- Grid categorías -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:0.7rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;">Categoría</div>
-            <button id="trans-cat-edit-btn" onclick="toggleCatEdit()" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#8892b0;padding:2px 6px;border-radius:6px;font-family:inherit;font-weight:600;">✏ Editar</button>
-        </div>
-        <div id="trans-cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;"></div>
-        <!-- Subcategorías -->
-        <div id="trans-subcat-wrap" style="display:none;margin-bottom:14px;"></div>
-        <!-- Descripción + fecha -->
-        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:12px;">
-            <div>
-                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Descripción</div>
-                <input id="trans-desc" class="input" placeholder="¿En qué gastaste?" style="padding:9px 10px;font-size:0.83rem;">
-            </div>
-            <div>
-                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Fecha</div>
-                <input id="trans-fecha" type="date" class="input" style="padding:9px 10px;font-size:0.8rem;">
-            </div>
-        </div>
-        <!-- Categoría de presupuesto (solo gastos) -->
-        <div id="trans-cat-presup-wrap" style="margin-bottom:16px;">
-            <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Categoría de presupuesto</div>
-            <select id="trans-cat-presup" class="select-modern" style="width:100%;font-size:0.83rem;padding:9px 10px;"></select>
-        </div>
-        <button id="trans-guardar-btn" onclick="guardarTrans()" style="width:100%;padding:13px;background:var(--success);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;min-height:48px;">
-            Guardar
-        </button>
-        <button onclick="cerrarModalTrans()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px;">
-            Cancelar
-        </button>
     </div>
 </div>
 <!-- ── Modal configuración sync ── -->
