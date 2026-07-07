@@ -753,6 +753,7 @@
         DIST_CATS_CUSTOM = JSON.parse(localStorage.getItem('dist_cats_custom'))     || [];
         if (!distPcts) { distPcts = {}; DIST_CATS.forEach(c => { distPcts[c.id] = c.pctSug; }); }
         normalizarHoras();
+        migrarGastosACalendario();
     }
 
     // Push automático cada vez que se guarda algo (con debounce de 3s)
@@ -810,6 +811,7 @@
         selInicio.value = 18; selFin.value = 21;
 
         normalizarHoras();   // migra turnos viejos al criterio por día
+        migrarGastosACalendario();   // re-agrupa movimientos por mes calendario
         setupMonthSelector();
         // Inicializar el mes activo antes del primer render
         _mesActivoCargado = document.getElementById('select-mes').value;
@@ -1096,7 +1098,7 @@
             // 1. Rastrear todos los aportes de esta meta y devolver el dinero (eliminar de dbGastosVar)
             const aportesMeta = dbHistorialAport.filter(ap => ap.metaId === id);
             aportesMeta.forEach(ap => {
-                const mes = ap.fecha ? monthKeyFromDate(parseFechaLocal(ap.fecha)) : (document.getElementById('select-mes')?.value || monthKeyFromDate(new Date()));
+                const mes = ap.fecha ? monthKeyFromDate(parseFechaLocal(ap.fecha)) : (finMesActual());
                 if (dbGastosVar[mes]) {
                     const idx = dbGastosVar[mes].findIndex(g => g.catId === ap.catId && g.monto === ap.monto);
                     if (idx !== -1) dbGastosVar[mes].splice(idx, 1);
@@ -1308,7 +1310,7 @@
         const asignado = distModo[catId] === 'monto'
             ? (parseFloat(distMontos[catId]) || 0)
             : (disponible > 0 ? Math.round(disponible * (distPcts[catId] || 0) / 100) : 0);
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         const gastado = (dbGastosVar[mes] || [])
             .filter(g => g.catId === catId && g.tipo !== 'ingreso')
             .reduce((s, g) => s + (g.monto || 0), 0);
@@ -1335,7 +1337,7 @@
             const m = dbMetas.find(x => x.id === ap.metaId);
             if (m) { m.ahorrado = Math.max(0, (m.ahorrado||0) - ap.monto); saveMetas(); }
             // Devolver el gasto a la categoría (eliminar de dbGastosVar)
-            const mes = ap.fecha ? monthKeyFromDate(parseFechaLocal(ap.fecha)) : (document.getElementById('select-mes')?.value || monthKeyFromDate(new Date()));
+            const mes = ap.fecha ? monthKeyFromDate(parseFechaLocal(ap.fecha)) : (finMesActual());
             if (dbGastosVar[mes]) {
                 // Eliminar el primer gasto de esa categoría con ese monto
                 const idx = dbGastosVar[mes].findIndex(g => g.catId === ap.catId && g.monto === ap.monto);
@@ -1405,7 +1407,7 @@
         if (c.historial && c.historial.length > 0) c.historial.pop();
         saveCuotas();
         if (pago) {
-            const mes = pago.fecha ? monthKeyFromDate(parseFechaLocal(pago.fecha)) : (document.getElementById('select-mes')?.value || monthKeyFromDate(new Date()));
+            const mes = pago.fecha ? monthKeyFromDate(parseFechaLocal(pago.fecha)) : (finMesActual());
             if (dbGastosVar[mes]) {
                 const idx = dbGastosVar[mes].findIndex(g =>
                     g.catId === pago.catId &&
@@ -1892,7 +1894,7 @@
                 ? (distMontos[c.id] || 0)
                 : (disponible > 0 ? Math.round(disponible * pct / 100) : 0);
             const gastado  = (() => {
-                const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+                const mes = finMesActual();
                 const gv  = (dbGastosVar[mes] || []).filter(g => g.catId === c.id && g.tipo !== 'ingreso');
                 return gv.reduce((s, g) => s + (g.monto || 0), 0);
             })();
@@ -1956,7 +1958,7 @@
                     : '')
                 // Lista de gastos registrados en esta categoría este mes
                 + (() => {
-                    const mes2 = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+                    const mes2 = finMesActual();
                     const gvCat = (dbGastosVar[mes2]||[]).filter(g => g.catId === c.id);
                     if (gvCat.length === 0) return '';
                     return '<div style="margin-top:8px;border-top:0.5px solid var(--border);padding-top:8px;">'
@@ -2114,6 +2116,34 @@
     let _anualExpandido = null; // período expandido (semanas) en la vista Mensual
     const MESES_ABR = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
+    // ── Período de Finanzas: MES CALENDARIO (1 al fin de mes), independiente del período 15-15 de Horas ──
+    let _finMes = null;   // clave 'YYYY-MM' del mes calendario activo en Finanzas
+    const mesCalHoy   = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+    const finMesActual = () => (_finMes || (_finMes = mesCalHoy()));
+    const finSetMes    = (key) => { _finMes = key; };
+    const finMesDeFecha = (fecha) => (fecha || '').slice(0, 7) || mesCalHoy();
+    const finBounds = (key) => { const [y, m] = key.split('-').map(Number); return { start: new Date(y, m - 1, 1), end: new Date(y, m, 1) }; };
+    const finLabel  = (key) => { const [y, m] = key.split('-').map(Number); return MESES_ABR[m - 1] + ' ' + y; };
+    const finAddMes = (key, delta) => { const [y, m] = key.split('-').map(Number); const d = new Date(y, m - 1 + delta, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+
+    // Re-agrupa dbGastosVar por mes calendario (según la fecha de cada movimiento). Idempotente.
+    function migrarGastosACalendario() {
+        let cambio = false;
+        const nuevo = {};
+        Object.entries(dbGastosVar).forEach(([key, arr]) => {
+            (arr || []).forEach(g => {
+                const nk = g.fecha ? g.fecha.slice(0, 7) : key;
+                if (nk !== key) cambio = true;
+                (nuevo[nk] = nuevo[nk] || []).push(g);
+            });
+        });
+        if (cambio) {
+            dbGastosVar = nuevo;
+            localStorage.setItem('db_gastos_var', JSON.stringify(dbGastosVar));
+            schedulePush();
+        }
+    }
+
     function switchFinVista(v) {
         _finVista = v;
         ['diario','calendario','anual','mensual','total','cuentas'].forEach(t => {
@@ -2132,7 +2162,7 @@
         const lbl = document.getElementById('fin-mes-label');
         if (!lbl) return;
         if (esAnual) {
-            const anio = _mensualAnio || parseInt((document.getElementById('select-mes')?.value || monthKeyFromDate(new Date())).substring(0, 4));
+            const anio = _mensualAnio || parseInt((finMesActual()).substring(0, 4));
             _mensualAnio = anio;
             lbl.innerText = anio;
             lbl.dataset.modo = 'anio';
@@ -2183,7 +2213,7 @@
         const cont = document.getElementById('fin-anual-body');
         if (!cont) return;
         const anio    = _mensualAnio || new Date().getFullYear();
-        const selMes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const selMes  = finMesActual();
         if (_anualExpandido === null && selMes.startsWith(String(anio))) _anualExpandido = selMes;
 
         const filaMonto = (ing, gas) => `
@@ -2196,10 +2226,10 @@
         for (let m = 12; m >= 1; m--) {
             const key = anio + '-' + String(m).padStart(2, '0');
             const { ing, gas } = totalesPeriodo(key);
-            const { start, end } = getPeriodoBounds(key);
+            const { start, end } = finBounds(key);
             const endMonth = new Date(end); endMonth.setDate(endMonth.getDate() - 1);
             const rango = `${start.getDate()}.${start.getMonth() + 1} ~ ${endMonth.getDate()}.${endMonth.getMonth() + 1}`;
-            const label = MESES_ABR[endMonth.getMonth()];
+            const label = MESES_ABR[start.getMonth()];
             const abierto = key === _anualExpandido;
             html += `
             <div onclick="toggleAnualMes('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${abierto ? 'rgba(56,189,248,0.05)' : 'transparent'};">
@@ -2217,7 +2247,7 @@
 
     // Sub-filas semanales de un período expandido
     function renderAnualSemanas(key) {
-        const { start, end } = getPeriodoBounds(key);
+        const { start, end } = finBounds(key);
         const movs = dbGastosVar[key] || [];
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         let out = '';
@@ -2250,34 +2280,24 @@
 
     function toggleAnualMes(key) {
         _anualExpandido = (_anualExpandido === key) ? null : key;
-        // Al abrir un mes, lo dejamos como período activo para el resto de la app
-        if (_anualExpandido) {
-            const sel = document.getElementById('select-mes');
-            if (sel && [...sel.options].some(o => o.value === key)) { sel.value = key; }
-        }
+        // Al abrir un mes, queda como período activo de Finanzas
+        if (_anualExpandido) finSetMes(key);
         renderFinAnual();
     }
 
+    // Navegación de mes en Finanzas (mes calendario, independiente de Horas)
     function finMesNav(delta) {
-        const sel = document.getElementById('select-mes');
-        if (!sel) return;
-        const nuevo = addMonthsToKey(sel.value || monthKeyFromDate(new Date()), delta);
-        if (![...sel.options].some(o => o.value === nuevo)) {
-            const { end } = getPeriodoBounds(nuevo);
-            sel.add(new Option(MESES_ABR[end.getMonth()] + ' ' + String(end.getFullYear()).slice(2) + ' · ' + formatPeriodoCorto(nuevo), nuevo));
-        }
-        sel.value = nuevo;
-        renderTodo();   // recalcula horas + finanzas para el nuevo período
+        finSetMes(finAddMes(finMesActual(), delta));
+        renderFinanzas();
     }
 
     function renderFinHeader() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
         const lbl = document.getElementById('fin-mes-label');
-        if (lbl) { const { end } = getPeriodoBounds(mes); lbl.innerText = MESES_ABR[end.getMonth()] + ' ' + end.getFullYear(); }
+        if (lbl) lbl.innerText = finLabel(finMesActual());
     }
 
     function renderFinResumen() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         let ing = 0, gas = 0;
         (dbGastosVar[mes] || []).forEach(g => {
             if (g.tipo === 'transfer') return;   // las transferencias no son ingreso ni gasto
@@ -2328,7 +2348,7 @@
     function renderDiario() {
         const cont = document.getElementById('fin-diario-lista');
         if (!cont) return;
-        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes   = finMesActual();
         const trans = dbGastosVar[mes] || [];
         if (trans.length === 0) {
             cont.innerHTML = `<div style="text-align:center;padding:44px 0;"><div style="font-size:2rem;margin-bottom:10px;">🧾</div><p style="font-size:0.82rem;color:var(--text-muted);">Sin movimientos este mes.<br>Tocá el botón + para registrar uno.</p></div>`;
@@ -2376,7 +2396,7 @@
     }
 
     function renderFinMensual() {
-        const mes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes  = finMesActual();
         const arr  = dbGastosVar[mes] || [];
         const cont = document.getElementById('fin-mensual-cats');
         const cv   = document.getElementById('fin-mensual-donut');
@@ -2477,7 +2497,7 @@
         if (!cont) return;
         if (_totalAjustes) { renderAjustesPresup(cont); return; }
 
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         const movs = dbGastosVar[mes] || [];
         const gastosMes = movs.filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer');
 
@@ -2490,7 +2510,7 @@
         const totalGastado = presup.reduce((s, [c]) => s + (gastadoPorSec[c] || 0), 0);
 
         // Posición de "hoy" dentro del período 15-15
-        const { start, end } = getPeriodoBounds(mes);
+        const { start, end } = finBounds(mes);
         const fracHoy = Math.min(1, Math.max(0, (new Date() - start) / (end - start)));
         const endIncl = new Date(end); endIncl.setDate(endIncl.getDate() - 1);
         const fCorto  = (d) => d.getDate() + '.' + (d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2);
@@ -2626,7 +2646,7 @@
 
     // ── Exportar movimientos del mes a Excel ──────────────────────────────
     async function exportarMovimientosExcel() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         const arr = (dbGastosVar[mes] || []).slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
         if (!arr.length) { alert('No hay movimientos este mes.'); return; }
         const wb = new ExcelJS.Workbook();
@@ -2696,7 +2716,7 @@
     function renderDetalleCuenta(cont) {
         const c = cuentaDe(_cuentaDetalle);
         if (!c) { _cuentaDetalle = null; renderCuentas(); return; }
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         const movs = (dbGastosVar[mes] || []).filter(g => g.cuentaId === c.id || g.cuentaDestId === c.id);
 
         // Depósito = ingresos + transferencias entrantes · Retiro = gastos + transferencias salientes
@@ -2711,7 +2731,7 @@
         });
         const saldo = calcSaldosCuentas()[c.id] || 0;
 
-        const { start, end } = getPeriodoBounds(mes);
+        const { start, end } = finBounds(mes);
         const endIncl = new Date(end); endIncl.setDate(endIncl.getDate() - 1);
         const fCorto = (d) => d.getDate() + '.' + (d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2);
 
@@ -3224,7 +3244,7 @@
         const monto = kpEval(document.getElementById('trans-monto').value);
         if (!monto || isNaN(monto) || monto <= 0) { alert('Ingresá un monto válido.'); return; }
         const fecha = document.getElementById('trans-fecha').value || hoyISO();
-        const mes   = monthKeyFromDate(parseFechaLocal(fecha));
+        const mes   = finMesDeFecha(fecha);
         const nota  = document.getElementById('trans-desc').value.trim();
 
         let entrada;
@@ -3289,7 +3309,7 @@
     function renderBalanceMes() {
         const elNeto = document.getElementById('bal-neto');
         if (!elNeto) return;
-        const mes      = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes      = finMesActual();
         const ingresos = totalIngresosMes + sumIngresosManualesMes(mes);
         const gastos   = totalGastosFijosReales() + sumGastosMes(mes);
         const calculado = ingresos - gastos;
@@ -3326,7 +3346,7 @@
 
     function guardarBalanceNeto(raw) {
         const val = parseFloat(raw.replace(',', '.'));
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         if (!isNaN(val)) {
             localStorage.setItem('bal_neto_override_' + mes, val);
         }
@@ -3336,7 +3356,7 @@
     }
 
     function limpiarBalanceNeto() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         localStorage.removeItem('bal_neto_override_' + mes);
         renderBalanceMes();
     }
@@ -3374,8 +3394,8 @@
     function renderCalendario() {
         const body = document.getElementById('cal-body');
         if (!body) return;
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        const { start, end } = getPeriodoBounds(mes);
+        const mes = finMesActual();
+        const { start, end } = finBounds(mes);
         const trans = dbGastosVar[mes] || [];
 
         // Totales por fecha ISO
@@ -3426,7 +3446,7 @@
         const cont = document.getElementById('cal-dia-detalle');
         if (!cont) return;
         if (!_calDiaSel) { cont.innerHTML = ''; return; }
-        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes   = finMesActual();
         const items = (dbGastosVar[mes] || []).filter(g => g.fecha === _calDiaSel);
         const filas = items.length
             ? items.slice().reverse().map(g => transItemHTML(g, mes)).join('')
@@ -3452,7 +3472,7 @@
     function renderTransPorCat() {
         const wrap = document.getElementById('trans-porcat-body');
         if (!wrap || wrap.style.display === 'none') return;
-        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes    = finMesActual();
         const gastos = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso');
         const porSec = {};
         gastos.forEach(g => { const s = seccionDeTrans(g); porSec[s] = (porSec[s] || 0) + (g.monto || 0); });
@@ -3514,7 +3534,7 @@
     function renderComparativaMes() {
         const el = document.getElementById('comp-mes');
         if (!el) return;
-        const mes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes  = finMesActual();
         const prev = prevMesKey(mes);
         const hayPrevTrans = (dbGastosVar[prev] || []).length > 0;
         const hayPrevHoras = dbHoras.some(h => h.fecha && !h.coordinar && monthKeyFromDate(parseFechaLocal(h.fecha)) === prev);
@@ -3564,7 +3584,7 @@
     function renderLimites() {
         const lista = document.getElementById('limites-lista');
         if (!lista) return;
-        const mes    = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes    = finMesActual();
         const gastos = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso');
         const porSec = {};
         gastos.forEach(g => { const s = seccionDeTrans(g); porSec[s] = (porSec[s] || 0) + (g.monto || 0); });
@@ -3710,7 +3730,7 @@
     function calcDisponible() {
         const ingreso    = totalIngresosMes;
         const totalFijos = totalGastosFijosReales();
-        const mes        = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes        = finMesActual();
         const gastadoCats= sumGastosMes(mes);
         const calculado  = Math.max(0, ingreso - totalFijos - gastadoCats);
         const override   = localStorage.getItem('disponible_override_' + mes);
@@ -3729,7 +3749,7 @@
     }
 
     function confirmarEditDisponible() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         const raw = document.getElementById('fin-disp-input').value;
         const val = parseFloat(String(raw).replace(/\./g, '').replace(',', '.'));
         if (!isNaN(val) && val >= 0) {
@@ -3746,7 +3766,7 @@
     }
 
     function resetDisponibleOverride() {
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         localStorage.removeItem('disponible_override_' + mes);
         renderFinanzas();
     }
@@ -4699,7 +4719,7 @@
         const montoStr = prompt('Monto $:');
         const monto = parseFloat(montoStr);
         if (!monto || isNaN(monto) || monto <= 0) return;
-        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const mes = finMesActual();
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         dbGastosVar[mes].push({ id: Date.now(), catId, desc: desc.trim(), monto });
         saveGastosVar();
@@ -4823,7 +4843,7 @@
         if (!desc || !monto || monto <= 0) { alert('Completá descripción y monto.'); return; }
 
         const fecha = _reciboFecha || hoyISO();
-        const mes   = monthKeyFromDate(parseFechaLocal(fecha));
+        const mes   = finMesDeFecha(fecha);
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
         const entrada = { id: Date.now(), catId, desc, monto, tipo: 'gasto', fecha };
         entrada.cuentaId = (dbCuentas[0] && dbCuentas[0].id) || null;
