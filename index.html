@@ -2336,17 +2336,25 @@
         _transSubcat  = null;
         _panelCatSel  = null;
         const estilos = {
-            ingreso:  { id: 'trans-pill-ingreso',  color: '#38bdf8' },
-            gasto:    { id: 'trans-pill-gasto',    color: '#f87171' },
-            transfer: { id: 'trans-pill-transfer', color: '#e6edf3' },
+            ingreso:  { id: 'trans-pill-ingreso',  color: '#38bdf8', bg: 'rgba(56,189,248,0.18)' },
+            gasto:    { id: 'trans-pill-gasto',    color: '#f87171', bg: 'rgba(248,113,113,0.18)' },
+            transfer: { id: 'trans-pill-transfer', color: '#e6edf3', bg: 'rgba(230,237,243,0.14)' },
         };
         Object.entries(estilos).forEach(([t, e]) => {
             const b = document.getElementById(e.id);
             if (!b) return;
             const on = t === tipo;
-            b.style.border = on ? '1px solid ' + e.color : '0.5px solid var(--border)';
-            b.style.color  = on ? e.color : 'var(--text-muted)';
+            b.style.border     = on ? '1.5px solid ' + e.color : '0.5px solid var(--border)';
+            b.style.color      = on ? e.color : 'var(--text-muted)';
+            b.style.background = on ? e.bg : 'transparent';
+            b.style.boxShadow  = on ? '0 0 12px ' + e.bg : 'none';
         });
+        // El importe también toma el color del tipo activo
+        const monto = document.getElementById('trans-monto');
+        if (monto) {
+            monto.style.color        = estilos[tipo].color;
+            monto.style.borderBottom = '1.5px solid ' + estilos[tipo].color;
+        }
         const esTransfer = tipo === 'transfer';
         document.getElementById('trans-row-cat-wrap').style.display  = esTransfer ? 'none' : 'flex';
         document.getElementById('trans-row-dest-wrap').style.display = esTransfer ? 'flex' : 'none';
