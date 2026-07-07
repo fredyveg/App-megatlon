@@ -130,6 +130,22 @@
         ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Barra de sub-vistas estilo Money Manager (subrayado, scrollable) */
+        .fin-tabs { display: flex; overflow-x: auto; border-bottom: 0.5px solid var(--border); margin-bottom: 14px; scrollbar-width: none; -ms-overflow-style: none; }
+        .fin-tabs::-webkit-scrollbar { display: none; }
+        .fin-tab { flex: 1 0 auto; background: none; border: none; border-bottom: 2px solid transparent; padding: 11px 14px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: inherit; white-space: nowrap; transition: color 0.2s; }
+        .fin-tab.on { color: var(--text-main); border-bottom-color: var(--primary); }
+
+        /* Adaptación a pantallas grandes (PC / tablet): columna centrada tipo app */
+        .fab-add { position: fixed; right: 18px; bottom: 88px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; color: #0a0e27; font-size: 1.7rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(0,212,255,0.35); z-index: 900; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        @media (min-width: 540px) {
+            body { background: #05070f; }
+            .app-container { min-height: 100vh; background: var(--bg-base); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+            .bottom-nav { max-width: 480px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); border-radius: 0; }
+            .fab-add { right: calc(50% - 240px + 18px); }
+            .modal-sheet { max-width: 480px !important; }
+        }
     </style>
 </head>
 <body>
@@ -281,9 +297,9 @@
         <!-- Header: navegación de mes + escanear -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
             <div style="display:flex;align-items:center;gap:6px;">
-                <button onclick="finMesNav(-1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">‹</button>
+                <button onclick="finHeaderNav(-1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">‹</button>
                 <div id="fin-mes-label" style="font-size:1.05rem;font-weight:700;color:var(--text-main);min-width:108px;text-align:center;">—</div>
-                <button onclick="finMesNav(1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">›</button>
+                <button onclick="finHeaderNav(1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">›</button>
             </div>
             <button onclick="abrirEscanerRecibo()" style="display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:10px;padding:0 12px;height:34px;color:#00d4ff;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;">
                 <i class="fa-solid fa-camera"></i> Escanear
@@ -306,13 +322,14 @@
             </div>
         </div>
 
-        <!-- Selector de vistas -->
-        <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
-            <button onclick="switchFinVista('diario')" id="fv-diario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">Diario</button>
-            <button onclick="switchFinVista('calendario')" id="fv-calendario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Calendario</button>
-            <button onclick="switchFinVista('mensual')" id="fv-mensual" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Estad.</button>
-            <button onclick="switchFinVista('total')" id="fv-total" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Total</button>
-            <button onclick="switchFinVista('cuentas')" id="fv-cuentas" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Cuentas</button>
+        <!-- Selector de vistas (estilo Money Manager) -->
+        <div class="fin-tabs">
+            <button onclick="switchFinVista('diario')"     id="fv-diario"     class="fin-tab on">Diario</button>
+            <button onclick="switchFinVista('calendario')" id="fv-calendario" class="fin-tab">Calendario</button>
+            <button onclick="switchFinVista('anual')"      id="fv-anual"      class="fin-tab">Mensual</button>
+            <button onclick="switchFinVista('mensual')"    id="fv-mensual"    class="fin-tab">Estad.</button>
+            <button onclick="switchFinVista('total')"      id="fv-total"      class="fin-tab">Total</button>
+            <button onclick="switchFinVista('cuentas')"    id="fv-cuentas"    class="fin-tab">Cuentas</button>
         </div>
 
         <!-- ══ VISTA: DIARIO ══ -->
@@ -325,6 +342,11 @@
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:12px 12px 14px;">
                 <div id="cal-body"></div>
             </div>
+        </div>
+
+        <!-- ══ VISTA: MENSUAL (desglose del año) ══ -->
+        <div id="finv-anual" style="display:none;">
+            <div id="fin-anual-body"></div>
         </div>
 
         <!-- ══ VISTA: ESTADÍSTICAS ══ -->
@@ -364,7 +386,7 @@
         </div>
 
         <!-- Botón flotante agregar -->
-        <button onclick="abrirModalTrans()" style="position:fixed;right:18px;bottom:88px;width:56px;height:56px;border-radius:50%;background:var(--primary);border:none;color:#0a0e27;font-size:1.7rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,212,255,0.35);z-index:900;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+        <button onclick="abrirModalTrans()" class="fab-add">+</button>
 
     </main>
     <!-- ── Stats Tab ── -->
@@ -2088,20 +2110,152 @@
     let finTabActivo = 'presupuesto';
     // ── Vistas de Finanzas (Diario / Calendario / Mensual / Cuentas) ──────
     let _finVista = 'diario';
+    let _mensualAnio = null;   // año mostrado en la vista Mensual
+    let _anualExpandido = null; // período expandido (semanas) en la vista Mensual
     const MESES_ABR = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
     function switchFinVista(v) {
         _finVista = v;
-        ['diario','calendario','mensual','total','cuentas'].forEach(t => {
+        ['diario','calendario','anual','mensual','total','cuentas'].forEach(t => {
             const panel = document.getElementById('finv-' + t);
             const btn   = document.getElementById('fv-' + t);
-            if (!panel || !btn) return;
-            const on = t === v;
-            panel.style.display  = on ? 'block' : 'none';
-            btn.style.background  = on ? 'var(--bg-input)' : 'transparent';
-            btn.style.color       = on ? 'var(--text-main)' : 'var(--text-muted)';
+            if (panel) panel.style.display = (t === v) ? 'block' : 'none';
+            if (btn)   btn.classList.toggle('on', t === v);
         });
+        actualizarFinHeader();
         renderFinanzas();
+    }
+
+    // El header muestra navegación por AÑO en la vista Mensual, por período (mes) en el resto
+    function actualizarFinHeader() {
+        const esAnual = _finVista === 'anual';
+        const lbl = document.getElementById('fin-mes-label');
+        if (!lbl) return;
+        if (esAnual) {
+            const anio = _mensualAnio || parseInt((document.getElementById('select-mes')?.value || monthKeyFromDate(new Date())).substring(0, 4));
+            _mensualAnio = anio;
+            lbl.innerText = anio;
+            lbl.dataset.modo = 'anio';
+        } else {
+            lbl.dataset.modo = 'mes';
+            renderFinHeader();
+        }
+    }
+
+    function finHeaderNav(delta) {
+        if (_finVista === 'anual') {
+            _mensualAnio = (_mensualAnio || new Date().getFullYear()) + delta;
+            actualizarFinHeader();
+            renderFinAnual();
+        } else {
+            finMesNav(delta);
+        }
+    }
+
+    // Ingresos/gastos de un período (clave 'YYYY-MM'), sin transferencias
+    function totalesPeriodo(key) {
+        let ing = 0, gas = 0;
+        (dbGastosVar[key] || []).forEach(g => {
+            if (g.tipo === 'transfer') return;
+            if (g.tipo === 'ingreso') ing += g.monto || 0; else gas += g.monto || 0;
+        });
+        return { ing, gas };
+    }
+
+    // Resumen superior en la vista Mensual: totales del año completo
+    function renderFinResumenAnual() {
+        const anio = _mensualAnio || new Date().getFullYear();
+        let ing = 0, gas = 0;
+        for (let m = 1; m <= 12; m++) {
+            const t = totalesPeriodo(anio + '-' + String(m).padStart(2, '0'));
+            ing += t.ing; gas += t.gas;
+        }
+        const iEl = document.getElementById('fin-sum-ing');
+        const gEl = document.getElementById('fin-sum-gas');
+        const bEl = document.getElementById('fin-sum-bal');
+        if (iEl) iEl.innerText = fmt(ing);
+        if (gEl) gEl.innerText = fmt(gas);
+        if (bEl) { const b = ing - gas; bEl.innerText = fmt(b); bEl.style.color = b >= 0 ? 'var(--text-main)' : '#f87171'; }
+    }
+
+    // Vista Mensual: lista de los 12 períodos del año; el seleccionado se expande a semanas
+    function renderFinAnual() {
+        const cont = document.getElementById('fin-anual-body');
+        if (!cont) return;
+        const anio    = _mensualAnio || new Date().getFullYear();
+        const selMes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        if (_anualExpandido === null && selMes.startsWith(String(anio))) _anualExpandido = selMes;
+
+        const filaMonto = (ing, gas) => `
+            <div style="text-align:right;">
+                <div style="font-size:0.82rem;font-weight:700;color:#38bdf8;">${ing ? fmt(ing) : '$ 0'}</div>
+                <div style="font-size:0.82rem;font-weight:700;color:#f87171;">${gas ? fmt(gas) : '$ 0'}</div>
+            </div>`;
+
+        let html = '';
+        for (let m = 12; m >= 1; m--) {
+            const key = anio + '-' + String(m).padStart(2, '0');
+            const { ing, gas } = totalesPeriodo(key);
+            const { start, end } = getPeriodoBounds(key);
+            const endMonth = new Date(end); endMonth.setDate(endMonth.getDate() - 1);
+            const rango = `${start.getDate()}.${start.getMonth() + 1} ~ ${endMonth.getDate()}.${endMonth.getMonth() + 1}`;
+            const label = MESES_ABR[endMonth.getMonth()];
+            const abierto = key === _anualExpandido;
+            html += `
+            <div onclick="toggleAnualMes('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${abierto ? 'rgba(56,189,248,0.05)' : 'transparent'};">
+                <div>
+                    <div style="font-size:0.92rem;font-weight:700;color:var(--text-main);">${label}</div>
+                    <div style="font-size:0.66rem;color:var(--text-muted);margin-top:1px;">${rango}</div>
+                </div>
+                ${filaMonto(ing, gas)}
+            </div>`;
+            if (abierto) html += renderAnualSemanas(key);
+        }
+
+        cont.innerHTML = `<div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;overflow:hidden;">${html}</div>`;
+    }
+
+    // Sub-filas semanales de un período expandido
+    function renderAnualSemanas(key) {
+        const { start, end } = getPeriodoBounds(key);
+        const movs = dbGastosVar[key] || [];
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+        let out = '';
+        let wStart = new Date(start);
+        while (wStart < end) {
+            const wEnd = new Date(wStart); wEnd.setDate(wEnd.getDate() + 7);
+            const wEndClamp = wEnd > end ? new Date(end) : wEnd;
+            let ing = 0, gas = 0;
+            movs.forEach(g => {
+                if (!g.fecha || g.tipo === 'transfer') return;
+                const f = parseFechaLocal(g.fecha);
+                if (f >= wStart && f < wEnd) { if (g.tipo === 'ingreso') ing += g.monto || 0; else gas += g.monto || 0; }
+            });
+            const last = new Date(wEndClamp); last.setDate(last.getDate() - 1);
+            const rango = `${String(wStart.getDate()).padStart(2,'0')}.${String(wStart.getMonth()+1).padStart(2,'0')} ~ ${String(last.getDate()).padStart(2,'0')}.${String(last.getMonth()+1).padStart(2,'0')}`;
+            const esActual = hoy >= wStart && hoy < wEnd;
+            const bal = ing - gas;
+            out += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px 11px 24px;border-bottom:0.5px solid var(--border);background:${esActual ? 'rgba(248,113,113,0.09)' : 'var(--bg-input)'};">
+                <span style="font-size:0.8rem;color:var(--text-muted);">${rango}</span>
+                <div style="text-align:right;">
+                    <div><span style="font-size:0.78rem;font-weight:700;color:#38bdf8;">${ing ? fmt(ing) : '$ 0'}</span> &nbsp; <span style="font-size:0.78rem;font-weight:700;color:#f87171;">${gas ? fmt(gas) : '$ 0'}</span></div>
+                    ${(ing || gas) ? `<div style="font-size:0.66rem;color:var(--text-muted);margin-top:1px;">Balance ${fmt(bal)}</div>` : ''}
+                </div>
+            </div>`;
+            wStart = wEnd;
+        }
+        return out;
+    }
+
+    function toggleAnualMes(key) {
+        _anualExpandido = (_anualExpandido === key) ? null : key;
+        // Al abrir un mes, lo dejamos como período activo para el resto de la app
+        if (_anualExpandido) {
+            const sel = document.getElementById('select-mes');
+            if (sel && [...sel.options].some(o => o.value === key)) { sel.value = key; }
+        }
+        renderFinAnual();
     }
 
     function finMesNav(delta) {
@@ -3599,10 +3753,11 @@
 
     // Dispatcher de la pestaña Finanzas (estilo Money Manager)
     function renderFinanzas() {
-        renderFinHeader();
-        renderFinResumen();
+        actualizarFinHeader();
+        if (_finVista === 'anual') renderFinResumenAnual(); else renderFinResumen();
         if (_finVista === 'diario')     renderDiario();
         if (_finVista === 'calendario') renderCalendario();
+        if (_finVista === 'anual')      renderFinAnual();
         if (_finVista === 'mensual')    renderFinMensual();
         if (_finVista === 'total')      renderFinTotal();
         if (_finVista === 'cuentas')    renderCuentas();
