@@ -311,6 +311,7 @@
             <button onclick="switchFinVista('diario')" id="fv-diario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">Diario</button>
             <button onclick="switchFinVista('calendario')" id="fv-calendario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Calendario</button>
             <button onclick="switchFinVista('mensual')" id="fv-mensual" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Estad.</button>
+            <button onclick="switchFinVista('total')" id="fv-total" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Total</button>
             <button onclick="switchFinVista('cuentas')" id="fv-cuentas" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Cuentas</button>
         </div>
 
@@ -341,6 +342,11 @@
                 <canvas id="fin-mensual-donut" style="width:100%;height:290px;display:block;margin:0 auto 8px;"></canvas>
                 <div id="fin-mensual-cats"></div>
             </div>
+        </div>
+
+        <!-- ══ VISTA: TOTAL (presupuestos + resumen de cuentas) ══ -->
+        <div id="finv-total" style="display:none;">
+            <div id="fin-total-body"></div>
         </div>
 
         <!-- ══ VISTA: CUENTAS ══ -->
@@ -2086,7 +2092,7 @@
 
     function switchFinVista(v) {
         _finVista = v;
-        ['diario','calendario','mensual','cuentas'].forEach(t => {
+        ['diario','calendario','mensual','total','cuentas'].forEach(t => {
             const panel = document.getElementById('finv-' + t);
             const btn   = document.getElementById('fv-' + t);
             if (!panel || !btn) return;
@@ -2306,6 +2312,197 @@
                 <span style="font-size:0.86rem;font-weight:700;color:var(--text-main);flex-shrink:0;">${fmt(m)}</span>
             </div>`;
         }).join('');
+    }
+
+    // ── Vista Total: presupuestos + resumen de cuentas ────────────────────
+    let _totalAjustes = false;   // true = pantalla "Ajustes de presupuestos"
+    let _presupEdit   = null;    // categoría cargada en el form de ajustes
+
+    function renderFinTotal() {
+        const cont = document.getElementById('fin-total-body');
+        if (!cont) return;
+        if (_totalAjustes) { renderAjustesPresup(cont); return; }
+
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const movs = dbGastosVar[mes] || [];
+        const gastosMes = movs.filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer');
+
+        // Gastado por sección (para las barras de presupuesto)
+        const gastadoPorSec = {};
+        gastosMes.forEach(g => { const s = seccionDeTrans(g); gastadoPorSec[s] = (gastadoPorSec[s] || 0) + (g.monto || 0); });
+
+        const presup = Object.entries(dbLimitesCat).filter(([, v]) => parseFloat(v) > 0).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+        const totalPresup  = presup.reduce((s, [, v]) => s + parseFloat(v), 0);
+        const totalGastado = presup.reduce((s, [c]) => s + (gastadoPorSec[c] || 0), 0);
+
+        // Posición de "hoy" dentro del período 15-15
+        const { start, end } = getPeriodoBounds(mes);
+        const fracHoy = Math.min(1, Math.max(0, (new Date() - start) / (end - start)));
+        const endIncl = new Date(end); endIncl.setDate(endIncl.getDate() - 1);
+        const fCorto  = (d) => d.getDate() + '.' + (d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2);
+
+        const barra = (icono, nombre, limite, gastado, esTotal) => {
+            const pct = limite > 0 ? Math.min(1, gastado / limite) : 0;
+            const restante = limite - gastado;
+            return `
+            <div style="padding:12px 0;border-bottom:0.5px solid var(--border);">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:${esTotal ? '24px' : '6px'};">
+                    <span style="font-size:0.85rem;font-weight:${esTotal ? '700' : '600'};color:var(--text-main);">${icono} ${nombre}</span>
+                    <span style="font-size:0.82rem;font-weight:700;color:${gastado > limite ? '#f87171' : 'var(--text-main)'};">${limite > 0 ? Math.round(gastado / limite * 100) : 0}%</span>
+                </div>
+                <div style="position:relative;background:var(--bg-input);border-radius:4px;height:16px;margin-bottom:6px;">
+                    ${esTotal ? `<div style="position:absolute;top:-21px;left:${(fracHoy * 100).toFixed(1)}%;transform:translateX(-50%);background:var(--bg-input);border:0.5px solid var(--border);border-radius:10px;padding:1px 8px;font-size:0.6rem;color:var(--text-main);">Hoy</div>` : ''}
+                    <div style="width:${(pct * 100).toFixed(1)}%;background:#60a5fa;height:100%;border-radius:4px 0 0 4px;"></div>
+                    <div style="position:absolute;top:-3px;bottom:-3px;left:${(fracHoy * 100).toFixed(1)}%;width:1.5px;background:var(--text-muted);"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:0.78rem;color:var(--text-muted);">${fmt(limite)}</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:#60a5fa;">${fmt(gastado)}</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:${restante < 0 ? '#f87171' : 'var(--text-main)'};">${fmt(restante)}</span>
+                </div>
+            </div>`;
+        };
+
+        // Resumen de cuentas del período (por grupo de cuenta)
+        let gasEfCtas = 0, gasTarj = 0, transfSal = 0;
+        movs.forEach(g => {
+            const m = g.monto || 0;
+            if (g.tipo === 'transfer') {
+                if (cuentaGrupo(cuentaDe(g.cuentaId) || {}) !== 'tarjeta') transfSal += m;
+                return;
+            }
+            if (g.tipo === 'ingreso') return;
+            if (cuentaGrupo(cuentaDe(g.cuentaId) || {}) === 'tarjeta') gasTarj += m; else gasEfCtas += m;
+        });
+        const gasPrev   = sumGastosMes(prevMesKey(mes));
+        const comparar  = gasPrev > 0 ? Math.round((gasEfCtas + gasTarj) / gasPrev * 100) + '%' : '—';
+
+        const filaInfo = (lbl, sub, val) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;">
+            <span style="font-size:0.8rem;color:var(--text-main);">${lbl} <span style="color:var(--text-muted);font-size:0.72rem;">${sub}</span></span>
+            <span style="font-size:0.82rem;font-weight:700;color:var(--text-main);">${val}</span>
+        </div>`;
+
+        cont.innerHTML = `
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);"><i class="fa-solid fa-pen-to-square" style="color:#f87171;margin-right:6px;"></i>Presupuesto</span>
+                    <button onclick="abrirAjustesPresup()" style="background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text-muted);font-size:0.72rem;font-weight:600;cursor:pointer;font-family:inherit;">Ajustes de presupuestos ›</button>
+                </div>
+                ${presup.length === 0
+                    ? '<p style="font-size:0.78rem;color:var(--text-muted);text-align:center;padding:16px 0;">Sin presupuestos. Agregá uno desde "Ajustes de presupuestos".</p>'
+                    : barra('', 'Total', totalPresup, totalGastado, true) + presup.map(([c, v]) => barra(SECCION_ICONS[c] || '➕', c, parseFloat(v), gastadoPorSec[c] || 0, false)).join('')}
+            </div>
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);"><i class="fa-solid fa-coins" style="color:#fbbf24;margin-right:6px;"></i>Cuentas</span>
+                    <span style="font-size:0.78rem;color:var(--text-muted);">${fCorto(start)} ~ ${fCorto(endIncl)}</span>
+                </div>
+                <div style="background:var(--bg-input);border-radius:12px;padding:4px 12px;">
+                    ${filaInfo('Comparar los gastos', '(último mes)', comparar)}
+                    ${filaInfo('Gastos', '(Efectivo, Cuentas)', fmt(gasEfCtas))}
+                    ${filaInfo('Gastos', '(Tarjetas de crédito)', fmt(gasTarj))}
+                    ${filaInfo('Transferencia', '(Efectivo, Cuentas→)', fmt(transfSal))}
+                </div>
+            </div>
+            <button onclick="exportarMovimientosExcel()" style="width:100%;display:flex;align-items:center;gap:10px;background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;margin-bottom:12px;">
+                <i class="fa-solid fa-file-excel" style="color:#34d399;font-size:1.05rem;"></i>
+                <span style="font-size:0.85rem;font-weight:600;color:var(--text-main);">Exportar movimientos a Excel</span>
+            </button>`;
+    }
+
+    // ── Ajustes de presupuestos ───────────────────────────────────────────
+    function abrirAjustesPresup()  { _totalAjustes = true;  _presupEdit = null; renderFinTotal(); }
+    function cerrarAjustesPresup() { _totalAjustes = false; renderFinTotal(); }
+
+    function renderAjustesPresup(cont) {
+        const presup   = Object.entries(dbLimitesCat).filter(([, v]) => parseFloat(v) > 0);
+        const opciones = getCatsGasto().map(c => `<option value="${c}" ${_presupEdit === c ? 'selected' : ''}>${SECCION_ICONS[c] || ''} ${c}</option>`).join('');
+        cont.innerHTML = `
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                    <button onclick="cerrarAjustesPresup()" style="background:none;border:none;color:var(--text-main);font-size:1rem;cursor:pointer;padding:6px 10px 6px 0;"><i class="fa-solid fa-arrow-left"></i></button>
+                    <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Ajustes de presupuestos</span>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;background:var(--bg-input);border-radius:12px;padding:10px 12px;margin-bottom:14px;">
+                    <i class="fa-solid fa-pen-to-square" style="color:#f87171;margin-top:2px;"></i>
+                    <span style="font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Los presupuestos que agregues acá aparecen en la vista <strong style="color:var(--text-main);">Total</strong> con su barra de progreso del mes.</span>
+                </div>
+                ${presup.length ? presup.map(([c, v]) => `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:0.5px solid var(--border);">
+                        <span onclick="editarPresup('${c.replace(/'/g, "\\'")}')" style="flex:1;font-size:0.85rem;color:var(--text-main);cursor:pointer;">${SECCION_ICONS[c] || '➕'} ${c}</span>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:0.85rem;font-weight:700;color:var(--text-main);">${fmt(parseFloat(v))}</span>
+                            <span onclick="eliminarPresup('${c.replace(/'/g, "\\'")}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
+                        </div>
+                    </div>`).join('') : '<p style="font-size:0.78rem;color:var(--text-muted);text-align:center;padding:12px 0;">Sin presupuestos todavía.</p>'}
+                <div style="margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);">
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">${_presupEdit ? 'Editar presupuesto' : 'Agregar presupuesto'}</div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
+                        <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:var(--text-muted);">Categoría</span>
+                        <select id="presup-cat" class="select-modern" style="flex:1;font-size:0.85rem;padding:8px 10px;">${opciones}</select>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:3px 0;margin-bottom:12px;">
+                        <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:var(--text-muted);">Dinero inicial</span>
+                        <input id="presup-monto" inputmode="numeric" placeholder="$ 0" value="${_presupEdit ? (dbLimitesCat[_presupEdit] || '') : ''}" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid var(--border);color:var(--text-main);padding:9px 2px;font-size:0.9rem;font-weight:700;outline:none;font-family:inherit;">
+                    </div>
+                    <button onclick="guardarPresup()" style="width:100%;padding:13px;background:#f87171;border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
+                </div>
+            </div>`;
+    }
+
+    function editarPresup(cat) { _presupEdit = cat; renderFinTotal(); }
+
+    function eliminarPresup(cat) {
+        if (!confirm('¿Quitar el presupuesto de ' + cat + '?')) return;
+        delete dbLimitesCat[cat];
+        saveLimitesCat();
+        if (_presupEdit === cat) _presupEdit = null;
+        renderFinTotal();
+    }
+
+    function guardarPresup() {
+        const cat = document.getElementById('presup-cat').value;
+        const val = parseFloat(String(document.getElementById('presup-monto').value).replace(/\./g, '').replace(',', '.'));
+        if (!cat || !val || val <= 0) { alert('Ingresá un monto válido.'); return; }
+        dbLimitesCat[cat] = val;
+        saveLimitesCat();
+        _presupEdit = null;
+        renderFinTotal();
+    }
+
+    // ── Exportar movimientos del mes a Excel ──────────────────────────────
+    async function exportarMovimientosExcel() {
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const arr = (dbGastosVar[mes] || []).slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+        if (!arr.length) { alert('No hay movimientos este mes.'); return; }
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet('Movimientos');
+        ws.columns = [
+            { header: 'Fecha',       key: 'f',  width: 12 },
+            { header: 'Tipo',        key: 't',  width: 14 },
+            { header: 'Categoría',   key: 'c',  width: 20 },
+            { header: 'Descripción', key: 'd',  width: 28 },
+            { header: 'Cuenta',      key: 'cu', width: 18 },
+            { header: 'Monto',       key: 'm',  width: 14 },
+        ];
+        arr.forEach(g => {
+            const cta  = cuentaDe(g.cuentaId);
+            const dest = cuentaDe(g.cuentaDestId);
+            ws.addRow({
+                f:  g.fecha || '',
+                t:  g.tipo === 'transfer' ? 'Transferencia' : g.tipo === 'ingreso' ? 'Ingreso' : 'Gasto',
+                c:  g.tipo === 'transfer' ? ((cta ? cta.nombre : '?') + ' → ' + (dest ? dest.nombre : '?')) : seccionDeTrans(g),
+                d:  g.desc || '',
+                cu: cta ? cta.nombre : '',
+                m:  g.tipo === 'gasto' || !g.tipo ? -(g.monto || 0) : (g.monto || 0),
+            });
+        });
+        ws.getRow(1).font = { bold: true };
+        const buf = await wb.xlsx.writeBuffer();
+        const url = URL.createObjectURL(new Blob([buf]));
+        const a = document.createElement('a');
+        a.href = url; a.download = `Movimientos_${mes}.xlsx`; a.click();
+        URL.revokeObjectURL(url);
     }
 
     // ── Cuentas ───────────────────────────────────────────────────────────
@@ -3407,6 +3604,7 @@
         if (_finVista === 'diario')     renderDiario();
         if (_finVista === 'calendario') renderCalendario();
         if (_finVista === 'mensual')    renderFinMensual();
+        if (_finVista === 'total')      renderFinTotal();
         if (_finVista === 'cuentas')    renderCuentas();
     }
 
