@@ -2329,9 +2329,81 @@
         return saldos;
     }
 
+    // ── Detalle de una cuenta (movimientos propios) ───────────────────────
+    let _cuentaDetalle = null;
+
+    function abrirDetalleCuenta(id) {
+        _cuentaDetalle = id;
+        renderCuentas();
+    }
+
+    function cerrarDetalleCuenta() {
+        _cuentaDetalle = null;
+        renderCuentas();
+    }
+
+    function renderDetalleCuenta(cont) {
+        const c = cuentaDe(_cuentaDetalle);
+        if (!c) { _cuentaDetalle = null; renderCuentas(); return; }
+        const mes = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const movs = (dbGastosVar[mes] || []).filter(g => g.cuentaId === c.id || g.cuentaDestId === c.id);
+
+        // Depósito = ingresos + transferencias entrantes · Retiro = gastos + transferencias salientes
+        let dep = 0, ret = 0;
+        movs.forEach(g => {
+            const m = g.monto || 0;
+            if (g.tipo === 'transfer') {
+                if (g.cuentaDestId === c.id) dep += m;
+                if (g.cuentaId     === c.id) ret += m;
+            } else if (g.tipo === 'ingreso') dep += m;
+            else ret += m;
+        });
+        const saldo = calcSaldosCuentas()[c.id] || 0;
+
+        const { start, end } = getPeriodoBounds(mes);
+        const endIncl = new Date(end); endIncl.setDate(endIncl.getDate() - 1);
+        const fCorto = (d) => d.getDate() + '.' + (d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2);
+
+        // Lista agrupada por fecha desc (mismas filas que el Diario: tocás y se edita)
+        const grupos = {};
+        movs.forEach(g => { const k = g.fecha || ''; (grupos[k] = grupos[k] || []).push(g); });
+        const keys = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
+        const lista = keys.length
+            ? keys.map(k => {
+                const label = k ? formatFechaLista(k) : 'Sin fecha';
+                return `<div style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:12px 0 2px;">${label}</div>`
+                    + grupos[k].slice().reverse().map(g => transRowDiario(g, mes)).join('');
+            }).join('')
+            : `<div style="text-align:center;padding:44px 0;color:var(--text-muted);">
+                <div style="font-size:1.9rem;margin-bottom:8px;">🧾</div>
+                <p style="font-size:0.8rem;">No hay datos disponibles</p>
+            </div>`;
+
+        const cell = (lbl, v, color) => `<div style="text-align:center;padding:0 4px;">
+            <div style="font-size:0.62rem;color:var(--text-muted);margin-bottom:3px;">${lbl}</div>
+            <div style="font-size:0.78rem;font-weight:700;color:${color};">${fmt(v)}</div>
+        </div>`;
+
+        cont.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <button onclick="cerrarDetalleCuenta()" style="background:none;border:none;color:var(--text-main);font-size:1rem;cursor:pointer;padding:6px 10px 6px 0;"><i class="fa-solid fa-arrow-left"></i></button>
+                <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
+            </div>
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-bottom:2px;">extractos</div>
+            <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);margin-bottom:12px;">${fCorto(start)} ~ ${fCorto(endIncl)}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--bg-input);border-radius:10px;padding:9px 0;">
+                ${cell('Depósito', dep, dep > 0 ? '#38bdf8' : 'var(--text-muted)')}
+                ${cell('Retiro',   ret, ret > 0 ? '#f87171' : 'var(--text-muted)')}
+                ${cell('Balance',  dep - ret, 'var(--text-main)')}
+                ${cell('Saldo',    saldo, saldo > 0 ? '#38bdf8' : saldo < 0 ? '#f87171' : 'var(--text-muted)')}
+            </div>
+            ${lista}`;
+    }
+
     function renderCuentas() {
         const cont = document.getElementById('fin-cuentas-lista');
         if (!cont) return;
+        if (_cuentaDetalle) { renderDetalleCuenta(cont); return; }
         const saldos = calcSaldosCuentas();
 
         const grupos = { efectivo: [], cuentas: [], tarjeta: [] };
@@ -2344,11 +2416,11 @@
         const money = (v) => `<span style="font-weight:700;font-size:0.85rem;color:${v > 0 ? '#38bdf8' : v < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(v)}</span>`;
 
         const filaCuenta = (c) => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);">
+            <div onclick="abrirDetalleCuenta('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;">
                 <span style="font-size:0.85rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
                 <div style="display:flex;align-items:center;gap:10px;">
                     ${money(saldos[c.id])}
-                    <span onclick="eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
+                    <span onclick="event.stopPropagation();eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
                 </div>
             </div>`;
 
@@ -2359,11 +2431,11 @@
             </div>` + arr.map(filaCuenta).join('') : '';
 
         const filaTarjeta = (c) => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);">
+            <div onclick="abrirDetalleCuenta('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;">
                 <span style="font-size:0.85rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-weight:700;font-size:0.85rem;color:${saldos[c.id] < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(Math.max(0, -saldos[c.id]))}</span>
-                    <span onclick="eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
+                    <span onclick="event.stopPropagation();eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
                 </div>
             </div>`;
 
