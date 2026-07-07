@@ -2148,7 +2148,7 @@
             color     = esIng ? '#38bdf8' : '#f87171';
             signo     = esIng ? '' : '-';
         }
-        return `<div onclick="if(confirm('¿Borrar este movimiento?'))eliminarGastoManual('${g.id}','${mes}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid rgba(30,42,71,0.55);cursor:pointer;">
+        return `<div onclick="abrirDetalleTrans('${g.id}','${mes}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid rgba(30,42,71,0.55);cursor:pointer;">
             <div style="display:flex;align-items:center;gap:10px;min-width:0;">
                 <div style="width:34px;height:34px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">${icono}</div>
                 <div style="min-width:0;">
@@ -2307,11 +2307,15 @@
     let _transSubcat     = null;
     let _transCuenta     = null;
     let _transCuentaDest = null;
-    let _transPanel      = null;   // 'cat' | 'cuenta' | 'cuentaDest' | null
+    let _transPanel      = null;   // 'cat' | 'cuenta' | 'cuentaDest' | 'monto' | null
     let _panelCatSel     = null;   // categoría resaltada en el panel (para ver subcats)
     let _transCatEditing = false;
+    let _transEditId     = null;   // id del movimiento en edición (null = nueva transacción)
+    let _transEditMes    = null;   // mes-key original del movimiento en edición
 
     function abrirModalTrans(fechaPre) {
+        _transEditId     = null;
+        _transEditMes    = null;
         _transSeccion    = null;
         _transSubcat     = null;
         _transCuenta     = (dbCuentas[0] && dbCuentas[0].id) || null;
@@ -2321,20 +2325,67 @@
         document.getElementById('trans-monto').value = '';
         document.getElementById('trans-desc').value  = '';
         document.getElementById('trans-fecha').value = fechaPre || hoyISO();
+        document.getElementById('trans-modal-title').innerText = 'Nueva transacción';
+        document.getElementById('trans-acciones').style.display = 'none';
+        document.getElementById('trans-continuar-btn').style.display = 'block';
         setTransTipo('gasto');
         document.getElementById('modal-trans').style.display = 'flex';
         setTimeout(() => abrirPanelTrans('monto'), 350);   // teclado numérico al abrir
     }
 
+    // Abre un movimiento existente en modo detalle/edición
+    function abrirDetalleTrans(id, mes) {
+        const g = (dbGastosVar[mes] || []).find(x => String(x.id) === String(id));
+        if (!g) return;
+        _transEditId     = g.id;
+        _transEditMes    = mes;
+        _transSeccion    = g.tipo === 'transfer' ? null : seccionDeTrans(g);
+        _transSubcat     = (g.subcategoria && g.subcategoria.includes(' › ')) ? g.subcategoria.split(' › ')[1] : null;
+        _transCuenta     = g.cuentaId || (dbCuentas[0] && dbCuentas[0].id) || null;
+        _transCuentaDest = g.cuentaDestId || null;
+        _panelCatSel     = null;
+        _transCatEditing = false;
+        document.getElementById('trans-monto').value = String(g.monto || 0).replace('.', ',');
+        document.getElementById('trans-desc').value  = g.desc || '';
+        document.getElementById('trans-fecha').value = g.fecha || hoyISO();
+        const tipo = g.tipo === 'transfer' ? 'transfer' : (g.tipo === 'ingreso' ? 'ingreso' : 'gasto');
+        document.getElementById('trans-modal-title').innerText = tipo === 'ingreso' ? 'Ingreso' : tipo === 'transfer' ? 'Transferencia' : 'Gasto';
+        document.getElementById('trans-acciones').style.display = 'grid';
+        document.getElementById('trans-continuar-btn').style.display = 'none';
+        setTransTipo(tipo, true);   // mantiene categoría/subcat cargadas
+        document.getElementById('modal-trans').style.display = 'flex';
+    }
+
+    function eliminarTransActual() {
+        if (_transEditId == null) return;
+        if (!confirm('¿Eliminar este movimiento?')) return;
+        eliminarGastoManual(_transEditId, _transEditMes);
+        _transEditId = null;
+        cerrarModalTrans();
+    }
+
+    function copiarTransActual() {
+        // Pasa a modo "nueva transacción" con los mismos datos cargados
+        _transEditId  = null;
+        _transEditMes = null;
+        document.getElementById('trans-modal-title').innerText = 'Nueva transacción (copia)';
+        document.getElementById('trans-acciones').style.display = 'none';
+        document.getElementById('trans-continuar-btn').style.display = 'block';
+    }
+
     function cerrarModalTrans() {
+        _transEditId  = null;
+        _transEditMes = null;
         document.getElementById('modal-trans').style.display = 'none';
     }
 
-    function setTransTipo(tipo) {
-        _transTipo    = tipo;
-        _transSeccion = null;
-        _transSubcat  = null;
-        _panelCatSel  = null;
+    function setTransTipo(tipo, mantenerSel) {
+        _transTipo = tipo;
+        if (!mantenerSel) {
+            _transSeccion = null;
+            _transSubcat  = null;
+            _panelCatSel  = null;
+        }
         const estilos = {
             ingreso:  { id: 'trans-pill-ingreso',  color: '#38bdf8', bg: 'rgba(56,189,248,0.18)' },
             gasto:    { id: 'trans-pill-gasto',    color: '#f87171', bg: 'rgba(248,113,113,0.18)' },
@@ -2654,6 +2705,21 @@
             entrada = { id: Date.now(), desc: nota || _transSeccion, monto, tipo: _transTipo, seccion: _transSeccion, fecha,
                         cuentaId: _transCuenta || (dbCuentas[0] && dbCuentas[0].id) || null };
             if (_transSubcat) entrada.subcategoria = _transSeccion + ' › ' + _transSubcat;
+        }
+
+        // Modo edición: reemplaza el movimiento original conservando id y campos extra
+        if (_transEditId != null) {
+            const arrOrig = dbGastosVar[_transEditMes] || [];
+            const idx = arrOrig.findIndex(g => String(g.id) === String(_transEditId));
+            if (idx !== -1) {
+                const orig = arrOrig[idx];
+                entrada = { ...orig, ...entrada, id: orig.id };   // preserva catId/aporteId si existían
+                if (entrada.tipo === 'transfer') { delete entrada.seccion; delete entrada.subcategoria; delete entrada.catId; }
+                else { delete entrada.cuentaDestId; if (!_transSubcat) delete entrada.subcategoria; }
+                arrOrig.splice(idx, 1);
+            }
+            _transEditId  = null;
+            _transEditMes = null;
         }
 
         if (!dbGastosVar[mes]) dbGastosVar[mes] = [];
@@ -4244,7 +4310,7 @@
 <div id="modal-trans" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalTrans()">
     <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:20px 20px 16px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <div style="font-size:1rem;font-weight:700;color:#f0f4f8;">Nueva transacción</div>
+            <div id="trans-modal-title" style="font-size:1rem;font-weight:700;color:#f0f4f8;">Nueva transacción</div>
             <button onclick="cerrarModalTrans()" style="background:none;border:none;color:#8892b0;font-size:1.1rem;cursor:pointer;padding:4px 8px;">✕</button>
         </div>
         <!-- Toggle tipo (estilo Money Manager: outline) -->
@@ -4281,7 +4347,12 @@
         <!-- Botones Guardar / Continuar -->
         <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;">
             <button id="trans-guardar-btn" onclick="guardarTrans(false)" style="padding:13px;background:var(--success);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
-            <button onclick="guardarTrans(true)" style="padding:13px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Continuar</button>
+            <button id="trans-continuar-btn" onclick="guardarTrans(true)" style="padding:13px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Continuar</button>
+        </div>
+        <!-- Acciones al editar un movimiento existente -->
+        <div id="trans-acciones" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+            <button onclick="eliminarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid rgba(248,113,113,0.4);border-radius:12px;color:#f87171;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+            <button onclick="copiarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-copy"></i> Copiar</button>
         </div>
         <!-- Panel selector inferior (categoría / cuentas) -->
         <div id="trans-panel" style="display:none;margin:14px -20px -16px;border-top:0.5px solid #1e2a47;background:#101832;">
