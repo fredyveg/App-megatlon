@@ -2447,15 +2447,27 @@
             title.innerText = 'Dinero';
             editB.style.display = 'none';
             const key = (label, val, extra) => `<button onclick="kpPress('${val}')" style="padding:15px 0;min-height:52px;background:${extra || 'transparent'};border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:1.05rem;font-weight:600;color:var(--text-main);">${label}</button>`;
-            const op = 'rgba(136,146,176,0.08)';
-            body.innerHTML = `
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);">
+            const op  = 'rgba(136,146,176,0.08)';
+            const fin = `<button id="kp-accion" onclick="kpAccion()" style="padding:15px 0;min-height:52px;background:#f87171;border:none;cursor:pointer;font-family:inherit;font-size:0.9rem;font-weight:700;color:#0a0e27;">Finalizar</button>`;
+            const calcBtn = (on) => `<button onclick="kpToggleCalc()" style="padding:15px 0;min-height:52px;background:${on ? 'rgba(0,212,255,0.15)' : op};border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:1rem;color:${on ? '#00d4ff' : 'var(--text-main)'};"><i class="fa-solid fa-calculator"></i></button>`;
+            if (!_kpCalc) {
+                // Pad simple (como Money Manager): dígitos + ⌫ − 🧮 Finalizar
+                body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);">
                     ${key('1','1')}${key('2','2')}${key('3','3')}${key('⌫','back', op)}
                     ${key('4','4')}${key('5','5')}${key('6','6')}${key('−','-', op)}
-                    ${key('7','7')}${key('8','8')}${key('9','9')}${key('+','+', op)}
-                    ${key('×','×', op)}${key('0','0')}${key(',',',')}${key('÷','÷', op)}
-                </div>
-                <button id="kp-accion" onclick="kpAccion()" style="width:100%;padding:15px 0;min-height:52px;background:#f87171;border:none;cursor:pointer;font-family:inherit;font-size:0.95rem;font-weight:700;color:#0a0e27;">Finalizar</button>`;
+                    ${key('7','7')}${key('8','8')}${key('9','9')}${calcBtn(false)}
+                    <div style="border:0.5px solid var(--border);"></div>${key('0','0')}${key(',',',')}${fin}
+                </div>`;
+            } else {
+                // Calculadora completa
+                body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);">
+                    ${key('C','C', op)}${key('÷','÷', op)}${key('×','×', op)}${key('⌫','back', op)}
+                    ${key('7','7')}${key('8','8')}${key('9','9')}${key('−','-', op)}
+                    ${key('4','4')}${key('5','5')}${key('6','6')}${key('+','+', op)}
+                    ${key('1','1')}${key('2','2')}${key('3','3')}${key('=','=', 'rgba(0,212,255,0.12)')}
+                    ${calcBtn(true)}${key('0','0')}${key(',',',')}${fin}
+                </div>`;
+            }
             kpSync();
         } else {
             title.innerText = _transPanel === 'cuentaDest' ? 'Cuenta destino' : 'Cuentas';
@@ -2469,6 +2481,12 @@
 
     // ── Teclado numérico con calculadora ──────────────────────────────────
     let _kpExpr = '';
+    let _kpCalc = false;   // false = pad simple · true = calculadora completa
+
+    function kpToggleCalc() {
+        _kpCalc = !_kpCalc;
+        renderPanelTrans();
+    }
 
     // Evalúa una expresión aritmética simple y segura ("1500+200×2"). NaN si es inválida.
     function kpEval(expr) {
@@ -2480,10 +2498,24 @@
         } catch (e) { return NaN; }
     }
 
+    const kpPendiente = () => /(?!^)[+\-×÷]/.test(_kpExpr);
+
+    function kpResolver() {
+        // Evalúa la expresión pendiente y deja el resultado. false si es inválida.
+        const v = kpEval(_kpExpr);
+        if (isNaN(v)) { alert('Operación inválida.'); return false; }
+        _kpExpr = String(Math.round(v * 100) / 100).replace('.', ',');
+        return true;
+    }
+
     function kpPress(k) {
         const OPS = '+-×÷';
         if (k === 'back') {
             _kpExpr = _kpExpr.slice(0, -1);
+        } else if (k === 'C') {
+            _kpExpr = '';
+        } else if (k === '=') {
+            if (kpPendiente() && !kpResolver()) return;
         } else if (OPS.includes(k)) {
             if (!_kpExpr) { if (k === '-') _kpExpr = '-'; }                       // solo "-" puede iniciar
             else if (OPS.includes(_kpExpr.slice(-1))) _kpExpr = _kpExpr.slice(0, -1) + k;  // reemplaza operador
@@ -2502,19 +2534,17 @@
         const inp = document.getElementById('trans-monto');
         if (inp) inp.value = _kpExpr;
         const btn = document.getElementById('kp-accion');
-        if (btn) btn.innerText = /(?!^)[+\-×÷]/.test(_kpExpr) ? '=' : 'Finalizar';
+        // En el pad simple el botón rojo hace de "=" cuando hay operación pendiente
+        if (btn) btn.innerText = (!_kpCalc && kpPendiente()) ? '=' : 'Finalizar';
     }
 
     function kpAccion() {
-        if (/(?!^)[+\-×÷]/.test(_kpExpr)) {
-            // Hay operación pendiente: evaluar y mostrar el resultado
-            const v = kpEval(_kpExpr);
-            if (isNaN(v)) { alert('Operación inválida.'); return; }
-            _kpExpr = String(Math.round(v * 100) / 100).replace('.', ',');
+        if (kpPendiente()) {
+            if (!kpResolver()) return;
             kpSync();
-        } else {
-            cerrarPanelTrans();
+            if (!_kpCalc) return;   // pad simple: "=" muestra el resultado y sigue abierto
         }
+        cerrarPanelTrans();
     }
 
     function panelSelCat(seccion) {
