@@ -310,7 +310,7 @@
         <div style="display:flex;background:var(--bg-card);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px;border:0.5px solid var(--border);">
             <button onclick="switchFinVista('diario')" id="fv-diario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:var(--bg-input);color:var(--text-main);">Diario</button>
             <button onclick="switchFinVista('calendario')" id="fv-calendario" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Calendario</button>
-            <button onclick="switchFinVista('mensual')" id="fv-mensual" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Mensual</button>
+            <button onclick="switchFinVista('mensual')" id="fv-mensual" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Estad.</button>
             <button onclick="switchFinVista('cuentas')" id="fv-cuentas" style="flex:1;padding:9px 4px;border-radius:9px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;transition:0.2s;background:transparent;color:var(--text-muted);">Cuentas</button>
         </div>
 
@@ -326,14 +326,19 @@
             </div>
         </div>
 
-        <!-- ══ VISTA: MENSUAL ══ -->
+        <!-- ══ VISTA: ESTADÍSTICAS ══ -->
         <div id="finv-mensual" style="display:none;">
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;">
-                <div class="card-title" style="margin-bottom:14px;">
-                    <div class="card-title-icon" style="background:rgba(165,180,252,0.1);color:var(--c-violet);"><i class="fa-solid fa-chart-pie"></i></div>
-                    <span class="card-title-text">Gastos por categoría</span>
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px 16px;margin-bottom:12px;">
+                <!-- Toggle Ingresos / Gastos con totales -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:16px;">
+                    <button id="fstat-tab-ingreso" onclick="setFinStatTipo('ingreso')" style="background:none;border:none;border-bottom:2px solid var(--border);padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-muted);">
+                        Ingresos <span id="fstat-total-ing" style="font-weight:700;">$0</span>
+                    </button>
+                    <button id="fstat-tab-gasto" onclick="setFinStatTipo('gasto')" style="background:none;border:none;border-bottom:2px solid #f87171;padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-main);">
+                        Gastos <span id="fstat-total-gas" style="font-weight:700;">$0</span>
+                    </button>
                 </div>
-                <canvas id="fin-mensual-donut" style="width:100%;max-width:220px;height:220px;display:block;margin:0 auto 16px;"></canvas>
+                <canvas id="fin-mensual-donut" style="width:100%;height:290px;display:block;margin:0 auto 8px;"></canvas>
                 <div id="fin-mensual-cats"></div>
             </div>
         </div>
@@ -2203,61 +2208,111 @@
         }).join('');
     }
 
+    let _finStatTipo = 'gasto';   // 'gasto' | 'ingreso'
+
+    function setFinStatTipo(t) {
+        _finStatTipo = t;
+        renderFinMensual();
+    }
+
     function renderFinMensual() {
-        const mes   = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
-        const trans = (dbGastosVar[mes] || []).filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer');
-        const cont  = document.getElementById('fin-mensual-cats');
-        const cv    = document.getElementById('fin-mensual-donut');
+        const mes  = document.getElementById('select-mes')?.value || monthKeyFromDate(new Date());
+        const arr  = dbGastosVar[mes] || [];
+        const cont = document.getElementById('fin-mensual-cats');
+        const cv   = document.getElementById('fin-mensual-donut');
         if (!cont || !cv) return;
+
+        // Totales para el toggle
+        let totIng = 0, totGas = 0;
+        arr.forEach(g => {
+            if (g.tipo === 'transfer') return;
+            if (g.tipo === 'ingreso') totIng += g.monto || 0; else totGas += g.monto || 0;
+        });
+        const elTi = document.getElementById('fstat-total-ing');
+        const elTg = document.getElementById('fstat-total-gas');
+        if (elTi) elTi.innerText = fmt(totIng);
+        if (elTg) elTg.innerText = fmt(totGas);
+        const tabI = document.getElementById('fstat-tab-ingreso');
+        const tabG = document.getElementById('fstat-tab-gasto');
+        const esGasto = _finStatTipo === 'gasto';
+        if (tabI) { tabI.style.borderBottom = esGasto ? '2px solid var(--border)' : '2px solid #38bdf8'; tabI.style.color = esGasto ? 'var(--text-muted)' : 'var(--text-main)'; }
+        if (tabG) { tabG.style.borderBottom = esGasto ? '2px solid #f87171' : '2px solid var(--border)'; tabG.style.color = esGasto ? 'var(--text-main)' : 'var(--text-muted)'; }
+
+        const trans = arr.filter(g => esGasto ? (g.tipo !== 'ingreso' && g.tipo !== 'transfer') : g.tipo === 'ingreso');
         const tot = {};
         trans.forEach(g => { const s = seccionDeTrans(g); tot[s] = (tot[s] || 0) + (g.monto || 0); });
         const sorted = Object.entries(tot).sort((a, b) => b[1] - a[1]).filter(([, v]) => v > 0);
         const total  = sorted.reduce((s, [, v]) => s + v, 0);
-        const COLORS = ['#a78bfa','#34d399','#f87171','#60a5fa','#fbbf24','#f472b6','#38bdf8','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
+        const COLORS = esGasto
+            ? ['#f87171','#fb923c','#fbbf24','#f472b6','#a78bfa','#60a5fa','#34d399','#38bdf8','#facc15','#4ade80','#e879f9','#818cf8']
+            : ['#38bdf8','#34d399','#60a5fa','#4ade80','#a78bfa','#fbbf24','#f472b6','#fb923c','#facc15','#e879f9','#818cf8','#f87171'];
+
         if (sorted.length === 0) {
             cv.style.display = 'none';
-            cont.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:20px 0;">Sin gastos este mes.</p>';
+            cont.innerHTML = `<p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:20px 0;">Sin ${esGasto ? 'gastos' : 'ingresos'} este mes.</p>`;
             return;
         }
+
+        // ── Torta con etiquetas externas (estilo Money Manager) ──
         cv.style.display = 'block';
         const dpr = window.devicePixelRatio || 1;
-        const size = Math.min(cv.offsetWidth || 220, 220);
-        cv.width = size * dpr; cv.height = size * dpr;
-        cv.style.width = size + 'px'; cv.style.height = size + 'px';
+        const W = cv.offsetWidth || 300;
+        const H = 290;
+        cv.width = W * dpr; cv.height = H * dpr;
+        cv.style.width = W + 'px'; cv.style.height = H + 'px';
         const cp = cv.getContext('2d');
         cp.scale(dpr, dpr);
-        cp.clearRect(0, 0, size, size);
-        const cx = size/2, cy = size/2, r = size/2 - 6, innerR = r * 0.52;
+        cp.clearRect(0, 0, W, H);
+        const cx = W / 2, cy = H / 2, r = Math.min(W, H) / 2 - 62;
+
         let ang = -Math.PI / 2;
-        sorted.forEach(([, val], i) => {
+        sorted.forEach(([sec, val], i) => {
             const slice = (val / total) * Math.PI * 2;
             cp.beginPath(); cp.moveTo(cx, cy); cp.arc(cx, cy, r, ang, ang + slice); cp.closePath();
             cp.fillStyle = COLORS[i % COLORS.length]; cp.fill();
+
+            // Etiqueta externa con línea guía (solo porciones >= 4%)
+            const frac = val / total;
+            if (frac >= 0.04) {
+                const mid = ang + slice / 2;
+                const cos = Math.cos(mid), sin = Math.sin(mid);
+                cp.strokeStyle = COLORS[i % COLORS.length];
+                cp.lineWidth = 1;
+                cp.beginPath();
+                cp.moveTo(cx + cos * r, cy + sin * r);
+                cp.lineTo(cx + cos * (r + 10), cy + sin * (r + 10));
+                cp.stroke();
+                const lx = cx + cos * (r + 14);
+                const ly = cy + sin * (r + 14);
+                cp.textAlign = cos > 0.3 ? 'left' : cos < -0.3 ? 'right' : 'center';
+                cp.textBaseline = 'middle';
+                cp.fillStyle = '#f0f4f8';
+                cp.font = 'bold 11px Inter, sans-serif';
+                cp.fillText(`${SECCION_ICONS[sec] || ''} ${sec}`, lx, ly - 7);
+                cp.fillStyle = '#8892b0';
+                cp.font = '10px Inter, sans-serif';
+                cp.fillText((frac * 100).toFixed(1) + ' %', lx, ly + 7);
+            }
             ang += slice;
         });
-        cp.beginPath(); cp.arc(cx, cy, innerR, 0, Math.PI * 2); cp.fillStyle = '#141d3a'; cp.fill();
-        cp.fillStyle = '#f0f4f8'; cp.font = `bold ${Math.round(size*0.095)}px Inter, sans-serif`;
-        cp.textAlign = 'center'; cp.textBaseline = 'middle';
-        cp.fillText(fmt(total), cx, cy - 7);
-        cp.fillStyle = '#8892b0'; cp.font = `${Math.round(size*0.065)}px Inter, sans-serif`;
-        cp.fillText('gastado', cx, cy + 12);
+
+        // ── Lista con badge de porcentaje ──
         cont.innerHTML = sorted.map(([s, m], i) => {
-            const pct = (m / total * 100).toFixed(1);
+            const pct   = Math.round(m / total * 100);
             const color = COLORS[i % COLORS.length];
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);">
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="width:10px;height:10px;border-radius:3px;background:${color};flex-shrink:0;display:inline-block;"></span>
-                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-main);">${SECCION_ICONS[s] || '➕'} ${s}</span>
-                </div>
-                <span style="font-size:0.78rem;color:var(--text-muted);">${fmt(m)} <span style="color:${color};font-weight:700;">${pct}%</span></span>
+            return `<div style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--border);">
+                <span style="background:${color};color:#0a0e27;font-size:0.68rem;font-weight:800;border-radius:6px;padding:3px 7px;min-width:40px;text-align:center;flex-shrink:0;">${pct}%</span>
+                <span style="flex:1;font-size:0.86rem;font-weight:600;color:var(--text-main);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${SECCION_ICONS[s] || '➕'} ${s}</span>
+                <span style="font-size:0.86rem;font-weight:700;color:var(--text-main);flex-shrink:0;">${fmt(m)}</span>
             </div>`;
         }).join('');
     }
 
     // ── Cuentas ───────────────────────────────────────────────────────────
-    function renderCuentas() {
-        const cont = document.getElementById('fin-cuentas-lista');
-        if (!cont) return;
+    // Grupo de una cuenta: 'efectivo' | 'cuentas' | 'tarjeta' (las viejas se infieren por id)
+    const cuentaGrupo = (c) => c.grupo || (c.id === 'efectivo' ? 'efectivo' : c.id === 'tarjeta' ? 'tarjeta' : 'cuentas');
+
+    function calcSaldosCuentas() {
         const saldos = {};
         dbCuentas.forEach(c => saldos[c.id] = 0);
         Object.values(dbGastosVar).forEach(arr => arr.forEach(g => {
@@ -2271,24 +2326,79 @@
             if (!g.cuentaId || saldos[g.cuentaId] === undefined) return;
             saldos[g.cuentaId] += (g.tipo === 'ingreso' ? 1 : -1) * m;
         }));
-        cont.innerHTML = dbCuentas.map(c => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:0.5px solid var(--border);">
+        return saldos;
+    }
+
+    function renderCuentas() {
+        const cont = document.getElementById('fin-cuentas-lista');
+        if (!cont) return;
+        const saldos = calcSaldosCuentas();
+
+        const grupos = { efectivo: [], cuentas: [], tarjeta: [] };
+        dbCuentas.forEach(c => (grupos[cuentaGrupo(c)] || grupos.cuentas).push(c));
+
+        const capital = [...grupos.efectivo, ...grupos.cuentas].reduce((s, c) => s + saldos[c.id], 0);
+        const deuda   = grupos.tarjeta.reduce((s, c) => s + Math.max(0, -saldos[c.id]), 0);
+        const balance = capital - deuda;
+
+        const money = (v) => `<span style="font-weight:700;font-size:0.85rem;color:${v > 0 ? '#38bdf8' : v < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(v)}</span>`;
+
+        const filaCuenta = (c) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);">
+                <span style="font-size:0.85rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1.05rem;">${c.icon || '💳'}</div>
-                    <span style="font-size:0.9rem;font-weight:600;color:var(--text-main);">${c.nombre}</span>
+                    ${money(saldos[c.id])}
+                    <span onclick="eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <span style="font-size:0.9rem;font-weight:700;color:${saldos[c.id] >= 0 ? 'var(--text-main)' : '#f87171'};">${fmt(saldos[c.id])}</span>
-                    <button onclick="eliminarCuenta('${c.id}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem;">✕</button>
+            </div>`;
+
+        const seccion = (titulo, arr, extraDer) => arr.length ? `
+            <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-input);border-radius:8px;padding:8px 10px;margin-top:14px;">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">${titulo}</span>
+                ${extraDer}
+            </div>` + arr.map(filaCuenta).join('') : '';
+
+        const filaTarjeta = (c) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);">
+                <span style="font-size:0.85rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-weight:700;font-size:0.85rem;color:${saldos[c.id] < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(Math.max(0, -saldos[c.id]))}</span>
+                    <span onclick="eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
                 </div>
-            </div>`).join('');
+            </div>`;
+
+        cont.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg-input);border-radius:10px;padding:10px 0;margin-bottom:2px;">
+                <div style="text-align:center;padding:0 6px;">
+                    <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Capital</div>
+                    ${money(capital)}
+                </div>
+                <div style="text-align:center;padding:0 6px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
+                    <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">A deber</div>
+                    <span style="font-weight:700;font-size:0.85rem;color:${deuda > 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(deuda)}</span>
+                </div>
+                <div style="text-align:center;padding:0 6px;">
+                    <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Balance</div>
+                    <span style="font-weight:700;font-size:0.85rem;color:var(--text-main);">${fmt(balance)}</span>
+                </div>
+            </div>
+            ${seccion('Efectivo', grupos.efectivo, money(grupos.efectivo.reduce((s,c) => s + saldos[c.id], 0)))}
+            ${seccion('Cuentas', grupos.cuentas, money(grupos.cuentas.reduce((s,c) => s + saldos[c.id], 0)))}
+            ${grupos.tarjeta.length ? `
+            <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-input);border-radius:8px;padding:8px 10px;margin-top:14px;">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">Tarjetas de crédito</span>
+                <span style="font-size:0.66rem;color:var(--text-muted);">Saldo a pagar</span>
+            </div>` + grupos.tarjeta.map(filaTarjeta).join('') : ''}
+        `;
     }
 
     function agregarCuentaPrompt() {
         const nombre = prompt('Nombre de la cuenta (ej: Mercado Pago):');
         if (!nombre || !nombre.trim()) return;
         const icon = (prompt('Emoji para la cuenta (opcional):', '💳') || '💳').trim() || '💳';
-        dbCuentas.push({ id: 'c' + Date.now(), nombre: nombre.trim(), icon, color: '#38bdf8' });
+        const t = (prompt('Tipo de cuenta:\n1 = Efectivo\n2 = Cuenta (banco / billetera)\n3 = Tarjeta de crédito', '2') || '2').trim();
+        const grupo = t === '1' ? 'efectivo' : t === '3' ? 'tarjeta' : 'cuentas';
+        dbCuentas.push({ id: 'c' + Date.now(), nombre: nombre.trim(), icon, grupo, color: '#38bdf8' });
         saveCuentas();
         renderCuentas();
     }
