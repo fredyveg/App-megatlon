@@ -5,26 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soporte IT - Panel Personal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
     <style>
         :root {
-            --bg-base: #0a0e27;
-            --bg-card: #141d3a;
-            --bg-hero: #1a2244;
-            --bg-input: #0a0e27;
-            --primary: #00d4ff;
-            --primary-hover: #00a8cc;
-            --success: #00d98e;
-            --danger: #ff6b6b;
-            --text-main: #f0f4f8;
-            --text-muted: #8892b0;
-            --border: #1e2a47;
+            /* Tema financiero: charcoal neutro + verde esmeralda (dinero) / rosa (gasto) */
+            --bg-base: #0c0f14;
+            --bg-card: #161b22;
+            --bg-hero: #1b222c;
+            --bg-input: #0e1218;
+            --primary: #2ee6a6;
+            --primary-hover: #10b981;
+            --success: #2ee6a6;
+            --danger: #fb7185;
+            --income: #34d399;
+            --expense: #fb7185;
+            --text-main: #eaf0f2;
+            --text-muted: #7c8896;
+            --border: #262d38;
             --c-green: #34d399;
-            --c-amber: #f59e0b;
+            --c-amber: #f5b661;
             --c-violet: #a5b4fc;
             --space-1: 4px;
             --space-2: 8px;
@@ -34,8 +39,8 @@
             --space-6: 24px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
         .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
 
         .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
@@ -46,19 +51,19 @@
         .card-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-4); color: var(--text-main); display: flex; align-items: center; gap: var(--space-3); }
         .card-title-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
         .card-title-text { flex: 1; }
-        .card-registrar { border-top: 2px solid rgba(0,212,255,0.4); }
+        .card-registrar { border-top: 2px solid rgba(46,230,166,0.4); }
         .card-historial { border-top: 2px solid rgba(165,180,252,0.4); }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
         .form-group { margin-bottom: var(--space-4); }
         .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .input { width: 100%; background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: var(--space-3) var(--space-4); border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s; }
-        .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(31,111,235,0.15); }
+        .input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16,185,129,0.15); }
 
         /* Botones */
         .btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.3s ease; color: white; }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: #e6edf3; }
+        .btn-primary { background: var(--primary); color: #eaf0f2; }
         .btn-success { background: #0f2d1a; color: var(--c-green); border: 0.5px solid #2d5a3a; }
         .btn-danger  { background: var(--danger);  box-shadow: 0 2px 8px rgba(255,107,107,0.2); }
         .btn-outline-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); box-shadow: none; padding: 12px; font-size: 0.9rem; }
@@ -87,14 +92,14 @@
         .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .item-action { border: none; width: 35px; height: 35px; min-width: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: rgba(255,107,107,0.1); color: var(--danger); }
         .item-action:hover { background: var(--danger); color: white; }
-        .item-action.edit { background: rgba(0,212,255,0.1); color: var(--primary); }
-        .item-action.edit:hover { background: var(--primary); color: #0a0e27; }
+        .item-action.edit { background: rgba(46,230,166,0.1); color: var(--primary); }
+        .item-action.edit:hover { background: var(--primary); color: #0c0f14; }
         .item-monto { font-weight: 700; color: var(--danger); font-size: 1rem; margin-right: 8px; text-align: right; flex-shrink: 0; }
 
         /* Badges */
         .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
         .horas-badge span { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-        .badge-total    { background: rgba(0,212,255,0.15);   color: #00d4ff; }
+        .badge-total    { background: rgba(46,230,166,0.15);   color: #2ee6a6; }
         .badge-50       { background: rgba(255,159,64,0.15);  color: #ff9f40; }
         .badge-100      { background: rgba(179,102,255,0.15); color: #b366ff; }
         .badge-coordinar{ background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px dashed rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 4px; }
@@ -105,7 +110,7 @@
         .breakdown-box { flex: 1; text-align: center; }
         .breakdown-box p  { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
         .breakdown-box h3 { font-size: 0.9rem; font-weight: 600; }
-        .c-total { color: #8892b0; }
+        .c-total { color: #7c8896; }
         .c-50    { color: #ff9f40; }
         .c-100   { color: #b366ff; }
 
@@ -121,7 +126,7 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(13,17,23,0.94); backdrop-filter: blur(12px); border-top: 0.5px solid var(--border); display: flex; padding: 10px 0 20px 0; z-index: 1000; justify-content: space-around; }
         .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; width: 33.33%; transition: 0.3s; }
         .nav-btn i { font-size: 1.3rem; transition: transform 0.3s; }
-        .nav-btn.active { color: #58a6ff; }
+        .nav-btn.active { color: var(--primary); }
         .nav-btn.active i { transform: translateY(-3px); }
 
         .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1); }
@@ -136,9 +141,11 @@
         .fin-tabs::-webkit-scrollbar { display: none; }
         .fin-tab { flex: 1 0 auto; background: none; border: none; border-bottom: 2px solid transparent; padding: 11px 14px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); cursor: pointer; font-family: inherit; white-space: nowrap; transition: color 0.2s; }
         .fin-tab.on { color: var(--text-main); border-bottom-color: var(--primary); }
+        .fh-icon { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: var(--bg-card); border: 0.5px solid var(--border); color: var(--text-muted); font-size: 0.82rem; cursor: pointer; transition: 0.15s; }
+        .fh-icon.on { color: var(--primary); border-color: rgba(46,230,166,0.4); background: rgba(46,230,166,0.1); }
 
         /* Adaptación a pantallas grandes (PC / tablet): columna centrada tipo app */
-        .fab-add { position: fixed; right: 18px; bottom: 88px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; color: #0a0e27; font-size: 1.7rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(0,212,255,0.35); z-index: 900; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        .fab-add { position: fixed; right: 18px; bottom: 88px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; color: #0c0f14; font-size: 1.7rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(46,230,166,0.35); z-index: 900; display: flex; align-items: center; justify-content: center; line-height: 1; }
         @media (min-width: 540px) {
             body { background: #05070f; }
             .app-container { min-height: 100vh; background: var(--bg-base); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
@@ -176,7 +183,7 @@
 
             <!-- Hero number -->
             <div id="view-total-neto" style="font-size:2.8rem;font-weight:700;color:var(--text-main);letter-spacing:-2px;line-height:1;margin-bottom:4px;">$0</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:16px;">Bruto estimado: <span id="view-total-bruto" style="color:#388bfd;font-weight:600;">$0</span></div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:16px;">Bruto estimado: <span id="view-total-bruto" style="color:#34d399;font-weight:600;">$0</span></div>
 
             <!-- Sub-stats: neto base + extra -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
@@ -196,7 +203,7 @@
             <!-- Breakdown horas -->
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;">
                 <div style="text-align:center;padding:0 8px;">
-                    <div id="bd-total" style="font-size:1.3rem;font-weight:700;color:#00d4ff;letter-spacing:-0.5px;line-height:1.1;">0h</div>
+                    <div id="bd-total" style="font-size:1.3rem;font-weight:700;color:#2ee6a6;letter-spacing:-0.5px;line-height:1.1;">0h</div>
                     <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Total</div>
                 </div>
                 <div style="text-align:center;padding:0 8px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
@@ -233,7 +240,7 @@
 
         <div class="card card-registrar" id="card-registrar-turno">
             <div class="card-title">
-                <div class="card-title-icon" style="background:rgba(0,212,255,0.12);color:var(--primary);"><i class="fa-solid fa-clock"></i></div>
+                <div class="card-title-icon" style="background:rgba(46,230,166,0.12);color:var(--primary);"><i class="fa-solid fa-clock"></i></div>
                 <span class="card-title-text">Registrar Turno</span>
             </div>
             <div class="grid-2">
@@ -252,7 +259,7 @@
                 </div>
                 <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
                     <input type="checkbox" id="switch-coordinar" onchange="toggleCoordi()" style="opacity:0;width:0;height:0;position:absolute;">
-                    <span id="slider-coordinar" style="position:absolute;inset:0;background:#1e2a47;border-radius:24px;transition:0.3s;border:1px solid #334155;">
+                    <span id="slider-coordinar" style="position:absolute;inset:0;background:#262d38;border-radius:24px;transition:0.3s;border:1px solid #334155;">
                         <span style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#475569;border-radius:50%;transition:0.3s;display:block;" id="knob-coordinar"></span>
                     </span>
                 </label>
@@ -275,7 +282,7 @@
                 <button onclick="descargarExcel()" class="btn btn-success">
                     <i class="fa-solid fa-file-excel"></i> Descargar Planilla Excel
                 </button>
-                <button id="btn-desbloquear-historico" onclick="desbloquearHistorico()" style="display:none;width:100%;padding:12px;border-radius:12px;font-size:0.88rem;font-weight:600;border:0.5px solid rgba(136,146,176,0.25);background:rgba(136,146,176,0.06);color:#8892b0;cursor:pointer;align-items:center;justify-content:center;gap:8px;">
+                <button id="btn-desbloquear-historico" onclick="desbloquearHistorico()" style="display:none;width:100%;padding:12px;border-radius:12px;font-size:0.88rem;font-weight:600;border:0.5px solid rgba(136,146,176,0.25);background:rgba(136,146,176,0.06);color:#7c8896;cursor:pointer;align-items:center;justify-content:center;gap:8px;">
                     <i class="fa-solid fa-lock-open"></i> Desbloquear edición
                 </button>
                 <button id="btn-rebloquear-historico" onclick="rebloquearHistorico()" style="display:none;width:100%;padding:12px;border-radius:12px;font-size:0.88rem;font-weight:600;border:0.5px solid rgba(251,191,36,0.3);background:rgba(251,191,36,0.06);color:#fbbf24;cursor:pointer;align-items:center;justify-content:center;gap:8px;">
@@ -294,27 +301,29 @@
 
     <main class="tab-content" id="tab-finanzas">
 
-        <!-- Header: navegación de mes + escanear -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <!-- Header: navegación de mes + accesos (Estadísticas · Cuentas · Escanear) -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;">
             <div style="display:flex;align-items:center;gap:6px;">
                 <button onclick="finHeaderNav(-1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">‹</button>
-                <div id="fin-mes-label" style="font-size:1.05rem;font-weight:700;color:var(--text-main);min-width:108px;text-align:center;">—</div>
+                <div id="fin-mes-label" style="font-size:1.02rem;font-weight:700;color:var(--text-main);min-width:96px;text-align:center;letter-spacing:-0.02em;">—</div>
                 <button onclick="finHeaderNav(1)" style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:10px;width:34px;height:34px;color:var(--text-main);font-size:1.1rem;cursor:pointer;line-height:1;">›</button>
             </div>
-            <button onclick="abrirEscanerRecibo()" style="display:flex;align-items:center;gap:6px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:10px;padding:0 12px;height:34px;color:#00d4ff;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                <i class="fa-solid fa-camera"></i> Escanear
-            </button>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <button onclick="switchFinVista('mensual')" id="fh-estad" class="fh-icon" title="Estadísticas"><i class="fa-solid fa-chart-pie"></i></button>
+                <button onclick="switchFinVista('cuentas')" id="fh-cuentas" class="fh-icon" title="Cuentas"><i class="fa-solid fa-wallet"></i></button>
+                <button onclick="abrirEscanerRecibo()" class="fh-icon" title="Escanear recibo con IA" style="color:var(--primary);border-color:rgba(46,230,166,0.3);background:rgba(46,230,166,0.06);"><i class="fa-solid fa-camera"></i></button>
+            </div>
         </div>
 
         <!-- Resumen Ingresos / Gastos / Balance -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:11px 0;margin-bottom:12px;">
             <div style="text-align:center;padding:0 6px;">
                 <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Ingresos</div>
-                <div id="fin-sum-ing" style="font-size:0.92rem;font-weight:700;color:#38bdf8;">$0</div>
+                <div id="fin-sum-ing" style="font-size:0.92rem;font-weight:700;color:#34d399;">$0</div>
             </div>
             <div style="text-align:center;padding:0 6px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
                 <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Gastos</div>
-                <div id="fin-sum-gas" style="font-size:0.92rem;font-weight:700;color:#f87171;">$0</div>
+                <div id="fin-sum-gas" style="font-size:0.92rem;font-weight:700;color:#fb7185;">$0</div>
             </div>
             <div style="text-align:center;padding:0 6px;">
                 <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Balance</div>
@@ -322,14 +331,12 @@
             </div>
         </div>
 
-        <!-- Selector de vistas (estilo Money Manager) -->
+        <!-- Selector de vistas temporales (estilo Money Manager) -->
         <div class="fin-tabs">
             <button onclick="switchFinVista('diario')"     id="fv-diario"     class="fin-tab on">Diario</button>
             <button onclick="switchFinVista('calendario')" id="fv-calendario" class="fin-tab">Calendario</button>
             <button onclick="switchFinVista('anual')"      id="fv-anual"      class="fin-tab">Mensual</button>
-            <button onclick="switchFinVista('mensual')"    id="fv-mensual"    class="fin-tab">Estad.</button>
             <button onclick="switchFinVista('total')"      id="fv-total"      class="fin-tab">Total</button>
-            <button onclick="switchFinVista('cuentas')"    id="fv-cuentas"    class="fin-tab">Cuentas</button>
         </div>
 
         <!-- ══ VISTA: DIARIO ══ -->
@@ -357,7 +364,7 @@
                     <button id="fstat-tab-ingreso" onclick="setFinStatTipo('ingreso')" style="background:none;border:none;border-bottom:2px solid var(--border);padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-muted);">
                         Ingresos <span id="fstat-total-ing" style="font-weight:700;">$0</span>
                     </button>
-                    <button id="fstat-tab-gasto" onclick="setFinStatTipo('gasto')" style="background:none;border:none;border-bottom:2px solid #f87171;padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-main);">
+                    <button id="fstat-tab-gasto" onclick="setFinStatTipo('gasto')" style="background:none;border:none;border-bottom:2px solid #fb7185;padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-main);">
                         Gastos <span id="fstat-total-gas" style="font-weight:700;">$0</span>
                     </button>
                 </div>
@@ -376,10 +383,10 @@
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(56,189,248,0.12);color:#38bdf8;"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="card-title-icon" style="background:rgba(52,211,153,0.12);color:#34d399;"><i class="fa-solid fa-wallet"></i></div>
                         <span class="card-title-text">Cuentas</span>
                     </div>
-                    <button onclick="agregarCuentaPrompt()" style="background:rgba(56,189,248,0.1);border:0.5px solid rgba(56,189,248,0.3);border-radius:8px;padding:4px 10px;color:#38bdf8;font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
+                    <button onclick="agregarCuentaPrompt()" style="background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.3);border-radius:8px;padding:4px 10px;color:#34d399;font-size:0.7rem;font-weight:600;cursor:pointer;">+ Nueva</button>
                 </div>
                 <div id="fin-cuentas-lista"></div>
             </div>
@@ -435,9 +442,9 @@
         </div>
 
         <!-- Historial de meses -->
-        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+        <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(52,211,153,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
             <div class="card-title">
-                <div class="card-title-icon" style="background:rgba(56,139,253,0.1);color:#388bfd;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="card-title-icon" style="background:rgba(52,211,153,0.1);color:#34d399;"><i class="fa-solid fa-clock-rotate-left"></i></div>
                 <span class="card-title-text">Historial mensual</span>
             </div>
             <div id="stats-historial"></div>
@@ -457,24 +464,24 @@
             </div>
 
             <!-- Gasto mensual -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(248,113,113,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(251,113,133,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
                 <div class="card-title" style="margin-bottom:14px;">
-                    <div class="card-title-icon" style="background:rgba(248,113,113,0.12);color:#f87171;"><i class="fa-solid fa-chart-column"></i></div>
+                    <div class="card-title-icon" style="background:rgba(251,113,133,0.12);color:#fb7185;"><i class="fa-solid fa-chart-column"></i></div>
                     <span class="card-title-text">Gasto variable por mes</span>
                 </div>
                 <canvas id="chart-gastos-mes" style="width:100%;height:160px;display:block;"></canvas>
             </div>
 
             <!-- Ingresos vs Gastos -->
-            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(56,139,253,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(52,211,153,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
                     <div class="card-title" style="margin-bottom:0;">
-                        <div class="card-title-icon" style="background:rgba(56,139,253,0.12);color:#388bfd;"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <div class="card-title-icon" style="background:rgba(52,211,153,0.12);color:#34d399;"><i class="fa-solid fa-scale-balanced"></i></div>
                         <span class="card-title-text">Ingresos vs Gastos</span>
                     </div>
                     <div style="display:flex;gap:10px;">
                         <span style="font-size:0.7rem;color:var(--c-green);display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:var(--c-green);border-radius:50%;display:inline-block;"></span>Ingresos</span>
-                        <span style="font-size:0.7rem;color:#f87171;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#f87171;border-radius:50%;display:inline-block;"></span>Gastos</span>
+                        <span style="font-size:0.7rem;color:#fb7185;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#fb7185;border-radius:50%;display:inline-block;"></span>Gastos</span>
                     </div>
                 </div>
                 <canvas id="chart-ing-vs-gas" style="width:100%;height:160px;display:block;"></canvas>
@@ -498,21 +505,21 @@
 
 <!-- ── Modal selector de categoría ── -->
 <div id="modal-cat-sel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#161b22;border:0.5px solid #30363d;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;">
-        <div style="font-size:0.7rem;color:#7d8590;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Descontar de categoría</div>
-        <div id="modal-cat-titulo" style="font-size:0.95rem;font-weight:600;color:#e6edf3;margin-bottom:14px;"></div>
+    <div style="background:#161b22;border:0.5px solid #262d38;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;">
+        <div style="font-size:0.7rem;color:#7c8896;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Descontar de categoría</div>
+        <div id="modal-cat-titulo" style="font-size:0.95rem;font-weight:600;color:#eaf0f2;margin-bottom:14px;"></div>
         <div id="modal-cat-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:280px;overflow-y:auto;"></div>
-        <button onclick="cerrarModalCat()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #30363d;border-radius:10px;color:#7d8590;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
+        <button onclick="cerrarModalCat()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
     </div>
 </div>
 
 <!-- ── Modal confirmar eliminación ── -->
 <div id="modal-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#161b22;border:0.5px solid #30363d;border-radius:16px;padding:20px;width:88%;max-width:360px;">
-        <div id="modal-confirm-msg" style="font-size:0.88rem;color:#e6edf3;margin-bottom:16px;line-height:1.5;"></div>
+    <div style="background:#161b22;border:0.5px solid #262d38;border-radius:16px;padding:20px;width:88%;max-width:360px;">
+        <div id="modal-confirm-msg" style="font-size:0.88rem;color:#eaf0f2;margin-bottom:16px;line-height:1.5;"></div>
         <div style="display:flex;gap:10px;">
-            <button onclick="cerrarModalConfirm(false)" style="flex:1;padding:11px;background:transparent;border:0.5px solid #30363d;border-radius:10px;color:#7d8590;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
-            <button id="modal-confirm-ok" onclick="cerrarModalConfirm(true)" style="flex:1;padding:11px;background:#22c55e;border:none;border-radius:10px;color:#0d1117;font-size:0.85rem;font-weight:700;cursor:pointer;">Confirmar</button>
+            <button onclick="cerrarModalConfirm(false)" style="flex:1;padding:11px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancelar</button>
+            <button id="modal-confirm-ok" onclick="cerrarModalConfirm(true)" style="flex:1;padding:11px;background:#22c55e;border:none;border-radius:10px;color:#0c0f14;font-size:0.85rem;font-weight:700;cursor:pointer;">Confirmar</button>
         </div>
     </div>
 </div>
@@ -520,67 +527,67 @@
 
 <!-- ── Modal Escanear Recibo ── -->
 <div id="modal-recibo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;">
+    <div style="background:#161b22;border:0.5px solid #262d38;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="fa-solid fa-camera" style="color:#00d4ff;font-size:1rem;"></i>
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-camera" style="color:#2ee6a6;font-size:1rem;"></i>
             </div>
             <div>
-                <div style="font-size:0.95rem;font-weight:700;color:#f0f4f8;">Escanear recibo</div>
-                <div style="font-size:0.68rem;color:#8892b0;margin-top:1px;">Claude AI extrae comercio, monto y categoría</div>
+                <div style="font-size:0.95rem;font-weight:700;color:#eaf0f2;">Escanear recibo</div>
+                <div style="font-size:0.68rem;color:#7c8896;margin-top:1px;">Claude AI extrae comercio, monto y categoría</div>
             </div>
         </div>
-        <div style="height:0.5px;background:#1e2a47;margin-bottom:16px;"></div>
+        <div style="height:0.5px;background:#262d38;margin-bottom:16px;"></div>
 
         <!-- Área de imagen -->
         <div id="recibo-upload-area" onclick="document.getElementById('recibo-file-input').click()"
-            style="border:1.5px dashed #1e2a47;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:14px;transition:border-color 0.2s;">
+            style="border:1.5px dashed #262d38;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;margin-bottom:14px;transition:border-color 0.2s;">
             <input type="file" id="recibo-file-input" accept="image/*" capture="environment" style="display:none;" onchange="previsualizarRecibo(event)">
             <div id="recibo-placeholder">
-                <i class="fa-solid fa-camera" style="font-size:2rem;color:#8892b0;display:block;margin-bottom:10px;"></i>
-                <div style="font-size:0.85rem;font-weight:600;color:#f0f4f8;margin-bottom:4px;">Tomá una foto o elegí una imagen</div>
-                <div style="font-size:0.7rem;color:#8892b0;">Toca para abrir la cámara o la galería</div>
+                <i class="fa-solid fa-camera" style="font-size:2rem;color:#7c8896;display:block;margin-bottom:10px;"></i>
+                <div style="font-size:0.85rem;font-weight:600;color:#eaf0f2;margin-bottom:4px;">Tomá una foto o elegí una imagen</div>
+                <div style="font-size:0.7rem;color:#7c8896;">Toca para abrir la cámara o la galería</div>
             </div>
             <div id="recibo-preview-wrap" style="display:none;">
                 <img id="recibo-preview-img" style="max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;">
-                <div style="font-size:0.7rem;color:#8892b0;margin-top:8px;">Tocá para cambiar la imagen</div>
+                <div style="font-size:0.7rem;color:#7c8896;margin-top:8px;">Tocá para cambiar la imagen</div>
             </div>
         </div>
 
         <!-- Botón analizar -->
         <button id="recibo-analizar-btn" onclick="analizarRecibo()"
-            style="width:100%;padding:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.3);border-radius:10px;color:#00d4ff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.4;pointer-events:none;">
+            style="width:100%;padding:12px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.3);border-radius:10px;color:#2ee6a6;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.4;pointer-events:none;">
             <i class="fa-solid fa-wand-magic-sparkles"></i> Analizar con IA
         </button>
 
         <!-- Resultados (oculto hasta analizar) -->
         <div id="recibo-resultados" style="display:none;">
-            <div style="height:0.5px;background:#1e2a47;margin-bottom:14px;"></div>
-            <div style="font-size:0.7rem;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:10px;">Datos detectados — editá si hace falta</div>
+            <div style="height:0.5px;background:#262d38;margin-bottom:14px;"></div>
+            <div style="font-size:0.7rem;color:#7c8896;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:10px;">Datos detectados — editá si hace falta</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
                 <div>
-                    <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Comercio / Descripción</div>
+                    <div style="font-size:0.7rem;color:#7c8896;margin-bottom:4px;text-transform:uppercase;">Comercio / Descripción</div>
                     <input id="recibo-desc" class="input" style="font-size:0.83rem;padding:8px 10px;">
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Monto $</div>
+                    <div style="font-size:0.7rem;color:#7c8896;margin-bottom:4px;text-transform:uppercase;">Monto $</div>
                     <input id="recibo-monto" class="input" inputmode="numeric" style="font-size:0.83rem;padding:8px 10px;text-align:right;">
                 </div>
             </div>
             <div id="recibo-subcateg-wrap" style="display:none;margin-bottom:10px;">
-                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">Subcategoría detectada</div>
-                <span id="recibo-subcateg-chip" style="display:inline-block;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:600;color:#00d4ff;letter-spacing:0.3px;"></span>
+                <div style="font-size:0.7rem;color:#7c8896;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;">Subcategoría detectada</div>
+                <span id="recibo-subcateg-chip" style="display:inline-block;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.25);border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:600;color:#2ee6a6;letter-spacing:0.3px;"></span>
             </div>
             <div style="margin-bottom:18px;">
-                <div style="font-size:0.7rem;color:#8892b0;margin-bottom:4px;text-transform:uppercase;">Categoría de presupuesto</div>
+                <div style="font-size:0.7rem;color:#7c8896;margin-bottom:4px;text-transform:uppercase;">Categoría de presupuesto</div>
                 <select id="recibo-cat" class="select-modern" style="width:100%;font-size:0.83rem;padding:8px 10px;"></select>
             </div>
-            <button onclick="confirmarRecibo()" style="width:100%;padding:12px;background:var(--success);border:none;border-radius:10px;color:#0a0e27;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+            <button onclick="confirmarRecibo()" style="width:100%;padding:12px;background:var(--success);border:none;border-radius:10px;color:#0c0f14;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">
                 <i class="fa-solid fa-check"></i> Registrar gasto
             </button>
         </div>
 
-        <button onclick="cerrarEscanerRecibo()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">
+        <button onclick="cerrarEscanerRecibo()" style="width:100%;padding:11px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">
             Cancelar
         </button>
     </div>
@@ -658,11 +665,11 @@
         if (!el) return;
         const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
         const cfg = {
-            idle:    { color: '#8892b0', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#8892b0',  anim: '',                          text: 'Sin configurar' },
+            idle:    { color: '#7c8896', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#7c8896',  anim: '',                          text: 'Sin configurar' },
             syncing: { color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)',  dot: '#fbbf24',  anim: 'animation:pulse 1s infinite;', text: 'Sincronizando...' },
             ok:      { color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)',  dot: '#34d399',  anim: '',                          text: msg || ('Sincronizado · ' + now) },
-            error:   { color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.25)', dot: '#f87171',  anim: '',                          text: msg || 'Error de sync' },
-            offline: { color: '#8892b0', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#8892b0',  anim: '',                          text: 'Sin conexión' },
+            error:   { color: '#fb7185', bg: 'rgba(251,113,133,0.08)', border: 'rgba(251,113,133,0.25)', dot: '#fb7185',  anim: '',                          text: msg || 'Error de sync' },
+            offline: { color: '#7c8896', bg: 'rgba(136,146,176,0.08)', border: 'rgba(136,146,176,0.2)',  dot: '#7c8896',  anim: '',                          text: 'Sin conexión' },
         };
         const c = cfg[status] || cfg.idle;
         el.innerHTML = '<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:' + c.bg + ';border:0.5px solid ' + c.border + ';">'
@@ -926,7 +933,7 @@
         horasRow.style.display  = on ? 'none' : 'grid';
         knob.style.left         = on ? '23px' : '3px';
         knob.style.background   = on ? '#f59e0b' : '#475569';
-        slider.style.background = on ? 'rgba(245,158,11,0.15)' : '#1e2a47';
+        slider.style.background = on ? 'rgba(245,158,11,0.15)' : '#262d38';
         slider.style.borderColor= on ? 'rgba(245,158,11,0.4)' : '#334155';
     }
 
@@ -972,7 +979,7 @@
         const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Turno guardado!';
         btn.style.background = 'var(--success)';
-        btn.style.color = '#0a0e27';
+        btn.style.color = '#0c0f14';
         btn.disabled = true;
         setTimeout(() => {
             btn.innerHTML = originalHTML;
@@ -1143,7 +1150,7 @@
         _realizarAporte(m, val);
     }
     const DIST_CATS = [
-        { id: 'necesidades', nombre: 'Necesidades',  icon: '🛒', color: '#388bfd', pctSug: 50 },
+        { id: 'necesidades', nombre: 'Necesidades',  icon: '🛒', color: '#34d399', pctSug: 50 },
         { id: 'ocio',        nombre: 'Ocio/Gustitos', icon: '🎯', color: '#fbbf24', pctSug: 20 },
         { id: 'inversion',   nombre: 'Inversión',    icon: '📈', color: '#a5b4fc', pctSug: 20 },
         { id: 'ahorro',      nombre: 'Ahorro',       icon: '🏦', color: '#34d399', pctSug: 10 },
@@ -1225,7 +1232,7 @@
     // ── Cuentas (efectivo / banco / tarjeta / …) ──────────────────────────
     let dbCuentas = JSON.parse(localStorage.getItem('app_v2_cuentas')) || [
         { id: 'efectivo', nombre: 'Efectivo', icon: '💵', color: '#34d399' },
-        { id: 'banco',    nombre: 'Banco',    icon: '🏦', color: '#38bdf8' },
+        { id: 'banco',    nombre: 'Banco',    icon: '🏦', color: '#34d399' },
         { id: 'tarjeta',  nombre: 'Tarjeta',  icon: '💳', color: '#a78bfa' },
     ];
     const saveCuentas = () => { localStorage.setItem('app_v2_cuentas', JSON.stringify(dbCuentas)); schedulePush(); };
@@ -1464,9 +1471,9 @@
         if (res) {
             const totalMes = activas.reduce((s,c) => s+c.monto, 0);
             res.innerHTML = activas.length > 0
-                ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(56,139,253,0.07);border:0.5px solid rgba(56,139,253,0.2);border-radius:12px;padding:10px 14px;">'
+                ? '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(52,211,153,0.07);border:0.5px solid rgba(52,211,153,0.2);border-radius:12px;padding:10px 14px;">'
                   + '<div><div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Proximo pago mensual</div>'
-                  + '<div style="font-size:0.95rem;font-weight:700;color:#79c0ff;">' + fmt(totalMes) + '</div></div>'
+                  + '<div style="font-size:0.95rem;font-weight:700;color:#34d399;">' + fmt(totalMes) + '</div></div>'
                   + '<div style="text-align:right;"><div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px;">Cuotas activas</div>'
                   + '<div style="font-size:0.95rem;font-weight:700;color:var(--text-main);">' + activas.length + '</div></div>'
                   + '</div>' : '';
@@ -1482,11 +1489,11 @@
             let burbujas = '';
             for (let i = 0; i < c.total; i++) {
                 const done = i < c.pagadas;
-                burbujas += '<div style="width:20px;height:20px;border-radius:50%;background:' + (done?'#1f6feb':'#21262d') + ';border:1.5px solid ' + (done?'#388bfd':'#30363d') + ';display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:' + (done?'#e6edf3':'#7d8590') + ';">' + (done?'✓':(i+1)) + '</div>';
+                burbujas += '<div style="width:20px;height:20px;border-radius:50%;background:' + (done?'#10b981':'#262d38') + ';border:1.5px solid ' + (done?'#34d399':'#262d38') + ';display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:' + (done?'#eaf0f2':'#7c8896') + ';">' + (done?'✓':(i+1)) + '</div>';
             }
             let histHtml = '';
             if (c.historial && c.historial.length > 0) {
-                histHtml = '<div style="margin-bottom:10px;border-top:0.5px solid #21262d;padding-top:8px;">'
+                histHtml = '<div style="margin-bottom:10px;border-top:0.5px solid #262d38;padding-top:8px;">'
                     + c.historial.map(h => '<div style="display:flex;justify-content:space-between;font-size:0.7rem;padding:2px 0;">'
                         + '<span style="color:var(--text-muted);">Cuota ' + h.num + ' · ' + h.catDesc + '</span>'
                         + '<span style="color:#34d399;">' + fmt(h.monto) + ' · ' + h.fecha.split('-').reverse().join('/') + '</span>'
@@ -1500,16 +1507,16 @@
                 +   '<button onclick="eliminarCuotaItem(' + c.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:2px;">✕</button>'
                 + '</div>'
                 + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
-                +   '<span style="font-size:0.68rem;color:var(--text-muted);"><span style="color:#388bfd;font-weight:700;">' + c.pagadas + '</span> pagadas de ' + c.total + '</span>'
-                +   '<span style="font-size:0.68rem;color:#f87171;font-weight:700;">' + rest + ' restantes</span>'
+                +   '<span style="font-size:0.68rem;color:var(--text-muted);"><span style="color:#34d399;font-weight:700;">' + c.pagadas + '</span> pagadas de ' + c.total + '</span>'
+                +   '<span style="font-size:0.68rem;color:#fb7185;font-weight:700;">' + rest + ' restantes</span>'
                 + '</div>'
-                + '<div style="background:#21262d;border-radius:6px;height:5px;overflow:hidden;margin-bottom:10px;">'
-                +   '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#1f6feb,#388bfd);border-radius:6px;"></div>'
+                + '<div style="background:#262d38;border-radius:6px;height:5px;overflow:hidden;margin-bottom:10px;">'
+                +   '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:6px;"></div>'
                 + '</div>'
                 + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:' + (histHtml?'0':'10px') + ';">' + burbujas + '</div>'
                 + histHtml
                 + '<div style="display:flex;gap:8px;">'
-                +   '<button onclick="pagarCuota(' + c.id + ')" style="flex:1;padding:9px;background:#1f2d3d;border:0.5px solid #1f6feb;border-radius:9px;color:#388bfd;font-size:0.82rem;font-weight:600;cursor:pointer;">✓ Pagar cuota ' + (c.pagadas+1) + '</button>'
+                +   '<button onclick="pagarCuota(' + c.id + ')" style="flex:1;padding:9px;background:#1f2d3d;border:0.5px solid #10b981;border-radius:9px;color:#34d399;font-size:0.82rem;font-weight:600;cursor:pointer;">✓ Pagar cuota ' + (c.pagadas+1) + '</button>'
                 +   (c.pagadas > 0 ? '<button onclick="deshacerCuota(' + c.id + ')" style="padding:9px 12px;background:transparent;border:0.5px solid var(--border);border-radius:9px;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">↩</button>' : '')
                 + '</div>'
                 + '</div>';
@@ -1551,7 +1558,7 @@
                 + '</div>'
                 + '<div style="text-align:right;flex-shrink:0;">'
                 +   '<div style="font-size:0.82rem;font-weight:700;color:#34d399;">+' + fmt(ap.monto) + '</div>'
-                +   '<button onclick="revertirAporte(' + ap.id + ')" style="font-size:0.6rem;color:#f87171;background:none;border:none;cursor:pointer;">↩ revertir</button>'
+                +   '<button onclick="revertirAporte(' + ap.id + ')" style="font-size:0.6rem;color:#fb7185;background:none;border:none;cursor:pointer;">↩ revertir</button>'
                 + '</div>'
                 + '</div>';
         }).join('')
@@ -1742,9 +1749,9 @@
         let border = 'rgba(251,191,36,0.22)';
         if (disponible <= 0 || gastoPct >= 95) {
             label = 'En riesgo';
-            color = '#f87171';
-            bg = 'rgba(248,113,113,0.07)';
-            border = 'rgba(248,113,113,0.24)';
+            color = '#fb7185';
+            bg = 'rgba(251,113,133,0.07)';
+            border = 'rgba(251,113,133,0.24)';
         } else if (librePct >= 18 && ahorroInvPct >= 25) {
             label = 'Sana';
             color = '#34d399';
@@ -1901,9 +1908,9 @@
             const pctGast  = monto > 0 ? Math.min(100, Math.round((gastado / monto) * 100)) : (gastado > 0 ? 100 : 0);
             const superado = gastado > monto;
             const usoAlto  = !superado && pctGast >= 80;
-            const cardBg   = superado ? 'rgba(248,113,113,0.055)' : (usoAlto ? 'rgba(251,191,36,0.045)' : 'var(--bg-input)');
-            const cardBor  = superado ? 'rgba(248,113,113,0.44)' : (usoAlto ? 'rgba(251,191,36,0.32)' : 'var(--border)');
-            const barColor = superado ? '#f87171' : (usoAlto ? '#fbbf24' : c.color);
+            const cardBg   = superado ? 'rgba(251,113,133,0.055)' : (usoAlto ? 'rgba(251,191,36,0.045)' : 'var(--bg-input)');
+            const cardBor  = superado ? 'rgba(251,113,133,0.44)' : (usoAlto ? 'rgba(251,191,36,0.32)' : 'var(--border)');
+            const barColor = superado ? '#fb7185' : (usoAlto ? '#fbbf24' : c.color);
             const metaVinc = distVinculos[c.id] ? dbMetas.find(m => m.id === distVinculos[c.id]) : null;
             const libreCat = Math.max(0, monto - gastado);
             const faltanteMeta = metaVinc ? Math.max(0, (metaVinc.monto || 0) - (metaVinc.ahorrado || 0)) : 0;
@@ -1919,7 +1926,7 @@
                 +     '<button class="dist-up" data-id="' + c.id + '" title="Subir" ' + (idx===0?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===0?'0.25':'1') + ';">^</button>'
                 +     '<button class="dist-down" data-id="' + c.id + '" title="Bajar" ' + (idx===ACTIVE.length-1?'disabled':'') + ' style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 1px;opacity:' + (idx===ACTIVE.length-1?'0.25':'1') + ';">v</button>'
                 +     '<button class="dist-rename" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--text-muted);padding:0 2px;">✏️</button>'
-                +     '<button class="dist-delete" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#f87171;padding:0 2px;">✕</button>'
+                +     '<button class="dist-delete" data-id="' + c.id + '" style="background:none;border:none;cursor:pointer;font-size:0.7rem;color:#fb7185;padding:0 2px;">✕</button>'
                 +   '</div>'
                 +   '<div style="display:flex;align-items:center;gap:6px;">'
                 +     '<span class="cat-monto" style="font-size:1rem;font-weight:700;color:' + c.color + ';">' + fmt(libreCat) + '</span>'
@@ -1928,11 +1935,11 @@
                 + '</div>'
                 // Input: monto fijo o slider
                 + (esMonto
-                    ? '<input class="dist-monto-input" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="text" inputmode="numeric" value="' + (distMontos[c.id]||0) + '" style="width:100%;background:#0d1117;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;margin-bottom:8px;outline:none;-moz-appearance:textfield;">'
+                    ? '<input class="dist-monto-input" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="text" inputmode="numeric" value="' + (distMontos[c.id]||0) + '" style="width:100%;background:#0c0f14;color:var(--text-main);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;margin-bottom:8px;outline:none;-moz-appearance:textfield;">'
                     : '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">'
-                    +   '<button class="dist-minus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>'
+                    +   '<button class="dist-minus" data-id="' + c.id + '" style="background:#0c0f14;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>'
                     +   '<input class="dist-range" data-id="' + c.id + '" data-disp="' + Math.round(disponible) + '" data-gastado="' + gastado + '" type="range" min="0" max="100" step="5" value="' + pct + '" style="flex:1;accent-color:' + c.color + ';height:5px;cursor:pointer;">'
-                    +   '<button class="dist-plus" data-id="' + c.id + '" style="background:#0d1117;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>'
+                    +   '<button class="dist-plus" data-id="' + c.id + '" style="background:#0c0f14;border:0.5px solid var(--border);border-radius:7px;width:28px;height:28px;min-width:28px;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>'
                     +   '<span class="pct-label" style="font-size:0.82rem;font-weight:700;color:' + c.color + ';min-width:34px;text-align:right;">' + pct + '%</span>'
                     + '</div>'
                 )
@@ -1941,16 +1948,16 @@
                     ? '<div style="margin-bottom:8px;">'
                     +   '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'
                     +     '<span style="font-size:0.7rem;color:var(--text-muted);">Gastado: ' + fmt(gastado) + '</span>'
-                    +     (superado ? '<span style="font-size:0.7rem;color:#f87171;font-weight:700;">Superado</span>' : (usoAlto ? '<span style="font-size:0.7rem;color:#fbbf24;font-weight:700;">' + pctGast + '% usado</span>' : '<span style="font-size:0.7rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>'))
+                    +     (superado ? '<span style="font-size:0.7rem;color:#fb7185;font-weight:700;">Superado</span>' : (usoAlto ? '<span style="font-size:0.7rem;color:#fbbf24;font-weight:700;">' + pctGast + '% usado</span>' : '<span style="font-size:0.7rem;color:var(--text-muted);">' + fmt(libreCat) + ' libre</span>'))
                     +   '</div>'
-                    +   '<div style="background:#21262d;border-radius:6px;height:5px;">'
+                    +   '<div style="background:#262d38;border-radius:6px;height:5px;">'
                     +     '<div style="width:' + pctGast + '%;height:5px;border-radius:6px;background:' + barColor + ';transition:width 0.4s;"></div>'
                     +   '</div>'
                     + '</div>'
                     : ''
                 )
                 // Vincular a meta
-                + (metasOpt ? '<select class="dist-meta-sel" data-id="' + c.id + '" style="width:100%;background:#0d1117;color:var(--text-muted);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.72rem;outline:none;margin-bottom:' + (metaVinc?'4':'0') + 'px;">'
+                + (metasOpt ? '<select class="dist-meta-sel" data-id="' + c.id + '" style="width:100%;background:#0c0f14;color:var(--text-muted);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.72rem;outline:none;margin-bottom:' + (metaVinc?'4':'0') + 'px;">'
                 +   '<option value="">↳ Destinar a meta...</option>' + metasOpt
                 + '</select>' : '')
                 + (metaVinc && aportePosible > 0
@@ -1967,8 +1974,8 @@
                             '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">'
                             + '<span style="font-size:0.72rem;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (g.desc||'Gasto') + '</span>'
                             + '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
-                            + '<span style="font-size:0.75rem;font-weight:600;color:#f87171;">-' + fmt(g.monto) + '</span>'
-                            + '<button class="elim-gvar" data-mes="' + mes2 + '" data-gid="' + g.id + '" style="background:none;border:none;color:#7d8590;cursor:pointer;font-size:0.72rem;padding:0 2px;">✕</button>'
+                            + '<span style="font-size:0.75rem;font-weight:600;color:#fb7185;">-' + fmt(g.monto) + '</span>'
+                            + '<button class="elim-gvar" data-mes="' + mes2 + '" data-gid="' + g.id + '" style="background:none;border:none;color:#7c8896;cursor:pointer;font-size:0.72rem;padding:0 2px;">✕</button>'
                             + '</div>'
                             + '</div>'
                         ).join('')
@@ -2053,7 +2060,7 @@
                     ? '<div style="flex:' + pct + ';background:' + c.color + ';height:100%;transition:flex 0.3s;" title="' + c.nombre + ' ' + pct + '%"></div>'
                     : '';
             }).join('') + (sobrante > 0 && totalPct < 100
-                ? '<div style="flex:' + (100-totalPct) + ';background:#21262d;height:100%;"></div>'
+                ? '<div style="flex:' + (100-totalPct) + ';background:#262d38;height:100%;"></div>'
                 : '');
         }
 
@@ -2066,12 +2073,12 @@
         if (distAsignadoEl) distAsignadoEl.innerText = fmt(totalAsignado);
         if (distSinAsignarEl) {
             distSinAsignarEl.innerText = excedido > 0 ? '-' + fmt(excedido) : fmt(sobrante);
-            distSinAsignarEl.style.color = excedido > 0 ? '#f87171' : (sobrante > 0 ? '#f87171' : '#34d399');
+            distSinAsignarEl.style.color = excedido > 0 ? '#fb7185' : (sobrante > 0 ? '#fb7185' : '#34d399');
         }
         if (distEstadoLabel) distEstadoLabel.innerText = excedido > 0 ? 'Excedido' : 'Sin asignar';
         if (distEstadoCard) {
-            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(248,113,113,0.55)' : 'var(--border)';
-            distEstadoCard.style.background = excedido > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.025)';
+            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(251,113,133,0.55)' : 'var(--border)';
+            distEstadoCard.style.background = excedido > 0 ? 'rgba(251,113,133,0.08)' : 'rgba(255,255,255,0.025)';
         }
         if (restEl)  restEl.innerText  = fmt(sobrante);
         if (restRow) restRow.style.display = sobrante > 0 ? 'flex' : 'none';
@@ -2091,12 +2098,12 @@
         if (distAsignadoEl) distAsignadoEl.innerText = fmt(totalAsignado);
         if (distSinAsignarEl) {
             distSinAsignarEl.innerText = excedido > 0 ? '-' + fmt(excedido) : fmt(sobrante);
-            distSinAsignarEl.style.color = excedido > 0 ? '#f87171' : (sobrante > 0 ? '#f87171' : '#34d399');
+            distSinAsignarEl.style.color = excedido > 0 ? '#fb7185' : (sobrante > 0 ? '#fb7185' : '#34d399');
         }
         if (distEstadoLabel) distEstadoLabel.innerText = excedido > 0 ? 'Excedido' : 'Sin asignar';
         if (distEstadoCard) {
-            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(248,113,113,0.55)' : 'var(--border)';
-            distEstadoCard.style.background = excedido > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.025)';
+            distEstadoCard.style.borderColor = excedido > 0 ? 'rgba(251,113,133,0.55)' : 'var(--border)';
+            distEstadoCard.style.background = excedido > 0 ? 'rgba(251,113,133,0.08)' : 'rgba(255,255,255,0.025)';
         }
         if (restEl) restEl.innerText = fmt(sobrante);
         if (restRow) restRow.style.display = sobrante > 0 ? 'flex' : 'none';
@@ -2152,6 +2159,9 @@
             if (panel) panel.style.display = (t === v) ? 'block' : 'none';
             if (btn)   btn.classList.toggle('on', t === v);
         });
+        // Estad. y Cuentas viven como íconos en el header
+        document.getElementById('fh-estad')?.classList.toggle('on', v === 'mensual');
+        document.getElementById('fh-cuentas')?.classList.toggle('on', v === 'cuentas');
         actualizarFinHeader();
         renderFinanzas();
     }
@@ -2205,7 +2215,7 @@
         const bEl = document.getElementById('fin-sum-bal');
         if (iEl) iEl.innerText = fmt(ing);
         if (gEl) gEl.innerText = fmt(gas);
-        if (bEl) { const b = ing - gas; bEl.innerText = fmt(b); bEl.style.color = b >= 0 ? 'var(--text-main)' : '#f87171'; }
+        if (bEl) { const b = ing - gas; bEl.innerText = fmt(b); bEl.style.color = b >= 0 ? 'var(--text-main)' : '#fb7185'; }
     }
 
     // Vista Mensual: lista de los 12 períodos del año; el seleccionado se expande a semanas
@@ -2218,8 +2228,8 @@
 
         const filaMonto = (ing, gas) => `
             <div style="text-align:right;">
-                <div style="font-size:0.82rem;font-weight:700;color:#38bdf8;">${ing ? fmt(ing) : '$ 0'}</div>
-                <div style="font-size:0.82rem;font-weight:700;color:#f87171;">${gas ? fmt(gas) : '$ 0'}</div>
+                <div style="font-size:0.82rem;font-weight:700;color:#34d399;">${ing ? fmt(ing) : '$ 0'}</div>
+                <div style="font-size:0.82rem;font-weight:700;color:#fb7185;">${gas ? fmt(gas) : '$ 0'}</div>
             </div>`;
 
         let html = '';
@@ -2232,7 +2242,7 @@
             const label = MESES_ABR[start.getMonth()];
             const abierto = key === _anualExpandido;
             html += `
-            <div onclick="toggleAnualMes('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${abierto ? 'rgba(56,189,248,0.05)' : 'transparent'};">
+            <div onclick="toggleAnualMes('${key}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;background:${abierto ? 'rgba(52,211,153,0.05)' : 'transparent'};">
                 <div>
                     <div style="font-size:0.92rem;font-weight:700;color:var(--text-main);">${label}</div>
                     <div style="font-size:0.66rem;color:var(--text-muted);margin-top:1px;">${rango}</div>
@@ -2266,10 +2276,10 @@
             const esActual = hoy >= wStart && hoy < wEnd;
             const bal = ing - gas;
             out += `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px 11px 24px;border-bottom:0.5px solid var(--border);background:${esActual ? 'rgba(248,113,113,0.09)' : 'var(--bg-input)'};">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px 11px 24px;border-bottom:0.5px solid var(--border);background:${esActual ? 'rgba(251,113,133,0.09)' : 'var(--bg-input)'};">
                 <span style="font-size:0.8rem;color:var(--text-muted);">${rango}</span>
                 <div style="text-align:right;">
-                    <div><span style="font-size:0.78rem;font-weight:700;color:#38bdf8;">${ing ? fmt(ing) : '$ 0'}</span> &nbsp; <span style="font-size:0.78rem;font-weight:700;color:#f87171;">${gas ? fmt(gas) : '$ 0'}</span></div>
+                    <div><span style="font-size:0.78rem;font-weight:700;color:#34d399;">${ing ? fmt(ing) : '$ 0'}</span> &nbsp; <span style="font-size:0.78rem;font-weight:700;color:#fb7185;">${gas ? fmt(gas) : '$ 0'}</span></div>
                     ${(ing || gas) ? `<div style="font-size:0.66rem;color:var(--text-muted);margin-top:1px;">Balance ${fmt(bal)}</div>` : ''}
                 </div>
             </div>`;
@@ -2308,7 +2318,7 @@
         const bEl = document.getElementById('fin-sum-bal');
         if (iEl) iEl.innerText = fmt(ing);
         if (gEl) gEl.innerText = fmt(gas);
-        if (bEl) { const bal = ing - gas; bEl.innerText = fmt(bal); bEl.style.color = bal >= 0 ? 'var(--text-main)' : '#f87171'; }
+        if (bEl) { const bal = ing - gas; bEl.innerText = fmt(bal); bEl.style.color = bal >= 0 ? 'var(--text-main)' : '#fb7185'; }
     }
 
     // Fila de movimiento estilo Money Manager (categoría · descripción · cuenta · monto)
@@ -2330,7 +2340,7 @@
             icono     = SECCION_ICONS[seccion] || (esIng ? '💰' : '➕');
             cuentaTxt = cuenta ? `<span style="font-size:0.66rem;color:var(--text-muted);">· ${cuenta.icon || ''} ${cuenta.nombre}</span>` : '';
             desc      = g.desc || (g.subcategoria && g.subcategoria.includes(' › ') ? g.subcategoria.split(' › ')[1] : seccion);
-            color     = esIng ? '#38bdf8' : '#f87171';
+            color     = esIng ? '#34d399' : '#fb7185';
             signo     = esIng ? '' : '-';
         }
         return `<div onclick="abrirDetalleTrans('${g.id}','${mes}')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid rgba(30,42,71,0.55);cursor:pointer;">
@@ -2377,8 +2387,8 @@
                 cab = `<span style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">Sin fecha</span>`;
             }
             const totales = `<div style="display:flex;gap:12px;align-items:center;">
-                ${ingD ? `<span style="font-size:0.78rem;font-weight:700;color:#38bdf8;">${fmt(ingD)}</span>` : ''}
-                ${gasD ? `<span style="font-size:0.78rem;font-weight:700;color:#f87171;">-${fmt(gasD)}</span>` : ''}
+                ${ingD ? `<span style="font-size:0.78rem;font-weight:700;color:#34d399;">${fmt(ingD)}</span>` : ''}
+                ${gasD ? `<span style="font-size:0.78rem;font-weight:700;color:#fb7185;">-${fmt(gasD)}</span>` : ''}
             </div>`;
             const filas = arr.slice().reverse().map(g => transRowDiario(g, mes)).join('');
             return `<div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:4px 14px 2px;margin-bottom:10px;">
@@ -2415,8 +2425,8 @@
         const tabI = document.getElementById('fstat-tab-ingreso');
         const tabG = document.getElementById('fstat-tab-gasto');
         const esGasto = _finStatTipo === 'gasto';
-        if (tabI) { tabI.style.borderBottom = esGasto ? '2px solid var(--border)' : '2px solid #38bdf8'; tabI.style.color = esGasto ? 'var(--text-muted)' : 'var(--text-main)'; }
-        if (tabG) { tabG.style.borderBottom = esGasto ? '2px solid #f87171' : '2px solid var(--border)'; tabG.style.color = esGasto ? 'var(--text-main)' : 'var(--text-muted)'; }
+        if (tabI) { tabI.style.borderBottom = esGasto ? '2px solid var(--border)' : '2px solid #34d399'; tabI.style.color = esGasto ? 'var(--text-muted)' : 'var(--text-main)'; }
+        if (tabG) { tabG.style.borderBottom = esGasto ? '2px solid #fb7185' : '2px solid var(--border)'; tabG.style.color = esGasto ? 'var(--text-main)' : 'var(--text-muted)'; }
 
         const trans = arr.filter(g => esGasto ? (g.tipo !== 'ingreso' && g.tipo !== 'transfer') : g.tipo === 'ingreso');
         const tot = {};
@@ -2424,8 +2434,8 @@
         const sorted = Object.entries(tot).sort((a, b) => b[1] - a[1]).filter(([, v]) => v > 0);
         const total  = sorted.reduce((s, [, v]) => s + v, 0);
         const COLORS = esGasto
-            ? ['#f87171','#fb923c','#fbbf24','#f472b6','#a78bfa','#60a5fa','#34d399','#38bdf8','#facc15','#4ade80','#e879f9','#818cf8']
-            : ['#38bdf8','#34d399','#60a5fa','#4ade80','#a78bfa','#fbbf24','#f472b6','#fb923c','#facc15','#e879f9','#818cf8','#f87171'];
+            ? ['#fb7185','#fb923c','#fbbf24','#f472b6','#a78bfa','#60a5fa','#34d399','#34d399','#facc15','#4ade80','#e879f9','#818cf8']
+            : ['#34d399','#34d399','#60a5fa','#4ade80','#a78bfa','#fbbf24','#f472b6','#fb923c','#facc15','#e879f9','#818cf8','#fb7185'];
 
         if (sorted.length === 0) {
             cv.style.display = 'none';
@@ -2466,10 +2476,10 @@
                 const ly = cy + sin * (r + 14);
                 cp.textAlign = cos > 0.3 ? 'left' : cos < -0.3 ? 'right' : 'center';
                 cp.textBaseline = 'middle';
-                cp.fillStyle = '#f0f4f8';
+                cp.fillStyle = '#eaf0f2';
                 cp.font = 'bold 11px Inter, sans-serif';
                 cp.fillText(`${SECCION_ICONS[sec] || ''} ${sec}`, lx, ly - 7);
-                cp.fillStyle = '#8892b0';
+                cp.fillStyle = '#7c8896';
                 cp.font = '10px Inter, sans-serif';
                 cp.fillText((frac * 100).toFixed(1) + ' %', lx, ly + 7);
             }
@@ -2481,7 +2491,7 @@
             const pct   = Math.round(m / total * 100);
             const color = COLORS[i % COLORS.length];
             return `<div style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--border);">
-                <span style="background:${color};color:#0a0e27;font-size:0.68rem;font-weight:800;border-radius:6px;padding:3px 7px;min-width:40px;text-align:center;flex-shrink:0;">${pct}%</span>
+                <span style="background:${color};color:#0c0f14;font-size:0.68rem;font-weight:800;border-radius:6px;padding:3px 7px;min-width:40px;text-align:center;flex-shrink:0;">${pct}%</span>
                 <span style="flex:1;font-size:0.86rem;font-weight:600;color:var(--text-main);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${SECCION_ICONS[s] || '➕'} ${s}</span>
                 <span style="font-size:0.86rem;font-weight:700;color:var(--text-main);flex-shrink:0;">${fmt(m)}</span>
             </div>`;
@@ -2522,7 +2532,7 @@
             <div style="padding:12px 0;border-bottom:0.5px solid var(--border);">
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:${esTotal ? '24px' : '6px'};">
                     <span style="font-size:0.85rem;font-weight:${esTotal ? '700' : '600'};color:var(--text-main);">${icono} ${nombre}</span>
-                    <span style="font-size:0.82rem;font-weight:700;color:${gastado > limite ? '#f87171' : 'var(--text-main)'};">${limite > 0 ? Math.round(gastado / limite * 100) : 0}%</span>
+                    <span style="font-size:0.82rem;font-weight:700;color:${gastado > limite ? '#fb7185' : 'var(--text-main)'};">${limite > 0 ? Math.round(gastado / limite * 100) : 0}%</span>
                 </div>
                 <div style="position:relative;background:var(--bg-input);border-radius:4px;height:16px;margin-bottom:6px;">
                     ${esTotal ? `<div style="position:absolute;top:-21px;left:${(fracHoy * 100).toFixed(1)}%;transform:translateX(-50%);background:var(--bg-input);border:0.5px solid var(--border);border-radius:10px;padding:1px 8px;font-size:0.6rem;color:var(--text-main);">Hoy</div>` : ''}
@@ -2532,7 +2542,7 @@
                 <div style="display:flex;justify-content:space-between;">
                     <span style="font-size:0.78rem;color:var(--text-muted);">${fmt(limite)}</span>
                     <span style="font-size:0.78rem;font-weight:700;color:#60a5fa;">${fmt(gastado)}</span>
-                    <span style="font-size:0.78rem;font-weight:700;color:${restante < 0 ? '#f87171' : 'var(--text-main)'};">${fmt(restante)}</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:${restante < 0 ? '#fb7185' : 'var(--text-main)'};">${fmt(restante)}</span>
                 </div>
             </div>`;
         };
@@ -2559,7 +2569,7 @@
         cont.innerHTML = `
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                    <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);"><i class="fa-solid fa-pen-to-square" style="color:#f87171;margin-right:6px;"></i>Presupuesto</span>
+                    <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);"><i class="fa-solid fa-pen-to-square" style="color:#fb7185;margin-right:6px;"></i>Presupuesto</span>
                     <button onclick="abrirAjustesPresup()" style="background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text-muted);font-size:0.72rem;font-weight:600;cursor:pointer;font-family:inherit;">Ajustes de presupuestos ›</button>
                 </div>
                 ${presup.length === 0
@@ -2598,7 +2608,7 @@
                     <span style="font-size:0.95rem;font-weight:700;color:var(--text-main);">Ajustes de presupuestos</span>
                 </div>
                 <div style="display:flex;gap:10px;align-items:flex-start;background:var(--bg-input);border-radius:12px;padding:10px 12px;margin-bottom:14px;">
-                    <i class="fa-solid fa-pen-to-square" style="color:#f87171;margin-top:2px;"></i>
+                    <i class="fa-solid fa-pen-to-square" style="color:#fb7185;margin-top:2px;"></i>
                     <span style="font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Los presupuestos que agregues acá aparecen en la vista <strong style="color:var(--text-main);">Total</strong> con su barra de progreso del mes.</span>
                 </div>
                 ${presup.length ? presup.map(([c, v]) => `
@@ -2619,7 +2629,7 @@
                         <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:var(--text-muted);">Dinero inicial</span>
                         <input id="presup-monto" inputmode="numeric" placeholder="$ 0" value="${_presupEdit ? (dbLimitesCat[_presupEdit] || '') : ''}" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid var(--border);color:var(--text-main);padding:9px 2px;font-size:0.9rem;font-weight:700;outline:none;font-family:inherit;">
                     </div>
-                    <button onclick="guardarPresup()" style="width:100%;padding:13px;background:#f87171;border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
+                    <button onclick="guardarPresup()" style="width:100%;padding:13px;background:#fb7185;border:none;border-radius:12px;color:#0c0f14;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
                 </div>
             </div>`;
     }
@@ -2763,10 +2773,10 @@
             <div style="font-size:0.66rem;color:var(--text-muted);margin-bottom:2px;">extractos</div>
             <div style="font-size:0.95rem;font-weight:700;color:var(--text-main);margin-bottom:12px;">${fCorto(start)} ~ ${fCorto(endIncl)}</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--bg-input);border-radius:10px;padding:9px 0;">
-                ${cell('Depósito', dep, dep > 0 ? '#38bdf8' : 'var(--text-muted)')}
-                ${cell('Retiro',   ret, ret > 0 ? '#f87171' : 'var(--text-muted)')}
+                ${cell('Depósito', dep, dep > 0 ? '#34d399' : 'var(--text-muted)')}
+                ${cell('Retiro',   ret, ret > 0 ? '#fb7185' : 'var(--text-muted)')}
                 ${cell('Balance',  dep - ret, 'var(--text-main)')}
-                ${cell('Saldo',    saldo, saldo > 0 ? '#38bdf8' : saldo < 0 ? '#f87171' : 'var(--text-muted)')}
+                ${cell('Saldo',    saldo, saldo > 0 ? '#34d399' : saldo < 0 ? '#fb7185' : 'var(--text-muted)')}
             </div>
             ${lista}`;
     }
@@ -2784,7 +2794,7 @@
         const deuda   = grupos.tarjeta.reduce((s, c) => s + Math.max(0, -saldos[c.id]), 0);
         const balance = capital - deuda;
 
-        const money = (v) => `<span style="font-weight:700;font-size:0.85rem;color:${v > 0 ? '#38bdf8' : v < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(v)}</span>`;
+        const money = (v) => `<span style="font-weight:700;font-size:0.85rem;color:${v > 0 ? '#34d399' : v < 0 ? '#fb7185' : 'var(--text-muted)'};">${fmt(v)}</span>`;
 
         const filaCuenta = (c) => `
             <div onclick="abrirDetalleCuenta('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;">
@@ -2805,7 +2815,7 @@
             <div onclick="abrirDetalleCuenta('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;">
                 <span style="font-size:0.85rem;color:var(--text-main);">${c.nombre} ${c.icon || ''}</span>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-weight:700;font-size:0.85rem;color:${saldos[c.id] < 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(Math.max(0, -saldos[c.id]))}</span>
+                    <span style="font-weight:700;font-size:0.85rem;color:${saldos[c.id] < 0 ? '#fb7185' : 'var(--text-muted)'};">${fmt(Math.max(0, -saldos[c.id]))}</span>
                     <span onclick="event.stopPropagation();eliminarCuenta('${c.id}')" style="color:var(--text-muted);cursor:pointer;font-size:0.72rem;opacity:0.5;padding:4px;">✕</span>
                 </div>
             </div>`;
@@ -2818,7 +2828,7 @@
                 </div>
                 <div style="text-align:center;padding:0 6px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
                     <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">A deber</div>
-                    <span style="font-weight:700;font-size:0.85rem;color:${deuda > 0 ? '#f87171' : 'var(--text-muted)'};">${fmt(deuda)}</span>
+                    <span style="font-weight:700;font-size:0.85rem;color:${deuda > 0 ? '#fb7185' : 'var(--text-muted)'};">${fmt(deuda)}</span>
                 </div>
                 <div style="text-align:center;padding:0 6px;">
                     <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Balance</div>
@@ -2841,7 +2851,7 @@
         const icon = (prompt('Emoji para la cuenta (opcional):', '💳') || '💳').trim() || '💳';
         const t = (prompt('Tipo de cuenta:\n1 = Efectivo\n2 = Cuenta (banco / billetera)\n3 = Tarjeta de crédito', '2') || '2').trim();
         const grupo = t === '1' ? 'efectivo' : t === '3' ? 'tarjeta' : 'cuentas';
-        dbCuentas.push({ id: 'c' + Date.now(), nombre: nombre.trim(), icon, grupo, color: '#38bdf8' });
+        dbCuentas.push({ id: 'c' + Date.now(), nombre: nombre.trim(), icon, grupo, color: '#34d399' });
         saveCuentas();
         renderCuentas();
     }
@@ -2940,9 +2950,9 @@
             _panelCatSel  = null;
         }
         const estilos = {
-            ingreso:  { id: 'trans-pill-ingreso',  color: '#38bdf8', bg: 'rgba(56,189,248,0.18)' },
-            gasto:    { id: 'trans-pill-gasto',    color: '#f87171', bg: 'rgba(248,113,113,0.18)' },
-            transfer: { id: 'trans-pill-transfer', color: '#e6edf3', bg: 'rgba(230,237,243,0.14)' },
+            ingreso:  { id: 'trans-pill-ingreso',  color: '#34d399', bg: 'rgba(52,211,153,0.18)' },
+            gasto:    { id: 'trans-pill-gasto',    color: '#fb7185', bg: 'rgba(251,113,133,0.18)' },
+            transfer: { id: 'trans-pill-transfer', color: '#eaf0f2', bg: 'rgba(230,237,243,0.14)' },
         };
         Object.entries(estilos).forEach(([t, e]) => {
             const b = document.getElementById(e.id);
@@ -3015,14 +3025,14 @@
                 const subcats = _transTipo === 'gasto' ? getSubcats(s) : [];
                 const on = s === _panelCatSel;
                 const der = _transCatEditing
-                    ? `<span onclick="event.stopPropagation();eliminarCatTrans('${esc}')" style="color:#f87171;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>`
+                    ? `<span onclick="event.stopPropagation();eliminarCatTrans('${esc}')" style="color:#fb7185;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>`
                     : (subcats.length ? '<span style="color:var(--text-muted);font-size:0.75rem;">›</span>' : '');
                 return `<button onclick="panelSelCat('${esc}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 10px;background:${on ? 'var(--bg-input)' : 'transparent'};border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;text-align:left;">
                     <span style="font-size:0.84rem;color:var(--text-main);">${icon} ${s}</span>${der}
                 </button>`;
             }).join('') + (_transCatEditing ? `<div style="display:flex;gap:6px;padding:10px 8px;">
                 <input id="cat-new-inp" placeholder="Nueva…" maxlength="20" onkeydown="if(event.key==='Enter')agregarCatTrans()" style="flex:1;min-width:0;padding:6px 10px;border-radius:8px;background:var(--bg-input);border:1px solid var(--primary);color:var(--text-main);font-size:0.78rem;outline:none;font-family:inherit;">
-                <button onclick="agregarCatTrans()" style="padding:6px 12px;border-radius:8px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00d4ff;font-size:0.8rem;font-weight:700;cursor:pointer;">+</button>
+                <button onclick="agregarCatTrans()" style="padding:6px 12px;border-radius:8px;background:rgba(46,230,166,0.15);border:1px solid rgba(46,230,166,0.4);color:#2ee6a6;font-size:0.8rem;font-weight:700;cursor:pointer;">+</button>
             </div>` : '');
 
             let der;
@@ -3031,7 +3041,7 @@
                 der = `<button onclick="panelSelSubcat(null)" style="width:100%;text-align:left;padding:12px 10px;background:transparent;border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-main);font-weight:600;">${_panelCatSel} <span style="font-weight:400;color:var(--text-muted);">(general)</span></button>`
                     + subcats.map(s => {
                         const esc = s.replace(/'/g, "\\'");
-                        const del = _transCatEditing ? `<span onclick="event.stopPropagation();eliminarSubcatTrans('${esc}')" style="color:#f87171;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>` : '';
+                        const del = _transCatEditing ? `<span onclick="event.stopPropagation();eliminarSubcatTrans('${esc}')" style="color:#fb7185;font-size:0.95rem;padding:0 4px;cursor:pointer;">×</span>` : '';
                         return `<button onclick="panelSelSubcat('${esc}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 10px;background:transparent;border:none;border-bottom:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:0.8rem;color:var(--text-muted);text-align:left;">${s}${del}</button>`;
                     }).join('')
                     + `<div style="display:flex;gap:6px;padding:10px 6px;">
@@ -3052,8 +3062,8 @@
             editB.style.display = 'none';
             const key = (label, val, extra) => `<button onclick="kpPress('${val}')" style="padding:15px 0;min-height:52px;background:${extra || 'transparent'};border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:1.05rem;font-weight:600;color:var(--text-main);">${label}</button>`;
             const op  = 'rgba(136,146,176,0.08)';
-            const fin = `<button id="kp-accion" onclick="kpAccion()" style="padding:15px 0;min-height:52px;background:#f87171;border:none;cursor:pointer;font-family:inherit;font-size:0.9rem;font-weight:700;color:#0a0e27;">Finalizar</button>`;
-            const calcBtn = (on) => `<button onclick="kpToggleCalc()" style="padding:15px 0;min-height:52px;background:${on ? 'rgba(0,212,255,0.15)' : op};border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:1rem;color:${on ? '#00d4ff' : 'var(--text-main)'};"><i class="fa-solid fa-calculator"></i></button>`;
+            const fin = `<button id="kp-accion" onclick="kpAccion()" style="padding:15px 0;min-height:52px;background:#fb7185;border:none;cursor:pointer;font-family:inherit;font-size:0.9rem;font-weight:700;color:#0c0f14;">Finalizar</button>`;
+            const calcBtn = (on) => `<button onclick="kpToggleCalc()" style="padding:15px 0;min-height:52px;background:${on ? 'rgba(46,230,166,0.15)' : op};border:0.5px solid var(--border);cursor:pointer;font-family:inherit;font-size:1rem;color:${on ? '#2ee6a6' : 'var(--text-main)'};"><i class="fa-solid fa-calculator"></i></button>`;
             if (!_kpCalc) {
                 // Pad simple (como Money Manager): dígitos + ⌫ − 🧮 Finalizar
                 body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);">
@@ -3068,7 +3078,7 @@
                     ${key('C','C', op)}${key('÷','÷', op)}${key('×','×', op)}${key('⌫','back', op)}
                     ${key('7','7')}${key('8','8')}${key('9','9')}${key('−','-', op)}
                     ${key('4','4')}${key('5','5')}${key('6','6')}${key('+','+', op)}
-                    ${key('1','1')}${key('2','2')}${key('3','3')}${key('=','=', 'rgba(0,212,255,0.12)')}
+                    ${key('1','1')}${key('2','2')}${key('3','3')}${key('=','=', 'rgba(46,230,166,0.12)')}
                     ${calcBtn(true)}${key('0','0')}${key(',',',')}${fin}
                 </div>`;
             }
@@ -3316,7 +3326,7 @@
         const override  = localStorage.getItem('bal_neto_override_' + mes);
         const balance   = override !== null ? parseFloat(override) : calculado;
         elNeto.innerText   = fmt(balance);
-        elNeto.style.color = balance >= 0 ? 'var(--text-main)' : '#f87171';
+        elNeto.style.color = balance >= 0 ? 'var(--text-main)' : '#fb7185';
         const hint = document.getElementById('bal-neto-hint');
         if (hint) hint.style.display = override !== null ? 'block' : 'none';
         document.getElementById('bal-ingresos').innerText = fmt(ingresos);
@@ -3366,7 +3376,7 @@
         const seccion   = seccionDeTrans(g);
         const icono     = SECCION_ICONS[seccion] || '➕';
         const subcatChip = g.subcategoria && g.subcategoria.includes(' › ')
-            ? `<span style="display:inline-block;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:1px 7px;font-size:0.65rem;font-weight:600;color:#00d4ff;margin-left:6px;vertical-align:middle;">${g.subcategoria.split(' › ')[1]}</span>`
+            ? `<span style="display:inline-block;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.25);border-radius:20px;padding:1px 7px;font-size:0.65rem;font-weight:600;color:#2ee6a6;margin-left:6px;vertical-align:middle;">${g.subcategoria.split(' › ')[1]}</span>`
             : '';
         const fechaTxt = conFecha && g.fecha ? ' · ' + g.fecha.split('-').reverse().slice(0,2).join('/') : '';
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
@@ -3378,7 +3388,7 @@
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-                <span style="font-size:0.92rem;font-weight:700;color:${esIngreso ? '#34d399' : '#f87171'};">${esIngreso ? '+' : '-'}$${(g.monto||0).toLocaleString('es-AR')}</span>
+                <span style="font-size:0.92rem;font-weight:700;color:${esIngreso ? '#34d399' : '#fb7185'};">${esIngreso ? '+' : '-'}$${(g.monto||0).toLocaleString('es-AR')}</span>
                 <button onclick="eliminarGastoManual('${g.id}','${mes}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:6px;">✕</button>
             </div>
         </div>`;
@@ -3424,9 +3434,9 @@
             const sel   = iso === _calDiaSel;
             const g     = info?.gasto   || 0;
             const ing   = info?.ingreso || 0;
-            celdas += `<div onclick="selDiaCalendario('${iso}')" style="cursor:pointer;border-radius:8px;padding:3px 1px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;border:1px solid ${sel ? 'var(--primary)' : 'transparent'};background:${esHoy ? 'rgba(0,212,255,0.08)' : (info ? 'var(--bg-input)' : 'transparent')};">
+            celdas += `<div onclick="selDiaCalendario('${iso}')" style="cursor:pointer;border-radius:8px;padding:3px 1px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;border:1px solid ${sel ? 'var(--primary)' : 'transparent'};background:${esHoy ? 'rgba(46,230,166,0.08)' : (info ? 'var(--bg-input)' : 'transparent')};">
                 <span style="font-size:0.68rem;font-weight:600;color:${esHoy ? 'var(--primary)' : 'var(--text-main)'};">${d.getDate()}</span>
-                ${g   ? `<span style="font-size:0.5rem;font-weight:700;color:#f87171;line-height:1.15;">-${milesCorto(g)}</span>` : ''}
+                ${g   ? `<span style="font-size:0.5rem;font-weight:700;color:#fb7185;line-height:1.15;">-${milesCorto(g)}</span>` : ''}
                 ${ing ? `<span style="font-size:0.5rem;font-weight:700;color:#34d399;line-height:1.15;">+${milesCorto(ing)}</span>` : ''}
             </div>`;
         });
@@ -3455,7 +3465,7 @@
             <div style="border-top:0.5px solid var(--border);margin-top:4px;padding-top:8px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
                     <span style="font-size:0.7rem;font-weight:700;color:var(--text-main);text-transform:uppercase;letter-spacing:0.5px;">${formatFechaLista(_calDiaSel)}</span>
-                    <button onclick="abrirModalTrans('${_calDiaSel}')" style="background:rgba(0,212,255,0.1);border:0.5px solid rgba(0,212,255,0.3);border-radius:8px;padding:4px 10px;color:var(--primary);font-size:0.7rem;font-weight:700;cursor:pointer;">+ Agregar</button>
+                    <button onclick="abrirModalTrans('${_calDiaSel}')" style="background:rgba(46,230,166,0.1);border:0.5px solid rgba(46,230,166,0.3);border-radius:8px;padding:4px 10px;color:var(--primary);font-size:0.7rem;font-weight:700;cursor:pointer;">+ Agregar</button>
                 </div>
                 ${filas}
             </div>`;
@@ -3481,14 +3491,14 @@
             wrap.innerHTML = '<p style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:8px 0;">Sin gastos este mes.</p>';
             return;
         }
-        const colores = ['#00d4ff','#34d399','#fbbf24','#a5b4fc','#f87171','#38bdf8','#f472b6','#facc15'];
+        const colores = ['#2ee6a6','#34d399','#fbbf24','#a5b4fc','#fb7185','#34d399','#f472b6','#facc15'];
         wrap.innerHTML = Object.entries(porSec).sort((a, b) => b[1] - a[1]).map(([s, m], i) => {
             const pct = Math.round(m / total * 100);
             const lim = parseFloat(dbLimitesCat[s]) || 0;
             let badge = '';
             if (lim > 0) {
                 const uso = m / lim;
-                if (uso >= 1)        badge = '<span style="font-size:0.62rem;font-weight:700;color:#f87171;margin-left:6px;">🔴 Excedido</span>';
+                if (uso >= 1)        badge = '<span style="font-size:0.62rem;font-weight:700;color:#fb7185;margin-left:6px;">🔴 Excedido</span>';
                 else if (uso >= 0.8) badge = `<span style="font-size:0.62rem;font-weight:700;color:#fbbf24;margin-left:6px;">⚠️ ${Math.round(uso*100)}%</span>`;
             }
             const color = colores[i % colores.length];
@@ -3497,7 +3507,7 @@
                     <span style="font-size:0.74rem;font-weight:600;color:var(--text-main);">${SECCION_ICONS[s] || '➕'} ${s}${badge}</span>
                     <span style="font-size:0.72rem;color:var(--text-muted);"><strong style="color:var(--text-main);">${fmt(m)}</strong> · ${pct}%</span>
                 </div>
-                <div style="background:#21262d;border-radius:6px;height:6px;overflow:hidden;">
+                <div style="background:#262d38;border-radius:6px;height:6px;overflow:hidden;">
                     <div class="tpc-bar" data-w="${pct}" style="width:0%;height:100%;border-radius:6px;background:${color};transition:width 0.6s ease-out;"></div>
                 </div>
             </div>`;
@@ -3550,7 +3560,7 @@
             const sube   = delta > 0;
             const mejora = subeEsMalo ? !sube : sube;
             const flecha = delta === 0 ? '' :
-                `<span style="font-size:0.72rem;font-weight:700;color:${mejora ? '#34d399' : '#f87171'};">${sube ? '▲' : '▼'} ${sube ? '+' : '-'}${pct}%</span>`;
+                `<span style="font-size:0.72rem;font-weight:700;color:${mejora ? '#34d399' : '#fb7185'};">${sube ? '▲' : '▼'} ${sube ? '+' : '-'}${pct}%</span>`;
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;">
                 <span style="font-size:0.75rem;color:var(--text-muted);">${label}</span>
                 <span style="font-size:0.78rem;color:var(--text-main);">${fmt(prevV)} <span style="color:var(--text-muted);">→</span> <strong>${fmt(actV)}</strong> ${flecha}</span>
@@ -3597,14 +3607,14 @@
             const superado = lim > 0 && uso >= 1;
             const alerta   = lim > 0 && !superado && uso >= 0.8;
             if (superado) excedidas++;
-            const badge = superado ? '<span style="font-size:0.62rem;font-weight:700;color:#f87171;">🔴 Excedido</span>'
+            const badge = superado ? '<span style="font-size:0.62rem;font-weight:700;color:#fb7185;">🔴 Excedido</span>'
                 : (alerta ? `<span style="font-size:0.62rem;font-weight:700;color:#fbbf24;">⚠️ ${Math.round(uso*100)}%</span>` : '');
             const barra = lim > 0
-                ? `<div style="background:#21262d;border-radius:5px;height:4px;margin-top:5px;overflow:hidden;">
-                       <div style="width:${Math.min(100, Math.round(uso*100))}%;height:100%;border-radius:5px;background:${superado ? '#f87171' : (alerta ? '#fbbf24' : '#34d399')};"></div>
+                ? `<div style="background:#262d38;border-radius:5px;height:4px;margin-top:5px;overflow:hidden;">
+                       <div style="width:${Math.min(100, Math.round(uso*100))}%;height:100%;border-radius:5px;background:${superado ? '#fb7185' : (alerta ? '#fbbf24' : '#34d399')};"></div>
                    </div>`
                 : '';
-            return `<div style="padding:8px 10px;margin-bottom:6px;background:var(--bg-input);border-radius:10px;border:0.5px solid ${superado ? 'rgba(248,113,113,0.44)' : 'var(--border)'};">
+            return `<div style="padding:8px 10px;margin-bottom:6px;background:var(--bg-input);border-radius:10px;border:0.5px solid ${superado ? 'rgba(251,113,133,0.44)' : 'var(--border)'};">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                     <span style="font-size:0.76rem;font-weight:600;color:var(--text-main);flex:1;min-width:0;">${SECCION_ICONS[s] || '➕'} ${s} ${badge}</span>
                     ${lim > 0 ? `<span style="font-size:0.66rem;color:var(--text-muted);white-space:nowrap;">${fmt(gastado)} /</span>` : ''}
@@ -3676,8 +3686,8 @@
                 .map(g => transItemHTML(g, mes, true)).join('');
             const totalMes = grupos[mes].reduce((s, g) => s + (g.tipo === 'ingreso' ? g.monto : -g.monto), 0);
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;">
-                <span style="font-size:0.68rem;font-weight:700;color:#388bfd;text-transform:uppercase;letter-spacing:0.5px;">${formatPeriodoLabel(mes)}</span>
-                <span style="font-size:0.68rem;font-weight:700;color:${totalMes >= 0 ? '#34d399' : '#f87171'};">${totalMes >= 0 ? '+' : ''}${fmt(totalMes)}</span>
+                <span style="font-size:0.68rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.5px;">${formatPeriodoLabel(mes)}</span>
+                <span style="font-size:0.68rem;font-weight:700;color:${totalMes >= 0 ? '#34d399' : '#fb7185'};">${totalMes >= 0 ? '+' : ''}${fmt(totalMes)}</span>
             </div>` + filas;
         }).join('');
     }
@@ -3826,7 +3836,7 @@
         const badge = document.getElementById('badge-readonly');
         if (badge) {
             badge.innerHTML = bloqueado
-                ? '<span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(136,146,176,0.1);color:#8892b0;border:0.5px solid rgba(136,146,176,0.2);">solo lectura</span>'
+                ? '<span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(136,146,176,0.1);color:#7c8896;border:0.5px solid rgba(136,146,176,0.2);">solo lectura</span>'
                 : (esHistorico
                     ? '<span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.08);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.2);">editando histórico</span>'
                     : '');
@@ -4057,7 +4067,7 @@
             // ── Gráfico 1: gasto variable por mes ──
             drawBarChart('chart-gastos-mes', data, maxGastos, (ctx, x, bw, ch, pad, d, max) => {
                 if (d.gastos === 0) {
-                    ctx.fillStyle = '#21262d';
+                    ctx.fillStyle = '#262d38';
                     ctx.beginPath();
                     if (ctx.roundRect) ctx.roundRect(x, pad.top + ch - 3, bw, 3, 2);
                     else ctx.rect(x, pad.top + ch - 3, bw, 3);
@@ -4065,12 +4075,12 @@
                     return;
                 }
                 const h = (d.gastos / max) * ch;
-                ctx.fillStyle = '#f87171';
+                ctx.fillStyle = '#fb7185';
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(x, pad.top + ch - h, bw, h, [3,3,0,0]);
                 else ctx.rect(x, pad.top + ch - h, bw, h);
                 ctx.fill();
-                ctx.fillStyle = '#f0f4f8';
+                ctx.fillStyle = '#eaf0f2';
                 ctx.font = `bold ${Math.min(9, bw)}px Inter, sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.fillText('$' + Math.round(d.gastos / 1000) + 'k', x + bw/2, pad.top + ch - h - 3);
@@ -4096,7 +4106,7 @@
             const bw2 = Math.max(2, Math.floor(groupW * 0.36));
             const gap2 = Math.max(1, Math.floor(groupW * 0.06));
 
-            ctx2.strokeStyle = '#21262d'; ctx2.lineWidth = 0.5;
+            ctx2.strokeStyle = '#262d38'; ctx2.lineWidth = 0.5;
             [0.25,0.5,0.75,1].forEach(p => {
                 const y = p2.top + cH2 * (1-p);
                 ctx2.beginPath(); ctx2.moveTo(p2.left, y); ctx2.lineTo(W2 - p2.right, y); ctx2.stroke();
@@ -4115,20 +4125,20 @@
                 }
                 if (d.gastos > 0) {
                     const hG = (d.gastos / maxTotal) * cH2;
-                    ctx2.fillStyle = '#f87171';
+                    ctx2.fillStyle = '#fb7185';
                     ctx2.beginPath();
                     if (ctx2.roundRect) ctx2.roundRect(bx + bw2 + gap2, by - hG, bw2, hG, [3,3,0,0]);
                     else ctx2.rect(bx + bw2 + gap2, by - hG, bw2, hG);
                     ctx2.fill();
                 }
-                ctx2.fillStyle = '#7d8590';
+                ctx2.fillStyle = '#7c8896';
                 ctx2.font = `${Math.min(9, bw2*2)}px Inter, sans-serif`;
                 ctx2.textAlign = 'center';
                 ctx2.fillText(d.nombre, bx + bw2 + gap2/2, H2 - 6);
             });
 
             // ── Gráfico 3: torta por categoría ──
-            const PIE_COLORS = ['#a78bfa','#34d399','#f87171','#60a5fa','#fbbf24','#f472b6','#38bdf8','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
+            const PIE_COLORS = ['#a78bfa','#34d399','#fb7185','#60a5fa','#fbbf24','#f472b6','#34d399','#fb923c','#4ade80','#e879f9','#facc15','#818cf8'];
             const totalesCat = {};
             data.forEach(d => {
                 (dbGastosVar[d.key] || []).filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer').forEach(g => {
@@ -4173,15 +4183,15 @@
                 // Hueco interior (donut)
                 cp.beginPath();
                 cp.arc(cx, cy, innerR, 0, Math.PI * 2);
-                cp.fillStyle = '#141d3a'; // --bg-card
+                cp.fillStyle = '#161b22'; // --bg-card
                 cp.fill();
                 // Total en el centro
-                cp.fillStyle = '#f0f4f8';
+                cp.fillStyle = '#eaf0f2';
                 cp.font = `bold ${Math.round(size * 0.095)}px Inter, sans-serif`;
                 cp.textAlign = 'center';
                 cp.textBaseline = 'middle';
                 cp.fillText(fmt(totalAnio), cx, cy - 7);
-                cp.fillStyle = '#8892b0';
+                cp.fillStyle = '#7c8896';
                 cp.font = `${Math.round(size * 0.065)}px Inter, sans-serif`;
                 cp.fillText('total', cx, cy + 12);
             }
@@ -4236,7 +4246,7 @@
         const barW = Math.floor(chartW / n) - 4;
 
         // Grid lines
-        ctx.strokeStyle = '#21262d';
+        ctx.strokeStyle = '#262d38';
         ctx.lineWidth = 0.5;
         [0.25, 0.5, 0.75, 1].forEach(p => {
             const y = pad.top + chartH * (1 - p);
@@ -4248,7 +4258,7 @@
             colorFn(ctx, x, barW, chartH, pad, d, maxVal);
 
             // Label mes
-            ctx.fillStyle = '#7d8590';
+            ctx.fillStyle = '#7c8896';
             ctx.font = `${Math.min(9, barW)}px Inter, sans-serif`;
             ctx.textAlign = 'center';
             ctx.fillText(d.nombre, x + barW/2, H - 6);
@@ -4267,7 +4277,7 @@
             drawBarChart('chart-horas', data, maxH, (ctx, x, bw, ch, pad, d, max) => {
                 const total = d.h50 + d.h100;
                 if (total === 0) {
-                    ctx.fillStyle = '#21262d';
+                    ctx.fillStyle = '#262d38';
                     ctx.beginPath();
                     ctx.roundRect(x, pad.top + ch - 3, bw, 3, 2);
                     ctx.fill();
@@ -4296,7 +4306,7 @@
 
                 // valor encima
                 if (total > 0) {
-                    ctx.fillStyle = '#e6edf3';
+                    ctx.fillStyle = '#eaf0f2';
                     ctx.font = `bold ${Math.min(9, bw)}px Inter, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.fillText(total + 'h', x + bw/2, pad.top + ch - fullH - 3);
@@ -4352,11 +4362,11 @@
             pts.forEach((p, i) => {
                 ctx2.beginPath();
                 ctx2.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                ctx2.fillStyle = data[i].neto > 0 ? '#34d399' : '#21262d';
+                ctx2.fillStyle = data[i].neto > 0 ? '#34d399' : '#262d38';
                 ctx2.fill();
 
                 // Etiqueta mes
-                ctx2.fillStyle = '#7d8590';
+                ctx2.fillStyle = '#7c8896';
                 ctx2.font = '8px Inter, sans-serif';
                 ctx2.textAlign = 'center';
                 ctx2.fillText(data[i].nombre, p.x, H - 6);
@@ -4403,7 +4413,7 @@
         totBox.innerHTML = [
             { label: 'Horas totales',    val: totH + 'h',     color: '#a5b4fc' },
             { label: 'Extra neto total', val: fmt(totNeto),   color: '#34d399' },
-            { label: 'Extra bruto',      val: fmt(totBruto),  color: '#388bfd' },
+            { label: 'Extra bruto',      val: fmt(totBruto),  color: '#34d399' },
             { label: 'Mejor mes',        val: mejorMes.neto > 0 ? mejorMes.nombre : '-', color: '#fbbf24' },
         ].map(b => `
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:14px;padding:14px;text-align:center;">
@@ -4608,7 +4618,7 @@
         _modalCatCallback = callback;
         document.getElementById('modal-cat-titulo').innerText = titulo;
         document.getElementById('modal-cat-lista').innerHTML = cats.map((c,i) =>
-            '<button onclick="seleccionarCat(' + i + ')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0d1117;border:0.5px solid #21262d;border-radius:10px;color:#e6edf3;font-size:0.85rem;cursor:pointer;text-align:left;">'
+            '<button onclick="seleccionarCat(' + i + ')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0c0f14;border:0.5px solid #262d38;border-radius:10px;color:#eaf0f2;font-size:0.85rem;cursor:pointer;text-align:left;">'
             + '<span style="font-size:1.1rem;">' + c.icon + '</span>'
             + '<span style="font-weight:500;">' + c.nombre + '</span>'
             + '</button>'
@@ -4694,7 +4704,7 @@
                 +     '<button onclick="eliminarMeta(' + m.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem;">✕</button>'
                 +   '</div>'
                 + '</div>'
-                + '<div style="background:#21262d;border-radius:6px;height:5px;overflow:hidden;margin-bottom:4px;">'
+                + '<div style="background:#262d38;border-radius:6px;height:5px;overflow:hidden;margin-bottom:4px;">'
                 +   '<div style="width:' + pct + '%;height:100%;background:' + (completa ? '#34d399' : '#fbbf24') + ';border-radius:6px;transition:width 0.5s;"></div>'
                 + '</div>'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:' + (completa ? '0' : '10px') + ';">'
@@ -4705,7 +4715,7 @@
                     '<div style="display:flex;gap:6px;">'
                     + '<input type="text" inputmode="numeric" id="aportar-input-' + m.id + '" class="input" placeholder="$ monto" style="flex:1;padding:7px 10px;font-size:0.78rem;">'
                     + '<button onclick="aportarManualMeta(' + m.id + ')" style="padding:7px 12px;background:#1a2a1a;border:0.5px solid #2d5a3a;border-radius:8px;color:#34d399;font-size:0.75rem;font-weight:600;cursor:pointer;">+ Aportar</button>'
-                    + '<button onclick="aportarAutoMeta(' + m.id + ')" title="Aportar 20% del disponible" style="padding:7px 10px;background:#1a1f35;border:0.5px solid #30363d;border-radius:8px;color:#a5b4fc;font-size:0.72rem;cursor:pointer;">20%</button>'
+                    + '<button onclick="aportarAutoMeta(' + m.id + ')" title="Aportar 20% del disponible" style="padding:7px 10px;background:#1a1f35;border:0.5px solid #262d38;border-radius:8px;color:#a5b4fc;font-size:0.72rem;cursor:pointer;">20%</button>'
                     + '</div>'
                 ) : '')
                 + '</div>';
@@ -4863,59 +4873,59 @@
 </script>
 <!-- ── Modal nueva transacción ── -->
 <div id="modal-trans" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalTrans()">
-    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:20px 20px 16px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+    <div style="background:#161b22;border:0.5px solid #262d38;border-radius:20px 20px 0 0;padding:20px 20px 16px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <div id="trans-modal-title" style="font-size:1rem;font-weight:700;color:#f0f4f8;">Nueva transacción</div>
-            <button onclick="cerrarModalTrans()" style="background:none;border:none;color:#8892b0;font-size:1.1rem;cursor:pointer;padding:4px 8px;">✕</button>
+            <div id="trans-modal-title" style="font-size:1rem;font-weight:700;color:#eaf0f2;">Nueva transacción</div>
+            <button onclick="cerrarModalTrans()" style="background:none;border:none;color:#7c8896;font-size:1.1rem;cursor:pointer;padding:4px 8px;">✕</button>
         </div>
         <!-- Toggle tipo (estilo Money Manager: outline) -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
             <button id="trans-pill-ingreso" onclick="setTransTipo('ingreso')" style="padding:10px 4px;border-radius:10px;background:transparent;border:0.5px solid var(--border);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-muted);min-height:44px;">Ingreso</button>
-            <button id="trans-pill-gasto" onclick="setTransTipo('gasto')" style="padding:10px 4px;border-radius:10px;background:transparent;border:1px solid #f87171;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#f87171;min-height:44px;">Gasto</button>
+            <button id="trans-pill-gasto" onclick="setTransTipo('gasto')" style="padding:10px 4px;border-radius:10px;background:transparent;border:1px solid #fb7185;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:#fb7185;min-height:44px;">Gasto</button>
             <button id="trans-pill-transfer" onclick="setTransTipo('transfer')" style="padding:10px 4px;border-radius:10px;background:transparent;border:0.5px solid var(--border);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-muted);min-height:44px;">Transfer.</button>
         </div>
         <!-- Filas estilo formulario -->
         <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
-            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Fecha</span>
-            <input id="trans-fecha" type="date" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;color-scheme:dark;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Fecha</span>
+            <input id="trans-fecha" type="date" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #262d38;color:#eaf0f2;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;color-scheme:dark;">
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
-            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Importe</span>
-            <input id="trans-monto" readonly onclick="abrirPanelTrans('monto')" placeholder="$ 0" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:1rem;font-weight:700;outline:none;font-family:inherit;cursor:pointer;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Importe</span>
+            <input id="trans-monto" readonly onclick="abrirPanelTrans('monto')" placeholder="$ 0" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #262d38;color:#eaf0f2;padding:9px 2px;font-size:1rem;font-weight:700;outline:none;font-family:inherit;cursor:pointer;">
         </div>
         <div id="trans-row-cat-wrap" style="display:flex;align-items:center;gap:10px;padding:3px 0;">
-            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Categoría</span>
-            <div id="trans-row-cat" onclick="abrirPanelTrans('cat')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Categoría</span>
+            <div id="trans-row-cat" onclick="abrirPanelTrans('cat')" style="flex:1;border-bottom:0.5px solid #262d38;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:3px 0;">
-            <span id="trans-row-cuenta-label" style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Cuenta</span>
-            <div id="trans-row-cuenta" onclick="abrirPanelTrans('cuenta')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+            <span id="trans-row-cuenta-label" style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Cuenta</span>
+            <div id="trans-row-cuenta" onclick="abrirPanelTrans('cuenta')" style="flex:1;border-bottom:0.5px solid #262d38;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
         </div>
         <div id="trans-row-dest-wrap" style="display:none;align-items:center;gap:10px;padding:3px 0;">
-            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Destino</span>
-            <div id="trans-row-dest" onclick="abrirPanelTrans('cuentaDest')" style="flex:1;border-bottom:0.5px solid #1e2a47;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Destino</span>
+            <div id="trans-row-dest" onclick="abrirPanelTrans('cuentaDest')" style="flex:1;border-bottom:0.5px solid #262d38;padding:10px 2px;font-size:0.88rem;cursor:pointer;min-height:20px;"></div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;padding:3px 0;margin-bottom:16px;">
-            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#8892b0;">Nota</span>
-            <input id="trans-desc" placeholder="Opcional" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #1e2a47;color:#f0f4f8;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;">
+            <span style="width:86px;flex-shrink:0;font-size:0.8rem;color:#7c8896;">Nota</span>
+            <input id="trans-desc" placeholder="Opcional" style="flex:1;background:transparent;border:none;border-bottom:0.5px solid #262d38;color:#eaf0f2;padding:9px 2px;font-size:0.88rem;outline:none;font-family:inherit;">
         </div>
         <!-- Botones Guardar / Continuar -->
         <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;">
-            <button id="trans-guardar-btn" onclick="guardarTrans(false)" style="padding:13px;background:var(--success);border:none;border-radius:12px;color:#0a0e27;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
-            <button id="trans-continuar-btn" onclick="guardarTrans(true)" style="padding:13px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Continuar</button>
+            <button id="trans-guardar-btn" onclick="guardarTrans(false)" style="padding:13px;background:var(--success);border:none;border-radius:12px;color:#0c0f14;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Guardar</button>
+            <button id="trans-continuar-btn" onclick="guardarTrans(true)" style="padding:13px;background:transparent;border:0.5px solid #262d38;border-radius:12px;color:#7c8896;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:48px;">Continuar</button>
         </div>
         <!-- Acciones al editar un movimiento existente -->
         <div id="trans-acciones" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-            <button onclick="eliminarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid rgba(248,113,113,0.4);border-radius:12px;color:#f87171;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
-            <button onclick="copiarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid #1e2a47;border-radius:12px;color:#8892b0;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-copy"></i> Copiar</button>
+            <button onclick="eliminarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid rgba(251,113,133,0.4);border-radius:12px;color:#fb7185;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+            <button onclick="copiarTransActual()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:transparent;border:0.5px solid #262d38;border-radius:12px;color:#7c8896;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;"><i class="fa-solid fa-copy"></i> Copiar</button>
         </div>
         <!-- Panel selector inferior (categoría / cuentas) -->
-        <div id="trans-panel" style="display:none;margin:14px -20px -16px;border-top:0.5px solid #1e2a47;background:#101832;">
+        <div id="trans-panel" style="display:none;margin:14px -20px -16px;border-top:0.5px solid #262d38;background:#101832;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(136,146,176,0.08);">
-                <span id="trans-panel-title" style="font-size:0.85rem;font-weight:700;color:#f0f4f8;">Categoría</span>
+                <span id="trans-panel-title" style="font-size:0.85rem;font-weight:700;color:#eaf0f2;">Categoría</span>
                 <div style="display:flex;gap:16px;align-items:center;">
-                    <button id="trans-panel-edit" onclick="toggleCatEdit()" style="background:none;border:none;color:#8892b0;font-size:0.85rem;cursor:pointer;font-family:inherit;">✏</button>
-                    <button onclick="cerrarPanelTrans()" style="background:none;border:none;color:#8892b0;font-size:1rem;cursor:pointer;">✕</button>
+                    <button id="trans-panel-edit" onclick="toggleCatEdit()" style="background:none;border:none;color:#7c8896;font-size:0.85rem;cursor:pointer;font-family:inherit;">✏</button>
+                    <button onclick="cerrarPanelTrans()" style="background:none;border:none;color:#7c8896;font-size:1rem;cursor:pointer;">✕</button>
                 </div>
             </div>
             <div id="trans-panel-body"></div>
@@ -4924,24 +4934,24 @@
 </div>
 <!-- ── Modal configuración sync ── -->
 <div id="modal-sync" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#141d3a;border:0.5px solid #1e2a47;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;">
+    <div style="background:#161b22;border:0.5px solid #262d38;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">☁</div>
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">☁</div>
             <div>
-                <div style="font-size:0.95rem;font-weight:700;color:#f0f4f8;">Sincronización</div>
-                <div style="font-size:0.68rem;color:#8892b0;margin-top:1px;">Google Sheets como base de datos</div>
+                <div style="font-size:0.95rem;font-weight:700;color:#eaf0f2;">Sincronización</div>
+                <div style="font-size:0.68rem;color:#7c8896;margin-top:1px;">Google Sheets como base de datos</div>
             </div>
         </div>
-        <div style="height:0.5px;background:#1e2a47;margin-bottom:16px;"></div>
-        <div style="font-size:0.7rem;font-weight:700;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">URL del Web App</div>
+        <div style="height:0.5px;background:#262d38;margin-bottom:16px;"></div>
+        <div style="font-size:0.7rem;font-weight:700;color:#7c8896;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">URL del Web App</div>
         <input id="sync-url-input" type="url" placeholder="https://script.google.com/macros/s/..." class="input" style="font-size:0.78rem;margin-bottom:8px;">
-        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(0,212,255,0.04);border:0.5px solid rgba(0,212,255,0.12);border-radius:8px;padding:9px 11px;margin-bottom:18px;">
-            <span style="font-size:0.75rem;color:#00d4ff;flex-shrink:0;margin-top:1px;">ℹ</span>
-            <span style="font-size:0.7rem;color:#8892b0;line-height:1.6;">Apps Script → <strong style="color:#00d4ff;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(46,230,166,0.04);border:0.5px solid rgba(46,230,166,0.12);border-radius:8px;padding:9px 11px;margin-bottom:18px;">
+            <span style="font-size:0.75rem;color:#2ee6a6;flex-shrink:0;margin-top:1px;">ℹ</span>
+            <span style="font-size:0.7rem;color:#7c8896;line-height:1.6;">Apps Script → <strong style="color:#2ee6a6;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
         </div>
         <div style="display:flex;gap:8px;">
-            <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #1e2a47;border-radius:10px;color:#8892b0;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
-            <button onclick="guardarConfigSync()" style="flex:1.6;padding:12px;background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.3);border-radius:10px;color:#00d4ff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">☁ Guardar y sincronizar</button>
+            <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+            <button onclick="guardarConfigSync()" style="flex:1.6;padding:12px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.3);border-radius:10px;color:#2ee6a6;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">☁ Guardar y sincronizar</button>
         </div>
     </div>
 </div>
