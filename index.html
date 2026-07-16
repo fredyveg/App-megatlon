@@ -486,6 +486,15 @@
                 <div id="stats-resumen-anual"></div>
             </div>
 
+            <!-- Comparativa interanual + proyección -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(96,165,250,0.4);border-radius:16px;padding:16px 18px;margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:14px;">
+                    <div class="card-title-icon" style="background:rgba(96,165,250,0.12);color:#60a5fa;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                    <span class="card-title-text">Comparativa y proyección</span>
+                </div>
+                <div id="stats-comparativa"></div>
+            </div>
+
             <!-- Ahorro por mes -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(52,211,153,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
                 <div class="card-title" style="margin-bottom:14px;">
@@ -4169,6 +4178,93 @@
             </div>`;
     }
 
+    // Totales de gasto por categoría para un conjunto de meses
+    function catTotales(data) {
+        const t = {};
+        data.forEach(d => (dbGastosVar[d.key] || [])
+            .filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer')
+            .forEach(g => { const s = seccionDeTrans(g); t[s] = (t[s] || 0) + (g.monto || 0); }));
+        return t;
+    }
+
+    // Comparativa vs año anterior + proyección anual al ritmo actual
+    function renderStatsComparativa(anio, data) {
+        const cont = document.getElementById('stats-comparativa');
+        if (!cont) return;
+        const totIng = data.reduce((s, d) => s + d.ingresos, 0);
+        const totGas = data.reduce((s, d) => s + d.gastos, 0);
+        const ahorro = totIng - totGas;
+        const mesesConDatos = data.filter(d => d.gastos > 0 || d.ingresos > 0).length;
+
+        // ── Proyección a 12 meses (solo si el año está en curso) ──
+        let proyHTML = '';
+        if (mesesConDatos > 0 && mesesConDatos < 12) {
+            const f = 12 / mesesConDatos;
+            const proyGas = totGas * f, proyAhorro = ahorro * f;
+            proyHTML = `
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Proyección a 12 meses · a este ritmo (${mesesConDatos} ${mesesConDatos === 1 ? 'mes' : 'meses'})</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+                    <div style="background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;">
+                        <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Gasto anual proyectado</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:#fb7185;">${fmt(proyGas)}</div>
+                    </div>
+                    <div style="background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;">
+                        <div style="font-size:0.58rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Ahorro anual proyectado</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:${proyAhorro >= 0 ? '#34d399' : '#fb7185'};">${fmt(proyAhorro)}</div>
+                    </div>
+                </div>`;
+        }
+
+        // ── Comparativa interanual ──
+        const prevAnio = String(parseInt(anio) - 1);
+        const prevData = getMesesGastosData(prevAnio);
+        const pIng = prevData.reduce((s, d) => s + d.ingresos, 0);
+        const pGas = prevData.reduce((s, d) => s + d.gastos, 0);
+        const pAhorro = pIng - pGas;
+        const hayPrev = prevData.some(d => d.gastos > 0 || d.ingresos > 0);
+
+        let compHTML;
+        if (!hayPrev) {
+            compHTML = `<div style="font-size:0.72rem;color:var(--text-muted);text-align:center;padding:8px 0;">Sin datos de ${prevAnio} para comparar.</div>`;
+        } else {
+            const varPct = (a, p) => p !== 0 ? ((a - p) / Math.abs(p) * 100) : (a > 0 ? 100 : 0);
+            const fila = (label, actual, prev, mejorSiSube) => {
+                const dif = actual - prev, sube = dif >= 0;
+                const color = dif === 0 ? 'var(--text-muted)' : ((mejorSiSube ? sube : !sube) ? '#34d399' : '#fb7185');
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);">
+                    <span style="font-size:0.8rem;color:var(--text-main);">${label}</span>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.82rem;font-weight:700;color:var(--text-main);">${fmt(actual)}</span>
+                        <span style="font-size:0.72rem;font-weight:700;color:${color};margin-left:8px;">${dif === 0 ? '—' : (sube ? '▲' : '▼') + ' ' + Math.abs(varPct(actual, prev)).toFixed(0) + '%'}</span>
+                    </div>
+                </div>`;
+            };
+            const cA = catTotales(data), cP = catTotales(prevData);
+            const cambios = [...new Set([...Object.keys(cA), ...Object.keys(cP)])]
+                .map(c => ({ c, a: cA[c] || 0, p: cP[c] || 0, dif: (cA[c] || 0) - (cP[c] || 0) }))
+                .filter(x => x.a > 0 || x.p > 0)
+                .sort((x, y) => Math.abs(y.dif) - Math.abs(x.dif)).slice(0, 4);
+            const catHTML = cambios.map(x => {
+                const sube = x.dif >= 0;
+                const color = x.dif === 0 ? 'var(--text-muted)' : (sube ? '#fb7185' : '#34d399'); // en gasto, subir = malo
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;">
+                    <span style="font-size:0.78rem;color:var(--text-muted);">${SECCION_ICONS[x.c] || '➕'} ${x.c}</span>
+                    <span style="font-size:0.76rem;font-weight:700;color:${color};">${x.dif === 0 ? '—' : (sube ? '▲' : '▼') + ' ' + Math.abs(varPct(x.a, x.p)).toFixed(0) + '%'} · ${fmt(x.a)}</span>
+                </div>`;
+            }).join('');
+
+            compHTML = `
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">${anio} vs ${prevAnio}</div>
+                ${fila('Ingresos', totIng, pIng, true)}
+                ${fila('Gastos', totGas, pGas, false)}
+                ${fila('Ahorro', ahorro, pAhorro, true)}
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 2px;">Categorías con más cambio</div>
+                ${catHTML || '<div style="font-size:0.72rem;color:var(--text-muted);padding:6px 0;">Sin cambios por categoría.</div>'}`;
+        }
+
+        cont.innerHTML = proyHTML + compHTML;
+    }
+
     // Gráfico de ahorro (ingreso − gasto) por mes, con línea base cero
     function dibujarAhorroPorMes(canvasId, data) {
         const cv = document.getElementById(canvasId);
@@ -4223,6 +4319,7 @@
         const maxTotal  = Math.max(...data.map(d => Math.max(d.gastos, d.ingresos)), 1);
 
         renderStatsResumenAnual(anio, data);
+        renderStatsComparativa(anio, data);
 
         setTimeout(() => {
             // ── Gráfico 0: ahorro (neto) por mes — verde positivo / rosa negativo ──
