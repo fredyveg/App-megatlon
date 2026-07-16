@@ -11,6 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -359,11 +360,6 @@
         <!-- ══ VISTA: ESTADÍSTICAS ══ -->
         <div id="finv-mensual" style="display:none;">
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-radius:16px;padding:14px 16px 16px;margin-bottom:12px;">
-                <div style="display:flex;justify-content:flex-end;margin-bottom:2px;">
-                    <button onclick="descargarEstadisticas()" style="display:flex;align-items:center;gap:6px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.28);border-radius:9px;padding:6px 11px;color:var(--primary);font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                        <i class="fa-solid fa-download"></i> Descargar
-                    </button>
-                </div>
                 <!-- Toggle Ingresos / Gastos con totales -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:16px;">
                     <button id="fstat-tab-ingreso" onclick="setFinStatTipo('ingreso')" style="background:none;border:none;border-bottom:2px solid var(--border);padding:9px 4px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--text-muted);">
@@ -419,6 +415,13 @@
         <!-- ══ SUB-TAB: HORAS ══ -->
         <div id="stats-horas" style="display:block;">
 
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+            <button onclick="descargarStats('horas')" style="display:flex;align-items:center;gap:6px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.28);border-radius:9px;padding:7px 12px;color:var(--primary);font-size:0.74rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                <i class="fa-solid fa-download"></i> Descargar
+            </button>
+        </div>
+        <div id="stats-horas-cap">
+
         <!-- Gráfico de barras + selector de año integrado -->
         <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(165,180,252,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -458,16 +461,21 @@
         <!-- Totales del año -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;" id="stats-totales"></div>
 
+        </div><!-- fin #stats-horas-cap -->
         </div><!-- fin #stats-horas -->
 
         <!-- ══ SUB-TAB: GASTOS ══ -->
         <div id="stats-gastos" style="display:none;">
 
-            <!-- Selector de año -->
-            <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+            <!-- Selector de año + descarga -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <button onclick="descargarStats('gastos')" style="display:flex;align-items:center;gap:6px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.28);border-radius:9px;padding:7px 12px;color:var(--primary);font-size:0.74rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    <i class="fa-solid fa-download"></i> Descargar
+                </button>
                 <select id="stats-gastos-anio" class="select-modern" onchange="renderStatsGastos()" style="font-size:0.72rem;padding:4px 10px;"></select>
             </div>
 
+            <div id="stats-gastos-cap">
             <!-- Gasto mensual -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(251,113,133,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
                 <div class="card-title" style="margin-bottom:14px;">
@@ -502,6 +510,7 @@
                 <div id="stats-dist-cat"></div>
             </div>
 
+            </div><!-- fin #stats-gastos-cap -->
         </div><!-- fin #stats-gastos -->
 
     </main>
@@ -2415,100 +2424,6 @@
         ? ['#fb7185','#fb923c','#fbbf24','#f472b6','#a78bfa','#60a5fa','#34d399','#2dd4bf','#facc15','#4ade80','#e879f9','#818cf8']
         : ['#34d399','#2dd4bf','#60a5fa','#4ade80','#a78bfa','#fbbf24','#f472b6','#fb923c','#facc15','#e879f9','#818cf8','#fb7185'];
 
-    // Descarga la vista Estadísticas como imagen PNG (torta + totales + desglose)
-    function descargarEstadisticas() {
-        const mes = finMesActual();
-        const arr = dbGastosVar[mes] || [];
-        const esGasto = _finStatTipo === 'gasto';
-        let totIng = 0, totGas = 0;
-        arr.forEach(g => { if (g.tipo === 'transfer') return; if (g.tipo === 'ingreso') totIng += g.monto || 0; else totGas += g.monto || 0; });
-        const trans = arr.filter(g => esGasto ? (g.tipo !== 'ingreso' && g.tipo !== 'transfer') : g.tipo === 'ingreso');
-        const tot = {};
-        trans.forEach(g => { const s = seccionDeTrans(g); tot[s] = (tot[s] || 0) + (g.monto || 0); });
-        const sorted = Object.entries(tot).sort((a, b) => b[1] - a[1]).filter(([, v]) => v > 0);
-        const total  = sorted.reduce((s, [, v]) => s + v, 0);
-        if (sorted.length === 0) { alert('No hay ' + (esGasto ? 'gastos' : 'ingresos') + ' para descargar este mes.'); return; }
-        const COLORS = FIN_STAT_COLORS(esGasto);
-
-        // ── Lienzo de exportación ──
-        const dpr   = 2;                 // export nítido
-        const W     = 720;
-        const padX  = 40;
-        const pieCX = W / 2, pieCY = 355, pieR = 150;
-        const rowH  = 46;
-        const listTop = 540;
-        const H = listTop + sorted.length * rowH + 46;
-        const cv = document.createElement('canvas');
-        cv.width = W * dpr; cv.height = H * dpr;
-        const c = cv.getContext('2d');
-        c.scale(dpr, dpr);
-
-        // Fondo
-        c.fillStyle = '#0c0f14'; c.fillRect(0, 0, W, H);
-        c.fillStyle = '#161b22';
-        if (c.roundRect) { c.beginPath(); c.roundRect(padX/2, padX/2, W - padX, H - padX, 24); c.fill(); }
-
-        // Título
-        c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-        c.fillStyle = '#eaf0f2'; c.font = '700 26px "Plus Jakarta Sans", sans-serif';
-        c.fillText(esGasto ? 'Gastos' : 'Ingresos', padX, 66);
-        c.fillStyle = '#7c8896'; c.font = '500 15px "Plus Jakarta Sans", sans-serif';
-        c.fillText(finLabel(mes), padX, 90);
-
-        // Totales (Ingresos / Gastos / Balance)
-        const cardY = 108, cardH = 62;
-        c.fillStyle = '#0e1218';
-        if (c.roundRect) { c.beginPath(); c.roundRect(padX, cardY, W - padX*2, cardH, 14); c.fill(); }
-        const cols = [['INGRESOS', totIng, '#34d399'], ['GASTOS', totGas, '#fb7185'], ['BALANCE', totIng - totGas, '#eaf0f2']];
-        const cw = (W - padX*2) / 3;
-        cols.forEach((col, i) => {
-            const cx = padX + cw * i + cw/2;
-            c.textAlign = 'center';
-            c.fillStyle = '#7c8896'; c.font = '600 11px "Plus Jakarta Sans", sans-serif';
-            c.fillText(col[0], cx, cardY + 24);
-            c.fillStyle = col[2]; c.font = '700 18px "Plus Jakarta Sans", sans-serif';
-            c.fillText(fmt(col[1]), cx, cardY + 48);
-            if (i < 2) { c.strokeStyle = '#262d38'; c.lineWidth = 1; c.beginPath(); c.moveTo(padX + cw*(i+1), cardY + 14); c.lineTo(padX + cw*(i+1), cardY + cardH - 14); c.stroke(); }
-        });
-
-        // Torta
-        let ang = -Math.PI / 2;
-        sorted.forEach(([, val], i) => {
-            const slice = (val / total) * Math.PI * 2;
-            c.beginPath(); c.moveTo(pieCX, pieCY); c.arc(pieCX, pieCY, pieR, ang, ang + slice); c.closePath();
-            c.fillStyle = COLORS[i % COLORS.length]; c.fill();
-            ang += slice;
-        });
-        c.beginPath(); c.arc(pieCX, pieCY, pieR * 0.55, 0, Math.PI*2); c.fillStyle = '#161b22'; c.fill();
-        c.textAlign = 'center'; c.fillStyle = '#eaf0f2'; c.font = '700 22px "Plus Jakarta Sans", sans-serif';
-        c.fillText(fmt(total), pieCX, pieCY - 2);
-        c.fillStyle = '#7c8896'; c.font = '500 13px "Plus Jakarta Sans", sans-serif';
-        c.fillText(esGasto ? 'gastado' : 'ingresado', pieCX, pieCY + 20);
-
-        // Lista por categoría
-        sorted.forEach(([s, m], i) => {
-            const y = listTop + i * rowH;
-            const color = COLORS[i % COLORS.length];
-            const pct = Math.round(m / total * 100);
-            c.fillStyle = color;
-            if (c.roundRect) { c.beginPath(); c.roundRect(padX, y, 48, 26, 7); c.fill(); }
-            c.fillStyle = '#0c0f14'; c.textAlign = 'center'; c.font = '800 13px "Plus Jakarta Sans", sans-serif';
-            c.fillText(pct + '%', padX + 24, y + 18);
-            c.fillStyle = '#eaf0f2'; c.textAlign = 'left'; c.font = '600 16px "Plus Jakarta Sans", sans-serif';
-            c.fillText(`${SECCION_ICONS[s] || ''} ${s}`, padX + 64, y + 18);
-            c.fillStyle = '#eaf0f2'; c.textAlign = 'right'; c.font = '700 16px "Plus Jakarta Sans", sans-serif';
-            c.fillText(fmt(m), W - padX, y + 18);
-            c.strokeStyle = '#262d38'; c.lineWidth = 1; c.beginPath(); c.moveTo(padX, y + rowH - 8); c.lineTo(W - padX, y + rowH - 8); c.stroke();
-        });
-
-        // Descargar
-        cv.toBlob(blob => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `Estadisticas_${esGasto ? 'gastos' : 'ingresos'}_${mes}.png`; a.click();
-            URL.revokeObjectURL(url);
-        });
-    }
 
     function renderFinMensual() {
         const mes  = finMesActual();
@@ -4133,6 +4048,32 @@
         });
         if (tab === 'gastos') { setupStatsGastosAnio(); renderStatsGastos(); }
         if (tab === 'horas')  { setupStatsAnio(); renderStats(); }
+    }
+
+    // Descarga las estadísticas (Horas o Gastos) como imagen PNG
+    async function descargarStats(cual) {
+        const esGastos = cual === 'gastos';
+        const anio = (document.getElementById(esGastos ? 'stats-gastos-anio' : 'stats-anio')?.value) || '';
+        const el   = document.getElementById(esGastos ? 'stats-gastos-cap' : 'stats-horas-cap');
+        if (!el) return;
+        if (typeof html2canvas === 'undefined') { alert('No se pudo cargar el generador de imagen. Revisá tu conexión e intentá de nuevo.'); return; }
+        const btn = event?.currentTarget;
+        const txt = btn ? btn.innerHTML : null;
+        if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando…'; btn.style.pointerEvents = 'none'; }
+        try {
+            const canvas = await html2canvas(el, { backgroundColor: '#0c0f14', scale: 2, useCORS: true, logging: false });
+            await new Promise(res => canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `Stats_${esGastos ? 'gastos' : 'horas'}${anio ? '_' + anio : ''}.png`; a.click();
+                URL.revokeObjectURL(url);
+                res();
+            }));
+        } catch (e) {
+            alert('No se pudo generar la imagen: ' + e.message);
+        } finally {
+            if (btn && txt) { btn.innerHTML = txt; btn.style.pointerEvents = 'auto'; }
+        }
     }
 
     function setupStatsGastosAnio() {
