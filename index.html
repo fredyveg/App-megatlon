@@ -476,6 +476,25 @@
             </div>
 
             <div id="stats-gastos-cap">
+
+            <!-- Resumen del año (KPIs para análisis) -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(46,230,166,0.4);border-radius:16px;padding:16px 18px;margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:14px;">
+                    <div class="card-title-icon" style="background:rgba(46,230,166,0.12);color:var(--primary);"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <span class="card-title-text">Resumen del año</span>
+                </div>
+                <div id="stats-resumen-anual"></div>
+            </div>
+
+            <!-- Ahorro por mes -->
+            <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(52,211,153,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
+                <div class="card-title" style="margin-bottom:14px;">
+                    <div class="card-title-icon" style="background:rgba(52,211,153,0.12);color:#34d399;"><i class="fa-solid fa-piggy-bank"></i></div>
+                    <span class="card-title-text">Ahorro por mes</span>
+                </div>
+                <canvas id="chart-ahorro-mes" style="width:100%;height:150px;display:block;"></canvas>
+            </div>
+
             <!-- Gasto mensual -->
             <div style="background:var(--bg-card);border:0.5px solid var(--border);border-top:2px solid rgba(251,113,133,0.4);border-radius:16px;padding:18px 20px;margin-bottom:14px;">
                 <div class="card-title" style="margin-bottom:14px;">
@@ -4100,6 +4119,102 @@
         });
     }
 
+    // Resumen ejecutivo del año (para pasar al asesor)
+    function renderStatsResumenAnual(anio, data) {
+        const cont = document.getElementById('stats-resumen-anual');
+        if (!cont) return;
+        const totIng = data.reduce((s, d) => s + d.ingresos, 0);
+        const totGas = data.reduce((s, d) => s + d.gastos, 0);
+        const ahorro = totIng - totGas;
+        const tasa   = totIng > 0 ? (ahorro / totIng * 100) : 0;
+        const mesesGasto = data.filter(d => d.gastos > 0);
+        const gastoProm  = mesesGasto.length ? totGas / mesesGasto.length : 0;
+        const ingProm    = (() => { const m = data.filter(d => d.ingresos > 0); return m.length ? totIng / m.length : 0; })();
+        const mesMax = data.reduce((a, d) => d.gastos > a.gastos ? d : a, { gastos: -1, nombre: '—' });
+
+        // Categoría de mayor gasto del año
+        const totalesCat = {};
+        data.forEach(d => (dbGastosVar[d.key] || [])
+            .filter(g => g.tipo !== 'ingreso' && g.tipo !== 'transfer')
+            .forEach(g => { const s = seccionDeTrans(g); totalesCat[s] = (totalesCat[s] || 0) + (g.monto || 0); }));
+        const catTop = Object.entries(totalesCat).sort((a, b) => b[1] - a[1])[0];
+
+        const tile = (label, valor, color, sub) => `
+            <div style="background:var(--bg-input);border:0.5px solid var(--border);border-radius:12px;padding:10px 12px;">
+                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${label}</div>
+                <div style="font-size:0.98rem;font-weight:700;color:${color};line-height:1.1;">${valor}</div>
+                ${sub ? `<div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px;">${sub}</div>` : ''}
+            </div>`;
+
+        const tasaColor = ahorro >= 0 ? '#34d399' : '#fb7185';
+        cont.innerHTML = `
+            <!-- Tasa de ahorro destacada -->
+            <div style="background:var(--bg-input);border:0.5px solid ${ahorro >= 0 ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)'};border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+                    <span style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Tasa de ahorro</span>
+                    <span style="font-size:1.5rem;font-weight:800;color:${tasaColor};letter-spacing:-0.02em;">${tasa.toFixed(1)}%</span>
+                </div>
+                <div style="background:var(--bg-card);border-radius:20px;height:7px;overflow:hidden;">
+                    <div style="width:${Math.max(0, Math.min(100, tasa)).toFixed(1)}%;height:100%;background:${tasaColor};border-radius:20px;"></div>
+                </div>
+                <div style="font-size:0.64rem;color:var(--text-muted);margin-top:6px;">Ahorraste <b style="color:${tasaColor};">${fmt(ahorro)}</b> de ${fmt(totIng)} de ingresos en ${anio}.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                ${tile('Ingresos totales', fmt(totIng), '#34d399', 'Prom. ' + fmt(ingProm) + '/mes')}
+                ${tile('Gastos totales', fmt(totGas), '#fb7185', 'Prom. ' + fmt(gastoProm) + '/mes')}
+                ${tile('Ahorro neto', fmt(ahorro), tasaColor, anio)}
+                ${tile('Mes de mayor gasto', mesMax.gastos > 0 ? mesMax.nombre : '—', 'var(--text-main)', mesMax.gastos > 0 ? fmt(mesMax.gastos) : 'Sin datos')}
+                ${catTop ? tile('Categoría top', (SECCION_ICONS[catTop[0]] || '') + ' ' + catTop[0], 'var(--text-main)', fmt(catTop[1]) + (totGas > 0 ? ' · ' + Math.round(catTop[1] / totGas * 100) + '%' : '')) : ''}
+                ${tile('Meses con registros', String(mesesGasto.length), 'var(--text-main)', 'de 12')}
+            </div>`;
+    }
+
+    // Gráfico de ahorro (ingreso − gasto) por mes, con línea base cero
+    function dibujarAhorroPorMes(canvasId, data) {
+        const cv = document.getElementById(canvasId);
+        if (!cv) return;
+        const dpr = window.devicePixelRatio || 1;
+        const W = cv.offsetWidth || 300, H = 150;
+        cv.width = W * dpr; cv.height = H * dpr;
+        cv.style.width = W + 'px'; cv.style.height = H + 'px';
+        const ctx = cv.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, W, H);
+
+        const nets = data.map(d => d.ingresos - d.gastos);
+        const maxAbs = Math.max(1, ...nets.map(Math.abs));
+        const pad = { top: 14, bottom: 22, left: 4, right: 4 };
+        const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bottom;
+        const zeroY = pad.top + cH / 2;                 // línea base cero al medio
+        const half = cH / 2;
+        const slot = cW / data.length;
+        const bw = Math.max(3, slot * 0.5);
+
+        // línea cero
+        ctx.strokeStyle = '#262d38'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(pad.left, zeroY); ctx.lineTo(W - pad.right, zeroY); ctx.stroke();
+
+        data.forEach((d, i) => {
+            const net = nets[i];
+            const cx = pad.left + slot * i + slot / 2;
+            const bx = cx - bw / 2;
+            if (net !== 0) {
+                const h = (Math.abs(net) / maxAbs) * half;
+                const pos = net > 0;
+                ctx.fillStyle = pos ? '#34d399' : '#fb7185';
+                ctx.beginPath();
+                const y = pos ? zeroY - h : zeroY;
+                const rad = pos ? [3,3,0,0] : [0,0,3,3];
+                if (ctx.roundRect) ctx.roundRect(bx, y, bw, h, rad); else ctx.rect(bx, y, bw, h);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#7c8896';
+            ctx.font = `${Math.min(9, bw)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(d.nombre, cx, H - 6);
+        });
+    }
+
     function renderStatsGastos() {
         const anio = document.getElementById('stats-gastos-anio')?.value;
         if (!anio) return;
@@ -4107,7 +4222,12 @@
         const maxGastos = Math.max(...data.map(d => d.gastos), 1);
         const maxTotal  = Math.max(...data.map(d => Math.max(d.gastos, d.ingresos)), 1);
 
+        renderStatsResumenAnual(anio, data);
+
         setTimeout(() => {
+            // ── Gráfico 0: ahorro (neto) por mes — verde positivo / rosa negativo ──
+            dibujarAhorroPorMes('chart-ahorro-mes', data);
+
             // ── Gráfico 1: gasto variable por mes ──
             drawBarChart('chart-gastos-mes', data, maxGastos, (ctx, x, bw, ch, pad, d, max) => {
                 if (d.gastos === 0) {
