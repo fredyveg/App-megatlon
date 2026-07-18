@@ -3926,22 +3926,28 @@
 
     // ── Modo histórico: bloquea toda edición ─────────────────────────────
     let _historicoDesbloqueado = false;
+    let _mesDesbloqueado = null;   // mes al que aplica el desbloqueo (para no re-bloquear al re-renderizar)
 
     function setModoHistorico(esHistorico) {
-        _historicoDesbloqueado = false;
-        _aplicarEstadoBloqueo(esHistorico, false);
+        // Preservar el desbloqueo si seguimos en el mismo mes histórico que se desbloqueó
+        const mesSel = document.getElementById('select-mes')?.value;
+        const sigue = _historicoDesbloqueado && _mesDesbloqueado === mesSel;
+        _historicoDesbloqueado = sigue;
+        _aplicarEstadoBloqueo(esHistorico, sigue);
     }
 
     function desbloquearHistorico() {
         mostrarConfirm('¿Desbloquear edición de este mes histórico?\nPodés agregar o editar turnos temporalmente.', function(ok) {
             if (!ok) return;
             _historicoDesbloqueado = true;
+            _mesDesbloqueado = document.getElementById('select-mes')?.value;
             _aplicarEstadoBloqueo(true, true);
         });
     }
 
     function rebloquearHistorico() {
         _historicoDesbloqueado = false;
+        _mesDesbloqueado = null;
         _aplicarEstadoBloqueo(true, false);
     }
 
