@@ -857,8 +857,42 @@
         const modal = document.getElementById('modal-sync');
         if (modal) {
             document.getElementById('sync-url-input').value = SYNC_URL || '';
+            renderSyncEstado();
             modal.style.display = 'flex';
         }
+    }
+
+    // Panel de consistencia: qué hay guardado y si está subido
+    function renderSyncEstado() {
+        const cont = document.getElementById('sync-estado');
+        const btn  = document.getElementById('btn-forzar-subida');
+        if (!cont) return;
+        const activo = !!SYNC_URL;
+        cont.style.display = activo ? 'block' : 'none';
+        if (btn) btn.style.display = activo ? 'flex' : 'none';
+        if (!activo) return;
+        const nTurnos = (dbHoras || []).length;
+        const nMov    = Object.values(dbGastosVar || {}).reduce((s, a) => s + (a ? a.length : 0), 0);
+        const mod     = Number(localStorage.getItem('sync_last_modified')) || 0;
+        const modTxt  = mod ? new Date(mod).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+        const fila = (l, v, color) => `<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="color:var(--text-muted);">${l}</span><span style="color:${color || 'var(--text-main)'};font-weight:600;">${v}</span></div>`;
+        cont.innerHTML =
+            fila('Turnos guardados', nTurnos) +
+            fila('Movimientos (gastos)', nMov) +
+            fila('Última modificación', modTxt) +
+            fila('Estado', _pendingPush ? '⏳ Pendiente de subir' : '✓ Al día', _pendingPush ? '#fbbf24' : '#34d399');
+    }
+
+    // Sube lo local a la nube ahora mismo (sin esperar los 3s)
+    async function forzarSubida() {
+        if (!SYNC_URL) { alert('Primero configurá la URL de sincronización.'); return; }
+        const btn = document.getElementById('btn-forzar-subida');
+        const txt = btn ? btn.innerHTML : null;
+        if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo…'; btn.style.pointerEvents = 'none'; }
+        clearTimeout(_syncTimer);
+        await syncPush();
+        if (btn && txt) { btn.innerHTML = txt; btn.style.pointerEvents = 'auto'; }
+        renderSyncEstado();
     }
     function cerrarConfigSync() {
         document.getElementById('modal-sync').style.display = 'none';
@@ -5250,8 +5284,14 @@
             <span style="font-size:0.75rem;color:#2ee6a6;flex-shrink:0;margin-top:1px;">ℹ</span>
             <span style="font-size:0.7rem;color:#7c8896;line-height:1.6;">Apps Script → <strong style="color:#2ee6a6;font-weight:600;">Implementar</strong> → Nueva implementación → Tipo: Web app → Acceso: Cualquier usuario → copiá la URL</span>
         </div>
+        <!-- Estado de consistencia (solo si el sync está activo) -->
+        <div id="sync-estado" style="display:none;background:var(--bg-input);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:0.74rem;"></div>
+        <button id="btn-forzar-subida" onclick="forzarSubida()" style="display:none;width:100%;padding:11px;margin-bottom:10px;background:rgba(46,230,166,0.1);border:0.5px solid rgba(46,230,166,0.3);border-radius:10px;color:var(--primary);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;align-items:center;justify-content:center;gap:7px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en la nube ahora
+        </button>
+
         <div style="display:flex;gap:8px;">
-            <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+            <button onclick="cerrarConfigSync()" style="flex:1;padding:12px;background:transparent;border:0.5px solid #262d38;border-radius:10px;color:#7c8896;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;">Cerrar</button>
             <button onclick="guardarConfigSync()" style="flex:1.6;padding:12px;background:rgba(46,230,166,0.08);border:0.5px solid rgba(46,230,166,0.3);border-radius:10px;color:#2ee6a6;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">☁ Guardar y sincronizar</button>
         </div>
     </div>
