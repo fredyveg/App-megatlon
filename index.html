@@ -696,8 +696,16 @@
         'db_historial_aport', 'db_cuotas_v1', 'dist_pcts', 'dist_montos',
         'dist_modo', 'dist_vinculos', 'auto_dist_config', 'dist_cats_custom',
         'meses_vistos', 'app_v2_limites_cat', 'app_v2_subcats_custom', 'app_v2_cats_custom',
-        'app_v2_cuentas'
+        'app_v2_cuentas', 'sync_last_modified'
     ];
+
+    // Marca de última modificación local — protege contra que un pull pise cambios locales sin subir.
+    // Si ya hay datos locales (usuario existente), se los protege como "recientes".
+    // Si es un dispositivo nuevo sin datos, se deja 0 para que el pull de la nube gane (y no pise la nube con vacío).
+    if (localStorage.getItem('sync_last_modified') === null) {
+        const hayDatosLocales = localStorage.getItem('db_horas_v1') || localStorage.getItem('db_gastos_var');
+        localStorage.setItem('sync_last_modified', hayDatosLocales ? String(Date.now()) : '0');
+    }
 
     let _syncStatus = 'idle'; // idle | syncing | ok | error
 
@@ -729,6 +737,13 @@
             const json = await res.json();
             if (!json.ok) throw new Error(json.error || 'Error del servidor');
             const data = json.data || {};
+            // Protección anti-clobber: si lo local es más nuevo que la nube, NO pisar; subir lo local.
+            const cloudMod = Number(data['sync_last_modified']) || 0;
+            const localMod = Number(localStorage.getItem('sync_last_modified')) || 0;
+            if (localMod > cloudMod) {
+                await syncPush();   // la nube estaba atrasada: subimos los cambios locales
+                return false;
+            }
             // Aplicar cada clave al localStorage
             Object.keys(data).forEach(k => {
                 if (data[k] !== undefined && data[k] !== null) {
@@ -776,6 +791,7 @@
             });
             const json = await res.json();
             if (!json.ok) throw new Error(json.error || 'Error del servidor');
+            _pendingPush = false;   // subida confirmada
             setSyncStatus('ok', 'Guardado · ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'}));
         } catch(err) {
             setSyncStatus(navigator.onLine ? 'error' : 'offline', navigator.onLine ? 'Error al guardar' : 'Sin conexión');
@@ -807,11 +823,35 @@
 
     // Push automático cada vez que se guarda algo (con debounce de 3s)
     let _syncTimer = null;
+    let _pendingPush = false;   // hay cambios locales sin subir
     function schedulePush() {
+        // Marcar SIEMPRE la modificación local (aunque el sync no esté configurado todavía)
+        localStorage.setItem('sync_last_modified', String(Date.now()));
         if (!SYNC_URL) return;
+        _pendingPush = true;
         clearTimeout(_syncTimer);
         _syncTimer = setTimeout(() => syncPush(), 3000);
     }
+
+    // Sube lo pendiente de inmediato al cerrar/ocultar la app (sobrevive al cierre con sendBeacon)
+    function flushPushBeacon() {
+        if (!SYNC_URL || !_pendingPush) return;
+        const updates = {};
+        SYNC_KEYS.forEach(k => {
+            const val = localStorage.getItem(k);
+            if (val !== null) { try { updates[k] = JSON.parse(val); } catch(e) { updates[k] = val; } }
+        });
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith('estado_mes_')) { try { updates[k] = JSON.parse(localStorage.getItem(k)); } catch(e) {} }
+        }
+        try {
+            const blob = new Blob([JSON.stringify({ updates })], { type: 'text/plain' });
+            if (navigator.sendBeacon(SYNC_URL, blob)) { _pendingPush = false; clearTimeout(_syncTimer); }
+        } catch(e) {}
+    }
+    window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPushBeacon(); });
+    window.addEventListener('pagehide', flushPushBeacon);
 
     function abrirConfigSync() {
         const modal = document.getElementById('modal-sync');
