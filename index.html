@@ -162,10 +162,11 @@
             body { background: var(--bg-base); padding-bottom: 0; }
             .app-container { max-width: 1100px; min-height: 100vh; margin: 0 0 0 232px; padding: 40px 44px 60px; background: var(--bg-base); box-shadow: none; }
 
-            /* Ancho de lectura por defecto para pestañas de una sola columna (Finanzas, Stats).
-               Trabajo queda exenta porque usa su propio layout de 2 columnas (ver .tab-layout). */
+            /* Ancho de lectura por defecto para pestañas de una sola columna (Finanzas).
+               Trabajo queda exenta por su layout de 2 columnas; Stats queda exenta porque
+               sus gráficos (canvas responsive) sí aprovechan bien el ancho extra. */
             .tab-content { max-width: 760px; }
-            #tab-horas { max-width: none; }
+            #tab-horas, #tab-stats { max-width: none; }
 
             /* Panel lateral: contenido principal + resumen fijo a la derecha, con acento de color */
             .tab-layout { display: flex; gap: 48px; align-items: flex-start; }
