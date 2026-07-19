@@ -660,28 +660,31 @@
     // Devuelve el set de valores vigente para un período (clave 'YYYY-MM').
     const valoresDeMes = (key) => key ? (ESCALA_VALORES.find(v => key >= v.desde) || ESCALA_VALORES[ESCALA_VALORES.length - 1]) : VALORES;
 
-    // Clasifica las horas de un turno en 50% / 100% según el día (LCT art. 201):
-    //   Lun a Vie  → todas al 50%
-    //   Sábado     → hasta las 13:00 al 50%, desde las 13:00 al 100%
-    //   Domingo    → todas al 100%
-    // (Los feriados se pagan al 100% pero la app no tiene calendario de feriados; se cargan a mano si hace falta.)
+    // Clasifica las horas de un turno en 50% / 100% según el horario (todos los días igual):
+    //   Antes de las 13:00 → 50%
+    //   Desde las 13:00    → 100%
+    // Confirmado por el usuario como la forma real en que se paga, cualquier día que se hagan extras.
     function clasificarHoras(fechaStr, hi, hf) {
-        const dow = parseFechaLocal(fechaStr).getDay();   // 0=Dom … 6=Sáb
         let h50 = 0, h100 = 0;
         for (let h = hi; h < hf; h++) {
-            const es100 = dow === 0 ? true : dow === 6 ? h >= 13 : false;
-            if (es100) h100++; else h50++;
+            if (h >= 13) h100++; else h50++;
         }
         return { h50, h100 };
     }
 
-    // Recalcula h50/h100 de los turnos ya guardados con el criterio por día (idempotente).
+    // Recalcula h50/h100/neto/bruto de los turnos ya guardados con el criterio vigente (idempotente).
     function normalizarHoras() {
         let cambio = false;
         dbHoras.forEach(t => {
             if (t.coordinar || t.hStartVal == null || t.hEndVal == null || !t.fecha) return;
             const { h50, h100 } = clasificarHoras(t.fecha, t.hStartVal, t.hEndVal);
-            if (t.h50 !== h50 || t.h100 !== h100) { t.h50 = h50; t.h100 = h100; cambio = true; }
+            if (t.h50 !== h50 || t.h100 !== h100) {
+                t.h50 = h50; t.h100 = h100;
+                const Vf = valoresDeMes(monthKeyFromDate(parseFechaLocal(t.fecha)));
+                t.neto  = (h50 * Vf.HORA_NETA  * 1.5) + (h100 * Vf.HORA_NETA  * 2);
+                t.bruto = (h50 * Vf.HORA_BRUTA * 1.5) + (h100 * Vf.HORA_BRUTA * 2);
+                cambio = true;
+            }
         });
         if (cambio) { localStorage.setItem('db_horas_v1', JSON.stringify(dbHoras)); schedulePush(); }
     }
