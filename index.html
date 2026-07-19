@@ -147,6 +147,8 @@
 
         /* Adaptación a pantallas grandes (PC / tablet): columna centrada tipo app */
         .fab-add { position: fixed; right: 18px; bottom: 88px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; color: #0c0f14; font-size: 1.7rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(46,230,166,0.35); z-index: 900; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        /* Panel lateral de resumen: oculto por defecto (mobile/tablet), solo aparece en escritorio real */
+        .tab-side { display: none; }
         @media (min-width: 540px) {
             body { background: #05070f; }
             .app-container { max-width: 820px; min-height: 100vh; background: var(--bg-base); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
@@ -158,7 +160,27 @@
         /* Escritorio real (≥900px): sidebar de navegación fija a la izquierda + contenido a la derecha. Mobile no se toca. */
         @media (min-width: 900px) {
             body { background: var(--bg-base); padding-bottom: 0; }
-            .app-container { max-width: 760px; min-height: 100vh; margin: 0 0 0 232px; padding: 40px 44px 60px; background: var(--bg-base); box-shadow: none; }
+            .app-container { max-width: 1100px; min-height: 100vh; margin: 0 0 0 232px; padding: 40px 44px 60px; background: var(--bg-base); box-shadow: none; }
+
+            /* Ancho de lectura por defecto para pestañas de una sola columna (Finanzas, Stats).
+               Trabajo queda exenta porque usa su propio layout de 2 columnas (ver .tab-layout). */
+            .tab-content { max-width: 760px; }
+            #tab-horas { max-width: none; }
+
+            /* Panel lateral: contenido principal + resumen fijo a la derecha, con acento de color */
+            .tab-layout { display: flex; gap: 48px; align-items: flex-start; }
+            .tab-main { flex: 1; min-width: 0; max-width: 700px; }
+            .tab-side {
+                display: block; width: 260px; flex-shrink: 0;
+                position: sticky; top: 40px;
+                border-left: 2px solid var(--primary); padding-left: 22px;
+            }
+            .tab-side-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; color: var(--text-muted); margin-bottom: 18px; }
+            .side-stat { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-bottom: 0.5px solid var(--border); }
+            .side-stat-label { font-size: 0.78rem; color: var(--text-muted); }
+            .side-stat-value { font-size: 0.98rem; font-weight: 700; color: var(--text-main); }
+            .tab-side-link { display: flex; align-items: center; gap: 8px; justify-content: space-between; width: 100%; margin-top: 22px; padding: 0; background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+            .tab-side-link:hover { color: #6ff5c4; }
 
             .bottom-nav {
                 position: fixed; top: 0; left: 0; bottom: 0; transform: none;
@@ -209,6 +231,8 @@
     </header>
 
     <main class="tab-content active" id="tab-horas">
+      <div class="tab-layout">
+      <div class="tab-main">
 
         <!-- ── Hero card ── -->
         <div class="page-section-hero" style="background:var(--bg-hero);border-top:2px solid var(--primary);border-radius:20px;padding:20px;margin-bottom:var(--space-5);position:relative;overflow:hidden;">
@@ -337,6 +361,18 @@
                 </button>
             </div>
         </div>
+
+      </div><!-- fin .tab-main -->
+
+      <aside class="tab-side">
+          <div class="tab-side-title">Resumen del año</div>
+          <div id="resumen-lateral-body"></div>
+          <button onclick="switchTab('stats')" class="tab-side-link">
+              Ver estadísticas completas <i class="fa-solid fa-arrow-right"></i>
+          </button>
+      </aside>
+
+      </div><!-- fin .tab-layout -->
     </main>
 
     <main class="tab-content" id="tab-finanzas">
@@ -4115,6 +4151,27 @@
 
         // Actualizar panel finanzas
         renderFinanzas();
+
+        // Actualizar panel lateral de resumen (solo visible en escritorio ≥900px)
+        renderResumenLateral();
+    }
+
+    // Panel lateral "Resumen del año" — horas totales, promedio mensual y mes pico del año en curso
+    function renderResumenLateral() {
+        const el = document.getElementById('resumen-lateral-body');
+        if (!el) return;
+        const anio = new Date().getFullYear().toString();
+        const data = getMesesData(anio);
+        const totalHoras   = data.reduce((s, d) => s + d.hTotal, 0);
+        const mesesConDatos = data.filter(d => d.registros > 0);
+        const promedio = mesesConDatos.length ? Math.round(totalHoras / mesesConDatos.length) : 0;
+        const mesTop = data.reduce((a, d) => d.hTotal > a.hTotal ? d : a, { hTotal: -1, nombre: '—' });
+        const fila = (label, value) => `<div class="side-stat"><span class="side-stat-label">${label}</span><span class="side-stat-value">${value}</span></div>`;
+        el.innerHTML =
+            fila('Horas en ' + anio, totalHoras + 'h') +
+            fila('Promedio mensual', promedio + 'h') +
+            fila('Mes con más horas', mesTop.hTotal > 0 ? mesTop.nombre : '—') +
+            fila('Meses con registros', mesesConDatos.length + ' de 12');
     }
 
     function fmt(v) {
