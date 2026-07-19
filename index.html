@@ -151,8 +151,30 @@
             body { background: #05070f; }
             .app-container { max-width: 820px; min-height: 100vh; background: var(--bg-base); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
             .bottom-nav { max-width: 820px; left: 50%; transform: translateX(-50%); border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); border-radius: 0; }
-            .fab-add { right: calc(50% - 410px + 18px); }
+            .fab-add { right: max(18px, calc((100vw - 820px) / 2 + 18px)); }
             .modal-sheet { max-width: 820px !important; }
+        }
+
+        /* Escritorio real (≥900px): sidebar de navegación fija a la izquierda + contenido a la derecha. Mobile no se toca. */
+        @media (min-width: 900px) {
+            body { background: var(--bg-base); padding-bottom: 0; }
+            .app-container { max-width: 1080px; min-height: 100vh; margin: 0 0 0 232px; padding: 36px 44px 60px; background: var(--bg-base); box-shadow: none; }
+
+            .bottom-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; transform: none;
+                width: 232px; max-width: 232px; height: 100vh;
+                flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px;
+                padding: 28px 14px; background: var(--bg-card); backdrop-filter: none;
+                border-top: none; border-right: 0.5px solid var(--border); border-left: none; border-radius: 0;
+            }
+            .nav-btn {
+                flex-direction: row; justify-content: flex-start; width: 100%; gap: 12px;
+                padding: 11px 14px; border-radius: 10px; font-size: 0.88rem;
+            }
+            .nav-btn i { font-size: 1.05rem; transform: none !important; }
+            .nav-btn.active { background: rgba(46,230,166,0.12); }
+
+            .fab-add { right: 44px; bottom: 44px; }
         }
     </style>
 </head>
