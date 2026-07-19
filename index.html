@@ -175,6 +175,23 @@
             .nav-btn.active { background: rgba(46,230,166,0.12); }
 
             .fab-add { right: 44px; bottom: 44px; }
+
+            /* Página sin tarjetas (pestaña Trabajo): las secciones pierden el look de "card" flotante
+               y se leen como bloques de una página normal, separados por una línea fina. */
+            .card, .page-section-hero {
+                background: transparent !important;
+                border: none !important;
+                border-top: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-top: 28px !important;
+                padding-bottom: 28px !important;
+                border-bottom: 1px solid var(--border) !important;
+                margin-bottom: 0 !important;
+            }
+            .card:last-child, .page-section-hero:last-child { border-bottom: none !important; }
         }
     </style>
 </head>
@@ -194,7 +211,7 @@
     <main class="tab-content active" id="tab-horas">
 
         <!-- ── Hero card ── -->
-        <div style="background:var(--bg-hero);border-top:2px solid var(--primary);border-radius:20px;padding:20px;margin-bottom:var(--space-5);position:relative;overflow:hidden;">
+        <div class="page-section-hero" style="background:var(--bg-hero);border-top:2px solid var(--primary);border-radius:20px;padding:20px;margin-bottom:var(--space-5);position:relative;overflow:hidden;">
             <!-- Header row -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <div style="display:flex;align-items:center;gap:8px;">
