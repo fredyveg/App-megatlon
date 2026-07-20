@@ -166,8 +166,10 @@
                límite interno (.tab-main, 700px) porque su contenido es texto/formulario, no gráficos. */
             .tab-content { max-width: none; }
 
-            /* Panel lateral: contenido principal + resumen fijo a la derecha, con acento de color */
-            .tab-layout { display: flex; gap: 48px; align-items: flex-start; }
+            /* Panel lateral: contenido principal + resumen fijo a la derecha, con acento de color.
+               max-width propio (no "none" como el resto) porque acá el contenido es texto/formulario,
+               no gráficos: dejarlo sin límite deja un hueco vacío colgando a la derecha del panel. */
+            .tab-layout { display: flex; gap: 48px; align-items: flex-start; max-width: 1008px; }
             .tab-main { flex: 1; min-width: 0; max-width: 700px; }
             .tab-side {
                 display: block; width: 260px; flex-shrink: 0;
