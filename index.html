@@ -762,6 +762,9 @@
     // Devuelve el set de valores vigente para un período (clave 'YYYY-MM').
     const valoresDeMes = (key) => key ? (ESCALA_VALORES.find(v => key >= v.desde) || ESCALA_VALORES[ESCALA_VALORES.length - 1]) : VALORES;
 
+    // Formatea un valor de hora (0-24) para mostrar; 24 se muestra como medianoche (00:00).
+    const fmtHora = (h) => ((h % 24) < 10 ? '0' : '') + (h % 24) + ':00';
+
     // Clasifica las horas de un turno en 50% / 100% según el horario (todos los días igual):
     //   Antes de las 13:00 → 50%
     //   Desde las 13:00    → 100%
@@ -1036,6 +1039,7 @@
             selInicio.options[selInicio.options.length] = new Option(h, i);
             selFin.options[selFin.options.length]       = new Option(h, i);
         }
+        selFin.options[selFin.options.length] = new Option('00:00 (medianoche)', 24);
         selInicio.value = 18; selFin.value = 21;
 
         normalizarHoras();   // migra turnos viejos al criterio por día
@@ -1204,7 +1208,7 @@
             dbHoras.push({
                 id: Date.now(), fecha: f, tareas: t,
                 hStartVal: hi, hEndVal: hf,
-                txt: `${hi}:00 a ${hf}:00`, h50, h100, forzar50,
+                txt: `${fmtHora(hi)} a ${fmtHora(hf)}`, h50, h100, forzar50,
                 neto:  (h50 * Vf.HORA_NETA  * 1.5) + (h100 * Vf.HORA_NETA  * 2),
                 bruto: (h50 * Vf.HORA_BRUTA * 1.5) + (h100 * Vf.HORA_BRUTA * 2),
                 coordinar: false
@@ -4240,6 +4244,7 @@
             const sel = document.getElementById(selId);
             if (sel.options.length === 0) {
                 for (let h = 0; h < 24; h++) sel.add(new Option((h < 10 ? '0' : '') + h + ':00', h));
+                if (selId === 'edit-fin') sel.add(new Option('00:00 (medianoche)', 24));
             }
         });
         // Si era "a coordinar", usar horario por defecto para que el usuario elija
@@ -4269,7 +4274,7 @@
         dbHoras = dbHoras.map(x => x.id !== id ? x : {
             ...x, fecha: f, tareas: t,
             hStartVal: hi, hEndVal: hf,
-            txt: `${hi}:00 a ${hf}:00`, h50, h100, forzar50,
+            txt: `${fmtHora(hi)} a ${fmtHora(hf)}`, h50, h100, forzar50,
             coordinar: false,  // al confirmar horas ya no es "a coordinar"
             neto:  (h50 * Vf.HORA_NETA  * 1.5) + (h100 * Vf.HORA_NETA  * 2),
             bruto: (h50 * Vf.HORA_BRUTA * 1.5) + (h100 * Vf.HORA_BRUTA * 2)
