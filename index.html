@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5511/5511413.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -15,20 +15,20 @@
 
     <style>
         :root {
-            /* Tema financiero: charcoal neutro + verde esmeralda (dinero) / rosa (gasto) */
-            --bg-base: #0c0f14;
-            --bg-card: #161b22;
-            --bg-hero: #1b222c;
-            --bg-input: #0e1218;
+            /* Tema Nocturne: oscuro con tinte índigo + verde esmeralda (dinero) / rosa (gasto) */
+            --bg-base: #0f1018;
+            --bg-card: #161826;
+            --bg-hero: #1b1e33;
+            --bg-input: #101223;
             --primary: #2ee6a6;
-            --primary-hover: #10b981;
+            --primary-hover: #6ff5c4;
             --success: #2ee6a6;
             --danger: #fb7185;
             --income: #34d399;
             --expense: #fb7185;
-            --text-main: #eaf0f2;
-            --text-muted: #7c8896;
-            --border: #262d38;
+            --text-main: #e9e9ed;
+            --text-muted: #8a8fa6;
+            --border: #2a2d42;
             --c-green: #34d399;
             --c-amber: #f5b661;
             --c-violet: #a5b4fc;
@@ -40,7 +40,7 @@
             --space-6: 24px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg-base); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
         .app-container { max-width: 480px; margin: 0 auto; padding: 20px; }
 
@@ -100,9 +100,9 @@
         /* Badges */
         .horas-badge { display: inline-flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
         .horas-badge span { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-        .badge-total    { background: rgba(46,230,166,0.15);   color: #2ee6a6; }
-        .badge-50       { background: rgba(255,159,64,0.15);  color: #ff9f40; }
-        .badge-100      { background: rgba(179,102,255,0.15); color: #b366ff; }
+        .badge-total    { background: rgba(46,230,166,0.14);  color: #34d399; }
+        .badge-50       { background: rgba(245,182,97,0.16);  color: #f5b661; }
+        .badge-100      { background: rgba(165,180,252,0.16); color: #a5b4fc; }
         .badge-coordinar{ background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px dashed rgba(245,158,11,0.4); display: inline-flex; align-items: center; gap: 4px; }
 
 
@@ -112,8 +112,8 @@
         .breakdown-box p  { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 4px; }
         .breakdown-box h3 { font-size: 0.9rem; font-weight: 600; }
         .c-total { color: #7c8896; }
-        .c-50    { color: #ff9f40; }
-        .c-100   { color: #b366ff; }
+        .c-50    { color: #f5b661; }
+        .c-100   { color: #a5b4fc; }
 
         /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -198,23 +198,13 @@
             .nav-btn.active { background: rgba(46,230,166,0.12); }
 
             .fab-add { right: 44px; bottom: 44px; }
+        }
 
-            /* Página sin tarjetas (pestaña Trabajo): las secciones pierden el look de "card" flotante
-               y se leen como bloques de una página normal, separados por una línea fina. */
-            .card, .page-section-hero {
-                background: transparent !important;
-                border: none !important;
-                border-top: none !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-                padding-top: 28px !important;
-                padding-bottom: 28px !important;
-                border-bottom: 1px solid var(--border) !important;
-                margin-bottom: 0 !important;
-            }
-            .card:last-child, .page-section-hero:last-child { border-bottom: none !important; }
+        /* Hero "Total a cobrar" — degradado índigo Nocturne (mobile y desktop) */
+        .page-section-hero {
+            background: radial-gradient(130% 110% at 80% -10%, #3a3f8c 0%, #262a60 44%, #1a1c40 100%) !important;
+            border-top: none !important;
+            border-radius: 18px !important;
         }
     </style>
 </head>
@@ -247,7 +237,7 @@
             </div>
 
             <!-- Hero number -->
-            <div id="view-total-neto" style="font-size:2.8rem;font-weight:700;color:var(--text-main);letter-spacing:-2px;line-height:1;margin-bottom:4px;">$0</div>
+            <div id="view-total-neto" style="font-size:clamp(2.6rem,8vw,3.5rem);font-weight:600;color:#ffffff;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;font-variant-numeric:tabular-nums;">$0</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:16px;">Bruto estimado: <span id="view-total-bruto" style="color:#34d399;font-weight:600;">$0</span></div>
 
             <!-- Sub-stats: neto base + extra -->
@@ -272,11 +262,11 @@
                     <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Total</div>
                 </div>
                 <div style="text-align:center;padding:0 8px;border-left:0.5px solid var(--border);border-right:0.5px solid var(--border);">
-                    <div id="bd-50" style="font-size:1.3rem;font-weight:700;color:#ff9f40;letter-spacing:-0.5px;line-height:1.1;">0h</div>
+                    <div id="bd-50" style="font-size:1.3rem;font-weight:700;color:#f5b661;letter-spacing:-0.5px;line-height:1.1;">0h</div>
                     <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 50%</div>
                 </div>
                 <div style="text-align:center;padding:0 8px;">
-                    <div id="bd-100" style="font-size:1.3rem;font-weight:700;color:#b366ff;letter-spacing:-0.5px;line-height:1.1;">0h</div>
+                    <div id="bd-100" style="font-size:1.3rem;font-weight:700;color:#a5b4fc;letter-spacing:-0.5px;line-height:1.1;">0h</div>
                     <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Al 100%</div>
                 </div>
             </div>
@@ -299,7 +289,7 @@
                 <!-- Switch "Forzar al 50%" -->
                 <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;">
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fa-solid fa-percent" style="color:#ff9f40;font-size:0.85rem;"></i>
+                        <i class="fa-solid fa-percent" style="color:#f5b661;font-size:0.85rem;"></i>
                         <span style="font-size:0.85rem;font-weight:600;color:var(--text-muted);">Forzar todo al 50%</span>
                     </div>
                     <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
@@ -345,7 +335,7 @@
             <!-- Switch "Forzar al 50%" -->
             <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <i class="fa-solid fa-percent" style="color:#ff9f40;font-size:0.85rem;"></i>
+                    <i class="fa-solid fa-percent" style="color:#f5b661;font-size:0.85rem;"></i>
                     <span style="font-size:0.85rem;font-weight:600;color:var(--text-muted);">Forzar todo al 50%</span>
                 </div>
                 <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
@@ -534,7 +524,7 @@
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="display:flex;gap:8px;">
                         <span style="font-size:0.7rem;color:var(--c-amber);display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:var(--c-amber);border-radius:50%;display:inline-block;"></span>50%</span>
-                        <span style="font-size:0.7rem;color:#b366ff;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#b366ff;border-radius:50%;display:inline-block;"></span>100%</span>
+                        <span style="font-size:0.7rem;color:#a5b4fc;display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;background:#a5b4fc;border-radius:50%;display:inline-block;"></span>100%</span>
                     </div>
                     <select id="stats-anio" class="select-modern" onchange="renderStats()" style="font-size:0.72rem;padding:4px 10px;"></select>
                 </div>
@@ -1171,7 +1161,7 @@
         const knob   = document.getElementById('knob-forzar50' + id);
         const slider = document.getElementById('slider-forzar50' + id);
         knob.style.left          = on ? '23px' : '3px';
-        knob.style.background    = on ? '#ff9f40' : '#475569';
+        knob.style.background    = on ? '#f5b661' : '#475569';
         slider.style.background  = on ? 'rgba(255,159,64,0.15)' : '#262d38';
         slider.style.borderColor = on ? 'rgba(255,159,64,0.4)' : '#334155';
     }
@@ -4795,7 +4785,7 @@
 
                 // barra 100% encima
                 if (d.h100 > 0) {
-                    ctx.fillStyle = '#b366ff';
+                    ctx.fillStyle = '#a5b4fc';
                     ctx.beginPath();
                     if (ctx.roundRect) ctx.roundRect(x, baseY - fullH, bw, h100H, [3,3,0,0]);
                     else ctx.rect(x, baseY - fullH, bw, h100H);
@@ -4892,7 +4882,7 @@
                         <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">
                             ${d.registros} turno${d.registros !== 1 ? 's' : ''} ·
                             <span style="color:var(--c-amber);">${d.h50}h al 50%</span> ·
-                            <span style="color:#b366ff;">${d.h100}h al 100%</span>
+                            <span style="color:#a5b4fc;">${d.h100}h al 100%</span>
                         </div>
                     </div>
                     <div style="text-align:right;">
